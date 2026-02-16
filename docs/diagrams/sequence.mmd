@@ -1,0 +1,41 @@
+sequenceDiagram
+    participant U as 用户
+    participant API as API Server
+    participant BL as B-LoRA
+    participant NB as Nano Banana
+    participant MN as MODNet
+    participant RM as Remotion Lambda
+    participant S3 as R2/S3 Storage
+
+    U->>API: 上传视频 + 参考图
+    API->>S3: 存储原始文件
+    S3-->>API: 返回 URL
+
+    rect rgb(240, 248, 255)
+        Note over API,BL: Stage 1: 风格学习 (~5-10秒)
+        API->>BL: 提取风格特征
+        BL-->>API: StyleProfile
+    end
+
+    rect rgb(255, 250, 240)
+        Note over API,NB: Stage 2: 素材生成 (~15秒)
+        API->>NB: 生成背景图 (并行)
+        NB-->>API: 背景图 URL x3
+    end
+
+    rect rgb(245, 255, 245)
+        Note over API,MN: Stage 3: 人物抠像 (~1-2分钟)
+        API->>MN: 发送视频帧
+        MN->>MN: MODNet 推理
+        MN-->>API: 透明视频 URL
+    end
+
+    rect rgb(255, 240, 245)
+        Note over API,RM: Stage 4: 视频合成 (~1-3分钟)
+        API->>RM: 提交合成任务
+        RM->>RM: 并行渲染帧
+        RM->>S3: 存储最终视频
+        RM-->>API: 完成
+    end
+
+    API-->>U: 返回高级化视频

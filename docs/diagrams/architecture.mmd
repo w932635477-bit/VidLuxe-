@@ -1,0 +1,48 @@
+flowchart TB
+    subgraph Client["客户端"]
+        Web["Web App<br/>Next.js"]
+    end
+
+    subgraph Edge["边缘层"]
+        CDN["Cloudflare CDN"]
+        EdgeFn["Vercel Edge<br/>API Routes"]
+    end
+
+    subgraph Compute["计算层"]
+        API["tRPC API<br/>Vercel Serverless"]
+        Queue["任务队列<br/>Upstash Redis"]
+    end
+
+    subgraph AI["AI 服务层"]
+        BL["B-LoRA<br/>Modal GPU"]
+        NB["Nano Banana<br/>External API"]
+        MN["MODNet<br/>Replicate/Modal"]
+    end
+
+    subgraph Render["渲染层"]
+        RL["Remotion Lambda<br/>AWS"]
+    end
+
+    subgraph Storage["存储层"]
+        DB[("Supabase<br/>PostgreSQL")]
+        Cache[("Redis<br/>Upstash")]
+        Object[("R2/S3<br/>对象存储")]
+    end
+
+    Web --> CDN
+    CDN --> EdgeFn
+    EdgeFn --> API
+
+    API --> Queue
+    Queue --> BL
+    Queue --> NB
+    Queue --> MN
+    Queue --> RL
+
+    BL --> Object
+    NB --> Object
+    MN --> Object
+    RL --> Object
+
+    API --> DB
+    API --> Cache

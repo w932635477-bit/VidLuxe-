@@ -1,0 +1,32 @@
+flowchart LR
+    subgraph Input["输入数据"]
+        V1[("原始视频<br/>~50MB")]
+        V2[("参考图<br/>~2MB")]
+        V3[("文案<br/>~1KB")]
+    end
+
+    subgraph Processing["处理层"]
+        P1[("B-LoRA<br/>风格向量<br/>~25MB")]
+        P2[("Nano Banana<br/>背景图 x3<br/>~5MB")]
+        P3[("MODNet<br/>遮罩序列<br/>~500MB")]
+    end
+
+    subgraph Composition["合成层"]
+        C1[("Remotion<br/>合成配置<br/>~10KB")]
+    end
+
+    subgraph Output["输出数据"]
+        O1[("最终视频<br/>~30MB")]
+        O2[("素材包<br/>~10MB")]
+    end
+
+    V1 -->|"视频帧"| P3
+    V2 -->|"图片"| P1
+    V3 -->|"文本"| C1
+
+    P1 -->|"风格"| P2
+    P2 -->|"背景"| C1
+    P3 -->|"人物层"| C1
+
+    C1 -->|"渲染"| O1
+    P2 -->|"导出"| O2

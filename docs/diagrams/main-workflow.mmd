@@ -1,0 +1,75 @@
+flowchart TB
+    subgraph User["用户输入"]
+        A1["原始视频<br/>MP4/MOV"]
+        A2["参考风格图<br/>可选"]
+        A3["文字内容<br/>可选"]
+    end
+
+    subgraph Stage1["Stage 1: 风格学习"]
+        B1{"有参考图?"}
+        B2["B-LoRA<br/>风格提取"]
+        B3["预设风格库"]
+        B4["StyleProfile<br/>风格配置"]
+    end
+
+    subgraph Stage2["Stage 2: 素材生成"]
+        C1["Prompt 构建器"]
+        C2["Nano Banana API"]
+        C3["背景图<br/>1080x1920"]
+        C4["文字卡片<br/>可选"]
+        C5["装饰元素<br/>可选"]
+    end
+
+    subgraph Stage3["Stage 3: 人物抠像"]
+        D1["视频抽帧<br/>FFmpeg"]
+        D2["关键帧选择<br/>每5帧取1"]
+        D3["MODNet<br/>人物抠像"]
+        D4["帧间插值<br/>光流算法"]
+        D5["透明视频<br/>ProRes 4444"]
+    end
+
+    subgraph Stage4["Stage 4: 视频合成"]
+        E1["Remotion<br/>合成模板"]
+        E2["图层叠加<br/>背景+人物+文字"]
+        E3["效果处理<br/>调色+暗角"]
+        E4["Lambda 渲染<br/>H.264 编码"]
+    end
+
+    subgraph Output["输出交付"]
+        F1["高级化视频<br/>MP4"]
+        F2["素材包<br/>背景/卡片"]
+        F3["处理报告<br/>Before/After"]
+    end
+
+    A1 --> D1
+    A2 --> B1
+    A3 --> C1
+
+    B1 -->|"是"| B2
+    B1 -->|"否"| B3
+    B2 --> B4
+    B3 --> B4
+    B4 --> C1
+
+    C1 --> C2
+    C2 --> C3
+    C2 --> C4
+    C2 --> C5
+
+    D1 --> D2
+    D2 --> D3
+    D3 --> D4
+    D4 --> D5
+
+    C3 --> E1
+    C4 --> E1
+    C5 --> E1
+    D5 --> E2
+    E1 --> E2
+    E2 --> E3
+    E3 --> E4
+
+    E4 --> F1
+    C3 --> F2
+    C4 --> F2
+    E4 --> F3

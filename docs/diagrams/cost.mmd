@@ -1,0 +1,17 @@
+flowchart LR
+    subgraph PerVideo["单视频成本"]
+        C1["B-LoRA<br/>$0.01"]
+        C2["Nano Banana<br/>$0.025"]
+        C3["MODNet<br/>$0.18"]
+        C4["Remotion<br/>$0.05"]
+        C5["存储/带宽<br/>$0.02"]
+    end
+
+    C1 --> C2
+    C2 --> C3
+    C3 --> C4
+    C4 --> C5
+
+    C5 --> Total["总计: ~$0.29<br/>约 ¥2.1/视频"]
+
+    style Total fill:#c8e6c9,stroke:#2e7d32
