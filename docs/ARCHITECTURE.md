@@ -2,7 +2,9 @@
 
 ## 架构概览
 
-VidLuxe 采用分层架构设计，结合现代 Serverless 技术，实现高可用、可扩展的视频分析增强系统。
+VidLuxe 采用**渐进式混合架构**，结合现代 Serverless 技术与 AI 服务，实现高可用、可扩展的视频高级感生成系统。
+
+> **架构决策**：采用渐进式混合方案，MVP 阶段以 API 为主，逐步过渡到自建能力。
 
 ```mermaid
 graph TB
@@ -23,11 +25,19 @@ graph TB
         H["@vidluxe/types"]
     end
 
-    subgraph "AI 学习层"
-        IA[NIMA 美学评估]
-        IB[CLIP 特征提取]
-        IC[风格向量检索]
-        ID[B-LoRA 风格迁移]
+    subgraph "AI 学习与生成层 - 渐进式"
+        subgraph "MVP 阶段"
+            IA[B-LoRA 风格学习 ⭐]
+            IB[Nano Banana API]
+            IC[MODNet 抠像]
+        end
+        subgraph "标准阶段"
+            ID[SDXL + B-LoRA]
+            IE[AnimateDiff]
+        end
+        subgraph "专业阶段"
+            IF[ComfyUI 工作流]
+        end
     end
 
     subgraph "视频处理层"
@@ -41,6 +51,7 @@ graph TB
         M[Supabase + pgvector]
         N[Redis Cache]
         O[S3 Storage]
+        P[Modal/Replicate GPU]
     end
 
     A --> D
@@ -50,18 +61,51 @@ graph TB
     F --> G
     G --> H
     G --> IA
-    G --> IB
-    IB --> IC
-    IC --> ID
-    ID --> G
+    IA --> IB
+    G --> IC
     G --> I
     G --> J
     G --> K
     D --> L
     F --> M
     F --> N
-    IC --> M
     I --> O
+    ID --> P
+```
+
+## 渐进式架构设计
+
+### 架构演进路线
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    渐进式架构演进                             │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  MVP 阶段（0-3 个月）                                        │
+│  ─────────────────                                          │
+│  ├─ 风格学习：B-LoRA（本地/Modal 托管）                      │
+│  ├─ 素材生成：Nano Banana API                               │
+│  ├─ 人物抠像：MODNet API                                    │
+│  ├─ 视频合成：Remotion Lambda                               │
+│  └─ 特点：Serverless 优先，零运维                           │
+│                                                             │
+│  标准阶段（3-6 个月）                                        │
+│  ─────────────────                                          │
+│  ├─ 风格学习：B-LoRA（保持）                                │
+│  ├─ 素材生成：SDXL + B-LoRA（高频）/ Nano Banana（低频）     │
+│  ├─ 视频风格：+ AnimateDiff                                 │
+│  ├─ 部署：Modal/Replicate GPU                               │
+│  └─ 特点：成本优化，效果提升                                 │
+│                                                             │
+│  专业阶段（6-12 个月）                                       │
+│  ─────────────────                                          │
+│  ├─ 全流程：ComfyUI 工作流                                  │
+│  ├─ 风格模型：自训练微调版                                   │
+│  ├─ 部署：自有 GPU 或长期合约云 GPU                          │
+│  └─ 特点：完全可控，技术壁垒                                 │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
 ```
 
 ## 分层设计
@@ -157,73 +201,194 @@ export type AppRouter = typeof appRouter;
 | AudioAnalyzer | 音频分析 | 🚧 待实现 |
 | DetailAnalyzer | 细节分析 | 🚧 待实现 |
 
-### 4. AI 学习层 (AI Learning Layer)
+### 4. AI 学习与生成层 (AI Learning & Generation Layer)
 
-> 🆕 **新增核心层**：实现从优质视频中学习高级感风格的能力
+> **渐进式混合方案**：采用分阶段架构，MVP 以 API 为主，逐步过渡到自建能力。
 
-**技术选型：**
+#### 4.1 架构决策
 
-| 组件 | 技术 | 用途 | 参考项目 |
-|------|------|------|----------|
-| 美学评估 | NIMA (Neural Image Assessment) | 图像美学评分 | [idealo/image-quality-assessment](https://github.com/idealo/image-quality-assessment) |
-| 特征提取 | CLIP / DINOv2 | 视觉特征编码 | [rom1504/clip-retrieval](https://github.com/rom1504/clip-retrieval) |
-| 向量检索 | Supabase pgvector / Milvus | 风格相似度搜索 | [milvus-io/milvus](https://github.com/milvus-io/milvus) |
-| 风格迁移 | B-LoRA / LUT Generation | 风格学习与应用 | [yardenfren1996/B-LoRA](https://github.com/yardenfren1996/B-LoRA) |
+```
+为什么选择渐进式方案？
 
-**核心模块：**
+❌ 纯 API 方案：长期成本不可控，缺乏技术壁垒
+❌ 纯自建方案：初期技术风险高，运维复杂
+✅ 渐进式方案：平衡风险与收益，快速验证商业价值
 
-| 模块 | 职责 | 状态 |
-|------|------|------|
-| DatasetCollector | 优质视频样本收集 | 🚧 待实现 |
-| FeatureExtractor | CLIP 特征提取 | 🚧 待实现 |
-| StyleVectorizer | 风格向量化与存储 | 🚧 待实现 |
-| AestheticScorer | NIMA 美学评分 | 🚧 待实现 |
-| StyleMatcher | 风格相似度匹配 | 🚧 待实现 |
-| StyleTransferEngine | B-LoRA 风格迁移 | 🚧 待实现 |
+核心理念：
+"先用成熟 API 快速验证，再逐步自建技术壁垒"
+```
 
-**学习流程：**
+#### 4.2 MVP 阶段技术选型
+
+| 组件 | 技术 | 用途 | 来源 |
+|------|------|------|------|
+| **风格学习** | **B-LoRA** | 单图风格学习 ⭐ | [GitHub](https://github.com/yardenfren1996/B-LoRA) |
+| **素材生成** | Nano Banana API | 高级感图片生成 | 商业 API |
+| **人物抠像** | MODNet API | 视频抠像 | 开源 + API |
+| **视频合成** | Remotion | 程序化视频 | 开源 |
+| **Prompt 模板** | 自建 | 高级感 Prompt | 参考 Remotion 官方模板 |
+
+#### 4.3 标准阶段技术选型（3-6 月后）
+
+| 组件 | 技术 | 变化 | 理由 |
+|------|------|------|------|
+| 风格学习 | B-LoRA | 保持 | 效果好 |
+| **素材生成** | **SDXL + B-LoRA** | 替换 Nano Banana | 成本降低 70% |
+| **视频风格** | **+ AnimateDiff** | 新增 | 时序一致性更好 |
+| 人物抠像 | MODNet | 自部署 | 降低 API 成本 |
+
+#### 4.4 专业阶段技术选型（6-12 月后）
+
+| 组件 | 技术 | 变化 | 理由 |
+|------|------|------|------|
+| **全流程** | **ComfyUI 工作流** | 统一编排 | 灵活可控 |
+| **风格模型** | **自训练微调版** | 差异化 | 建立壁垒 |
+| 部署 | 自有 GPU | 降低边际成本 | 规模效应 |
+
+#### 4.5 核心模块（MVP 阶段）
+
+| 模块 | 职责 | 状态 | 包 |
+|------|------|------|-----|
+| **BLoRALoader** | **B-LoRA 模型加载** | 🚧 待实现 | @vidluxe/learning |
+| **StyleExtractor** | **单图风格提取** | 🚧 待实现 | @vidluxe/learning |
+| **NanoBananaClient** | **Nano Banana API 封装** | 🚧 待实现 | @vidluxe/generator |
+| **PromptBuilder** | **高级感 Prompt 构建** | 🚧 待实现 | @vidluxe/generator |
+| **Segmenter** | **MODNet 人物抠像** | 🚧 待实现 | @vidluxe/generator |
+| **VideoComposer** | **Remotion 视频合成** | 🚧 待实现 | @vidluxe/generator |
+
+#### 4.6 生成流程（MVP 阶段）
 
 ```typescript
-// packages/learning/src/index.ts
-interface AILearningPipeline {
-  // Phase 1: 美学评估
-  assessAesthetics(frames: ImageData[]): Promise<AestheticScore>;
+// packages/generator/src/index.ts
 
-  // Phase 2: 特征提取
-  extractFeatures(frames: ImageData[]): Promise<StyleEmbedding>;
+/**
+ * MVP 阶段生成管道
+ * 风格学习: B-LoRA
+ * 素材生成: Nano Banana API
+ * 视频合成: Remotion
+ */
+interface MVPGenerationPipeline {
+  // Phase 1: 风格学习 (B-LoRA)
+  extractStyle(referenceImage: ImageData): Promise<StyleEmbedding>;
 
-  // Phase 3: 风格匹配
-  matchStyle(embedding: StyleEmbedding): Promise<StyleMatch>;
+  // Phase 2: Prompt 构建
+  buildPrompt(style: StyleEmbedding, content: ContentAnalysis): GenerationPrompt;
 
-  // Phase 4: 风格迁移
-  transferStyle(
-    source: ImageData[],
-    targetStyle: StyleMatch
-  ): Promise<ImageData[]>;
+  // Phase 3: 素材生成 (Nano Banana)
+  generateAssets(prompt: GenerationPrompt): Promise<GeneratedAssets>;
+
+  // Phase 4: 视频合成 (Remotion)
+  composeVideo(assets: GeneratedAssets, personVideo: Video): Promise<VideoOutput>;
+}
+
+interface GeneratedAssets {
+  backgrounds: ImageAsset[];    // 高级感背景图（B-LoRA 风格）
+  textCards: ImageAsset[];      // 金句卡片
+  coverImage: ImageAsset;       // 封面图
 }
 ```
 
-**数据流：**
+#### 4.7 数据流架构（MVP 阶段）
 
 ```mermaid
 flowchart LR
-    subgraph "训练阶段"
-        A1[优质视频样本] --> B1[帧提取]
-        B1 --> C1[CLIP 编码]
-        C1 --> D1[NIMA 评分]
-        D1 --> E1[向量存储]
+    subgraph "输入"
+        A1[用户口播视频]
+        A2[参考风格图]
     end
 
-    subgraph "推理阶段"
-        A2[用户视频] --> B2[帧提取]
-        B2 --> C2[CLIP 编码]
-        C2 --> D2[向量检索]
-        D2 --> E2[风格匹配]
-        E2 --> F2[LUT/LoRA 生成]
-        F2 --> G2[增强输出]
+    subgraph "风格学习 (B-LoRA)"
+        B1[风格提取]
+        B2[风格嵌入]
     end
 
-    E1 -.->|相似度匹配| D2
+    subgraph "素材生成 (Nano Banana)"
+        C1[Prompt 构建]
+        C2[背景图生成]
+        C3[卡片生成]
+    end
+
+    subgraph "视频处理"
+        D1[MODNet 抠像]
+        D2[Remotion 合成]
+    end
+
+    subgraph "输出"
+        E1[高级感视频]
+        E2[封面图]
+        E3[金句卡片]
+    end
+
+    A2 --> B1
+    B1 --> B2
+    B2 --> C1
+    A1 --> D1
+    C1 --> C2
+    C1 --> C3
+    C2 --> D2
+    D1 --> D2
+    D2 --> E1
+    C2 --> E2
+    C3 --> E3
+```
+
+#### 4.7 高级感 Prompt 库
+
+```typescript
+// packages/generator/src/prompts/index.ts
+
+export const PREMIUM_PROMPTS = {
+  minimal: {
+    background: `
+      Create a premium minimalist background.
+      - Deep charcoal (#1A1A1A) to soft gray gradient
+      - Subtle geometric pattern, low opacity
+      - Soft blue accent (#4A90A4)
+      - Apple keynote aesthetic
+      - 60% negative space minimum
+    `,
+    textCard: `
+      Design a premium text card.
+      - Clean sans-serif font
+      - Generous letter spacing (0.08em)
+      - White text on dark background
+      - Subtle glass morphism
+      - Maximum 3 lines
+    `
+  },
+
+  warmLuxury: {
+    background: `
+      Create a luxurious warm-toned background.
+      - Warm beige to deep brown
+      - Subtle marble texture
+      - Gold accent touches (#C9A962)
+      - Chanel campaign aesthetic
+    `,
+    textCard: `
+      Design an elegant luxury card.
+      - Serif font for titles
+      - Gold accent on key words
+      - Cream background
+      - Maximum 2 lines
+    `
+  },
+
+  morandi: {
+    background: `
+      Create a Morandi-style background.
+      - Muted sage green, dusty pink, warm gray
+      - Soft, diffused lighting
+      - Kinfolk magazine aesthetic
+    `,
+    textCard: `
+      Design a Morandi-style card.
+      - Light serif font
+      - Earthy accent colors
+      - Generous white space
+    `
+  }
+};
 ```
 
 ### 5. 视频处理层 (Video Processing)
@@ -418,9 +583,34 @@ export async function analyzeVideo(input: VideoInput) {
 }
 ```
 
+## 包结构
+
+```typescript
+// Monorepo 结构
+packages/
+├── types/               # 类型定义 (@vidluxe/types)
+├── core/                # 核心分析引擎 (@vidluxe/core)
+│   ├── ColorAnalyzer    # 色彩分析 ✅
+│   ├── PremiumScorer    # 评分引擎 ✅
+│   └── ColorRules       # 规则库 ✅
+├── learning/            # AI 学习引擎 (@vidluxe/learning)
+│   ├── FeatureExtractor # CLIP 特征提取
+│   ├── AestheticScorer  # NIMA 美学评分
+│   ├── VectorStore      # 风格向量存储
+│   └── StyleMatcher     # 风格匹配
+├── generator/           # AI 素材生成引擎 (@vidluxe/generator) 🆕
+│   ├── AssetGenerator   # Nano Banana 生成
+│   ├── PromptBuilder    # Prompt 构建
+│   ├── Segmenter        # 人物抠像
+│   └── VideoComposer    # Remotion 合成
+├── api/                 # tRPC API (@vidluxe/api)
+└── ui/                  # UI 组件 (@vidluxe/ui)
+```
+
 ## 下一步
 
 - [API 设计规范](./API.md)
 - [数据模型设计](./DATA_MODELS.md)
-- [模块设计](./MODULES/analyzer.md)
-- [AI 学习引擎](./MODULES/learning.md) 🆕
+- [模块设计 - 分析引擎](./MODULES/analyzer.md)
+- [AI 学习引擎](./MODULES/learning.md)
+- [AI 素材生成引擎](./MODULES/generator.md) 🆕

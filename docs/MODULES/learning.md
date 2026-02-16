@@ -2,45 +2,275 @@
 
 ## 概述
 
-AI 学习引擎是 VidLuxe 的核心创新模块，负责从优质视频中学习高级感风格特征，并智能应用到用户视频中。该模块替代原有的硬编码规则引擎，实现数据驱动的美学评估与风格迁移。
+AI 学习引擎是 VidLuxe 高级感引擎的核心组成部分，采用 **B-LoRA** 作为核心风格学习技术，实现单图风格学习与迁移。
+
+> **渐进式方案核心**：MVP 阶段采用 B-LoRA + Nano Banana 混合架构，标准阶段逐步过渡到自建 SDXL。
 
 ---
 
-## 设计背景
+## 渐进式技术方案
 
-### 当前问题
+### MVP 阶段（当前）
 
-现有实现采用**硬编码规则引擎**：
+```
+风格学习：B-LoRA（单图学习）⭐ 核心技术
+├─ 来源：https://github.com/yardenfren1996/B-LoRA
+├─ 特点：单张参考图即可学习风格
+├─ 论文：ECCV 2024
+└─ 集成：ComfyUI-B-LoRA 节点
+
+素材生成：Nano Banana API
+├─ 快速生成，无需 GPU
+├─ 成本可控
+└─ 效果稳定
+
+工作流：
+用户上传参考图 → B-LoRA 提取风格 → 风格嵌入 → Nano Banana 生成
+```
+
+### 标准阶段（3-6 月后）
+
+```
+风格学习：B-LoRA（保持）
+素材生成：SDXL + B-LoRA（自部署，成本降低 70%）
+视频风格：+ AnimateDiff（时序一致性）
+```
+
+---
+
+## B-LoRA 核心概念
+
+### 什么是 B-LoRA？
+
+```
+B-LoRA = Block-wise Low-Rank Adaptation
+
+核心能力：
+1. 从单张图片学习风格
+2. 隐式分离风格和内容
+3. 可将学到的风格应用到任意内容
+
+技术原理：
+├─ 基于 SDXL + LoRA
+├─ 发现两个关键块（B-LoRA blocks）
+├─ 联合训练实现风格-内容分离
+└─ ECCV 2024 论文验证
+```
+
+### B-LoRA vs 原方案
+
+| 维度 | 原方案 (CLIP + NIMA) | B-LoRA |
+|------|---------------------|--------|
+| **学习方式** | 需要大量样本库 | 单张图片 |
+| **风格理解** | 向量相似度 | 深度特征提取 |
+| **迁移质量** | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ |
+| **实现复杂度** | 高（数据库+检索） | 低（模型加载） |
+| **GPU 需求** | 低 | 中（推理） |
+| **成本** | API 费用 | 推理费用 |
+
+---
+
+## 模块设计
+
+### MVP 阶段模块结构
+
+```
+packages/learning/
+├── src/
+│   ├── blora/                    # B-LoRA 核心 🆕
+│   │   ├── blora-loader.ts       # 模型加载
+│   │   ├── style-extractor.ts    # 风格提取
+│   │   ├── style-embedding.ts    # 风格嵌入
+│   │   └── index.ts
+│   │
+│   ├── analyzer/                 # 内容分析
+│   │   ├── content-analyzer.ts
+│   │   └── keyword-extractor.ts
+│   │
+│   └── index.ts
+│
+├── models/                       # 模型文件
+│   └── blora/                    # B-LoRA 权重
+│
+└── package.json
+```
+
+### 核心模块：BLoRALoader
 
 ```typescript
-// 当前实现：人工定义的固定阈值
-{
-  id: 'saturation_premium_range',
-  check: (value: number) => {
-    if (value >= 0.35 && value <= 0.55) {  // 硬编码
-      return { score: 100 };
+// packages/learning/src/blora/blora-loader.ts
+
+/**
+ * B-LoRA 模型加载器
+ * 参考：https://github.com/yardenfren1996/B-LoRA
+ */
+export class BLoRALoader {
+  private model: SDXLModel;
+  private contentBLora: LoRAWeights;
+  private styleBLora: LoRAWeights;
+
+  /**
+   * 加载 B-LoRA 模型
+   * 可选方式：
+   * 1. 本地加载（需要 GPU）
+   * 2. Modal/Replicate 托管（推荐 MVP）
+   */
+  async loadModel(options: {
+    method: 'local' | 'modal' | 'replicate';
+    modelPath?: string;
+  }): Promise<void> {
+    switch (options.method) {
+      case 'local':
+        // 本地加载 SDXL + B-LoRA
+        this.model = await loadSDXL();
+        break;
+      case 'modal':
+        // Modal 托管
+        this.model = new ModalClient('b-lora');
+        break;
+      case 'replicate':
+        // Replicate API
+        this.model = new ReplicateClient('b-lora');
+        break;
     }
+  }
+
+  /**
+   * 从单张图片提取风格
+   * 这是 B-LoRA 的核心能力
+   */
+  async extractStyle(referenceImage: ImageData): Promise<StyleEmbedding> {
+    // 1. 加载参考图片
+    // 2. 训练/提取 B-LoRA 权重
+    // 3. 返回风格嵌入
+
+    const styleEmbedding = await this.model.extractStyle(referenceImage);
+
+    return {
+      id: generateId(),
+      vector: styleEmbedding.vector,
+      contentWeight: styleEmbedding.contentWeight,
+      styleWeight: styleEmbedding.styleWeight,
+      metadata: {
+        sourceImage: referenceImage,
+        extractedAt: new Date(),
+      },
+    };
   }
 }
 ```
 
-**局限性**：
-1. 无法从优质样本中学习
-2. 阈值主观性强，缺乏数据支撑
-3. 风格固定，无法扩展
-4. 缺乏泛化能力
-
-### 解决方案
-
-采用**深度学习 + 向量检索**架构：
+### 核心模块：StyleExtractor
 
 ```typescript
-// 新实现：数据驱动的风格学习
-const styleMatch = await styleMatcher.match(userVideoFrames);
-const transferParams = await styleTransfer.generate(styleMatch);
+// packages/learning/src/blora/style-extractor.ts
 
-// 应用学习到的风格
-const enhanced = await processor.apply(frames, transferParams);
+export interface StyleEmbedding {
+  id: string;
+  vector: number[];
+  contentWeight: number;   // 内容权重 (0-1)
+  styleWeight: number;     // 风格权重 (0-1)
+  metadata: {
+    sourceImage: ImageData;
+    extractedAt: Date;
+  };
+}
+
+export class StyleExtractor {
+  private loader: BLoRALoader;
+
+  constructor(loader: BLoRALoader) {
+    this.loader = loader;
+  }
+
+  /**
+   * 从参考图提取高级感风格
+   * 支持 4 种预设风格
+   */
+  async extractPremiumStyle(
+    referenceImage: ImageData,
+    styleType: PremiumStyle
+  ): Promise<StyleEmbedding> {
+    // 提取风格嵌入
+    const embedding = await this.loader.extractStyle(referenceImage);
+
+    // 根据风格类型调整权重
+    const adjusted = this.adjustWeightsForStyle(embedding, styleType);
+
+    return adjusted;
+  }
+
+  /**
+   * 根据预设风格调整权重
+   */
+  private adjustWeightsForStyle(
+    embedding: StyleEmbedding,
+    style: PremiumStyle
+  ): StyleEmbedding {
+    const styleWeights: Record<PremiumStyle, { style: number; content: number }> = {
+      minimal: { style: 0.7, content: 0.3 },
+      warm_luxury: { style: 0.8, content: 0.2 },
+      cool_professional: { style: 0.75, content: 0.25 },
+      morandi: { style: 0.85, content: 0.15 },
+    };
+
+    const weights = styleWeights[style];
+    return {
+      ...embedding,
+      styleWeight: weights.style,
+      contentWeight: weights.content,
+    };
+  }
+}
+```
+
+---
+
+## 与生成引擎集成
+
+### MVP 阶段工作流
+
+```typescript
+import { StyleExtractor } from '@vidluxe/learning';
+import { NanoBananaGenerator, PromptBuilder } from '@vidluxe/generator';
+
+async function generatePremiumVideo(input: {
+  userVideo: Video;
+  referenceImage: ImageData;  // 用户选择的风格参考图
+  style: PremiumStyle;
+}) {
+  // 1. B-LoRA 提取风格
+  const styleExtractor = new StyleExtractor(bLoRALoader);
+  const styleEmbedding = await styleExtractor.extractPremiumStyle(
+    input.referenceImage,
+    input.style
+  );
+
+  // 2. 构建 Prompt
+  const promptBuilder = new PromptBuilder();
+  const prompt = promptBuilder.build(styleEmbedding, input.style);
+
+  // 3. Nano Banana 生成素材
+  const generator = new NanoBananaGenerator();
+  const assets = await generator.generate({
+    prompt,
+    count: { backgrounds: 3, textCards: 5 },
+  });
+
+  // 4. Remotion 合成视频
+  // ... 见 generator.md
+
+  return { video, assets };
+}
+```
+const assets = await generator.generate({
+  style: styleMatch.reference,
+  content: contentAnalysis,
+  prompts: PREMIUM_PROMPTS.minimal,
+});
+
+// 3. 合成：Remotion 渲染
+const video = await composer.render(assets);
 ```
 
 ---
@@ -987,6 +1217,7 @@ console.log(`参考风格来源: ${match.reference.metadata.source}`);
 
 ## 下一步
 
+- [AI 素材生成引擎](./generator.md) 🆕 - Nano Banana 集成
 - [实施评估报告](../EVALUATION.md)
 - [分析引擎](./analyzer.md)
 - [增强引擎](./enhancer.md)
