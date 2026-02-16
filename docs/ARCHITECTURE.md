@@ -23,6 +23,13 @@ graph TB
         H["@vidluxe/types"]
     end
 
+    subgraph "AI 学习层"
+        IA[NIMA 美学评估]
+        IB[CLIP 特征提取]
+        IC[风格向量检索]
+        ID[B-LoRA 风格迁移]
+    end
+
     subgraph "视频处理层"
         I[Remotion]
         J[FFmpeg]
@@ -31,7 +38,7 @@ graph TB
 
     subgraph "基础设施层"
         L[Vercel Edge]
-        M[Supabase]
+        M[Supabase + pgvector]
         N[Redis Cache]
         O[S3 Storage]
     end
@@ -42,12 +49,18 @@ graph TB
     E --> F
     F --> G
     G --> H
+    G --> IA
+    G --> IB
+    IB --> IC
+    IC --> ID
+    ID --> G
     G --> I
     G --> J
     G --> K
     D --> L
     F --> M
     F --> N
+    IC --> M
     I --> O
 ```
 
@@ -144,7 +157,76 @@ export type AppRouter = typeof appRouter;
 | AudioAnalyzer | 音频分析 | 🚧 待实现 |
 | DetailAnalyzer | 细节分析 | 🚧 待实现 |
 
-### 4. 视频处理层 (Video Processing)
+### 4. AI 学习层 (AI Learning Layer)
+
+> 🆕 **新增核心层**：实现从优质视频中学习高级感风格的能力
+
+**技术选型：**
+
+| 组件 | 技术 | 用途 | 参考项目 |
+|------|------|------|----------|
+| 美学评估 | NIMA (Neural Image Assessment) | 图像美学评分 | [idealo/image-quality-assessment](https://github.com/idealo/image-quality-assessment) |
+| 特征提取 | CLIP / DINOv2 | 视觉特征编码 | [rom1504/clip-retrieval](https://github.com/rom1504/clip-retrieval) |
+| 向量检索 | Supabase pgvector / Milvus | 风格相似度搜索 | [milvus-io/milvus](https://github.com/milvus-io/milvus) |
+| 风格迁移 | B-LoRA / LUT Generation | 风格学习与应用 | [yardenfren1996/B-LoRA](https://github.com/yardenfren1996/B-LoRA) |
+
+**核心模块：**
+
+| 模块 | 职责 | 状态 |
+|------|------|------|
+| DatasetCollector | 优质视频样本收集 | 🚧 待实现 |
+| FeatureExtractor | CLIP 特征提取 | 🚧 待实现 |
+| StyleVectorizer | 风格向量化与存储 | 🚧 待实现 |
+| AestheticScorer | NIMA 美学评分 | 🚧 待实现 |
+| StyleMatcher | 风格相似度匹配 | 🚧 待实现 |
+| StyleTransferEngine | B-LoRA 风格迁移 | 🚧 待实现 |
+
+**学习流程：**
+
+```typescript
+// packages/learning/src/index.ts
+interface AILearningPipeline {
+  // Phase 1: 美学评估
+  assessAesthetics(frames: ImageData[]): Promise<AestheticScore>;
+
+  // Phase 2: 特征提取
+  extractFeatures(frames: ImageData[]): Promise<StyleEmbedding>;
+
+  // Phase 3: 风格匹配
+  matchStyle(embedding: StyleEmbedding): Promise<StyleMatch>;
+
+  // Phase 4: 风格迁移
+  transferStyle(
+    source: ImageData[],
+    targetStyle: StyleMatch
+  ): Promise<ImageData[]>;
+}
+```
+
+**数据流：**
+
+```mermaid
+flowchart LR
+    subgraph "训练阶段"
+        A1[优质视频样本] --> B1[帧提取]
+        B1 --> C1[CLIP 编码]
+        C1 --> D1[NIMA 评分]
+        D1 --> E1[向量存储]
+    end
+
+    subgraph "推理阶段"
+        A2[用户视频] --> B2[帧提取]
+        B2 --> C2[CLIP 编码]
+        C2 --> D2[向量检索]
+        D2 --> E2[风格匹配]
+        E2 --> F2[LUT/LoRA 生成]
+        F2 --> G2[增强输出]
+    end
+
+    E1 -.->|相似度匹配| D2
+```
+
+### 5. 视频处理层 (Video Processing)
 
 **技术选型：**
 - **Remotion** - React-based 视频渲染
@@ -169,7 +251,7 @@ interface VideoProcessingPipeline {
 }
 ```
 
-### 5. 基础设施层 (Infrastructure)
+### 6. 基础设施层 (Infrastructure)
 
 **技术选型：**
 
@@ -341,3 +423,4 @@ export async function analyzeVideo(input: VideoInput) {
 - [API 设计规范](./API.md)
 - [数据模型设计](./DATA_MODELS.md)
 - [模块设计](./MODULES/analyzer.md)
+- [AI 学习引擎](./MODULES/learning.md) 🆕

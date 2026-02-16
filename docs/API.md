@@ -38,6 +38,7 @@ export const appRouter = router({
   profile: profileRouter,
   project: projectRouter,
   user: userRouter,
+  learning: learningRouter,  // 🆕 AI 学习路由
 });
 
 export type AppRouter = typeof appRouter;
@@ -300,6 +301,136 @@ export const projectRouter = router({
       return await ctx.db.project.deleteMany({
         where: { id: input.projectId, userId: ctx.user.id },
       });
+    }),
+});
+```
+
+### Learning Router 🆕
+
+```typescript
+// packages/api/src/router/learning.ts
+import { router, procedure } from '../trpc';
+import { z } from 'zod';
+import {
+  FeatureExtractor,
+  AestheticScorer,
+  StyleMatcher,
+} from '@vidluxe/learning';
+
+export const learningRouter = router({
+  // 评估视频美学分数
+  assessAesthetics: procedure
+    .input(z.object({
+      videoUrl: z.string().url(),
+    }))
+    .mutation(async ({ input }) => {
+      const scorer = new AestheticScorer();
+      await scorer.initialize();
+
+      const frames = await extractFrames(input.videoUrl);
+      const score = await scorer.scoreVideo(frames);
+
+      return {
+        mean: score.mean,
+        std: score.std,
+        grade: score.grade,
+        distribution: score.distribution,
+      };
+    }),
+
+  // 匹配相似风格
+  matchStyle: procedure
+    .input(z.object({
+      videoUrl: z.string().url(),
+      targetStyle: z.enum(['minimal', 'warm_luxury', 'cool_professional', 'morandi']).optional(),
+      topK: z.number().min(1).max(20).default(5),
+    }))
+    .mutation(async ({ input }) => {
+      const matcher = new StyleMatcher();
+
+      const frames = await extractFrames(input.videoUrl);
+      const match = await matcher.match(frames, {
+        targetStyle: input.targetStyle,
+        topK: input.topK,
+      });
+
+      return {
+        reference: {
+          id: match.reference.id,
+          style: match.reference.metadata.style,
+          aestheticsScore: match.reference.metadata.aestheticsScore,
+          thumbnailUrl: match.reference.metadata.thumbnailUrl,
+        },
+        similarity: match.similarity,
+        transferParams: match.transferParams,
+        suggestions: match.suggestions,
+      };
+    }),
+
+  // 搜索风格库
+  searchStyles: procedure
+    .input(z.object({
+      query: z.string().optional(),
+      style: z.enum(['minimal', 'warm_luxury', 'cool_professional', 'morandi']).optional(),
+      category: z.enum(['luxury', 'fashion', 'tech', 'lifestyle']).optional(),
+      minScore: z.number().min(1).max(10).optional(),
+      limit: z.number().min(1).max(50).default(20),
+    }))
+    .query(async ({ input, ctx }) => {
+      return await ctx.db.styleVector.findMany({
+        where: {
+          ...(input.style && { 'metadata.style': input.style }),
+          ...(input.category && { 'metadata.category': input.category }),
+          ...(input.minScore && { 'metadata.aestheticsScore': { gte: input.minScore } }),
+        },
+        take: input.limit,
+        orderBy: { 'metadata.aestheticsScore': 'desc' },
+      });
+    }),
+
+  // 上传学习样本（管理员）
+  uploadSample: procedure
+    .input(z.object({
+      videoUrl: z.string().url(),
+      labels: z.object({
+        style: z.enum(['minimal', 'warm_luxury', 'cool_professional', 'morandi']),
+        category: z.enum(['luxury', 'fashion', 'tech', 'lifestyle']),
+        brand: z.string().optional(),
+        mood: z.array(z.string()),
+        quality: z.number().min(1).max(10),
+      }),
+    }))
+    .mutation(async ({ input, ctx }) => {
+      // 管理员权限检查
+      if (!ctx.user.isAdmin) {
+        throw new TRPCError({
+          code: 'FORBIDDEN',
+          message: 'Admin access required',
+        });
+      }
+
+      const extractor = new FeatureExtractor();
+      const scorer = new AestheticScorer();
+
+      await extractor.initialize();
+      await scorer.initialize();
+
+      const frames = await extractFrames(input.videoUrl);
+      const embedding = await extractor.extractFromFrames(frames);
+      const aestheticsScore = await scorer.scoreVideo(frames);
+
+      const vector = await ctx.db.styleVector.create({
+        data: {
+          embedding: embedding.vector,
+          metadata: {
+            ...input.labels,
+            source: input.videoUrl,
+            aestheticsScore: aestheticsScore.mean,
+          },
+        },
+      });
+
+      return { id: vector.id, aestheticsScore: aestheticsScore.mean };
     }),
 });
 ```
