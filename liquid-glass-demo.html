@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VidLuxe - Liquid Glass Demo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #0a0a0f;
+      min-height: 100vh;
+      overflow-x: hidden;
+      color: white;
+    }
+
+    /* Animated gradient background */
+    .gradient-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+    }
+
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.5;
+      animation: float 15s ease-in-out infinite;
+    }
+
+    .blob-1 {
+      width: 600px;
+      height: 600px;
+      background: rgba(139, 92, 246, 0.4);
+      top: -100px;
+      left: -100px;
+      animation-delay: 0s;
+    }
+
+    .blob-2 {
+      width: 500px;
+      height: 500px;
+      background: rgba(236, 72, 153, 0.3);
+      bottom: -100px;
+      right: -100px;
+      animation-delay: -5s;
+    }
+
+    .blob-3 {
+      width: 400px;
+      height: 400px;
+      background: rgba(59, 130, 246, 0.25);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      animation-delay: -10s;
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translate(0, 0) scale(1);
+      }
+      33% {
+        transform: translate(30px, -30px) scale(1.05);
+      }
+      66% {
+        transform: translate(-20px, 20px) scale(0.95);
+      }
+    }
+
+    /* Noise texture */
+    .noise {
+      position: fixed;
+      inset: 0;
+      z-index: 1;
+      opacity: 0.03;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    }
+
+    /* Main container */
+    .container {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 3rem 1.5rem;
+    }
+
+    /* Logo */
+    .logo {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .logo h1 {
+      font-size: 3rem;
+      font-weight: 300;
+      letter-spacing: 0.2em;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .logo h1 span {
+      font-weight: 600;
+    }
+
+    .logo p {
+      margin-top: 1rem;
+      color: rgba(255, 255, 255, 0.4);
+      letter-spacing: 0.3em;
+      font-size: 0.875rem;
+      text-transform: uppercase;
+    }
+
+    /* Liquid Glass Card */
+    .glass-card {
+      width: 100%;
+      max-width: 900px;
+      position: relative;
+      border-radius: 1.5rem;
+      padding: 1px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.02) 50%, rgba(255,255,255,0.08) 100%);
+    }
+
+    .glass-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: 1.5rem;
+      box-shadow:
+        inset 0 0 0 1px rgba(255,255,255,0.1),
+        0 0 60px rgba(139, 92, 246, 0.15),
+        0 0 100px rgba(236, 72, 153, 0.08);
+      pointer-events: none;
+    }
+
+    .glass-card-inner {
+      border-radius: 1.5rem;
+      padding: 2.5rem;
+      background: rgba(20, 20, 30, 0.6);
+      backdrop-filter: blur(40px) saturate(150%);
+      -webkit-backdrop-filter: blur(40px) saturate(150%);
+      position: relative;
+    }
+
+    .glass-card-inner::before {
+      content: '';
+      position: absolute;
+      inset: 1rem;
+      border-radius: 1rem;
+      background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    /* Upload zone */
+    .upload-zone {
+      border: 2px dashed rgba(255, 255, 255, 0.1);
+      border-radius: 1rem;
+      padding: 3rem;
+      text-align: center;
+      transition: all 0.5s ease;
+      cursor: pointer;
+      margin-bottom: 2rem;
+    }
+
+    .upload-zone:hover {
+      border-color: rgba(255, 255, 255, 0.2);
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .upload-icon {
+      width: 4rem;
+      height: 4rem;
+      margin: 0 auto 1.5rem;
+      border-radius: 1rem;
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(236, 72, 153, 0.2));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.5s ease;
+    }
+
+    .upload-zone:hover .upload-icon {
+      transform: scale(1.1);
+    }
+
+    .upload-icon svg {
+      width: 2rem;
+      height: 2rem;
+      stroke: rgba(255, 255, 255, 0.6);
+    }
+
+    .upload-zone p {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .upload-zone p.main {
+      font-size: 1.125rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .upload-zone p.sub {
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Score section */
+    .score-section {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    @media (max-width: 640px) {
+      .score-section {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .score-label {
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 0.875rem;
+      letter-spacing: 0.1em;
+      margin-bottom: 1rem;
+    }
+
+    /* Score circle */
+    .score-circle-container {
+      display: flex;
+      align-items: flex-end;
+      gap: 1.5rem;
+    }
+
+    .score-circle {
+      position: relative;
+      width: 7rem;
+      height: 7rem;
+      border-radius: 50%;
+      background: conic-gradient(
+        from 180deg,
+        rgba(202, 138, 4, 0.8) 0deg,
+        rgba(202, 138, 4, 0.2) 260deg,
+        transparent 260deg
+      );
+      box-shadow: 0 0 60px rgba(202, 138, 4, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .score-circle-inner {
+      width: 6rem;
+      height: 6rem;
+      border-radius: 50%;
+      background: rgba(20, 20, 30, 0.8);
+      backdrop-filter: blur(10px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .score-number {
+      font-size: 2.5rem;
+      font-weight: 300;
+      color: white;
+    }
+
+    .score-grade {
+      font-size: 0.75rem;
+      color: rgba(202, 138, 4, 0.8);
+      letter-spacing: 0.1em;
+    }
+
+    .score-info {
+      padding-bottom: 0.5rem;
+    }
+
+    .score-info h3 {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 1.125rem;
+      font-weight: 500;
+      margin-bottom: 0.25rem;
+    }
+
+    .score-info p {
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 0.875rem;
+    }
+
+    /* Dimension bars */
+    .dimension-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .dimension-bar {
+      display: flex;
+      flex-direction: column;
+      gap: 0.375rem;
+    }
+
+    .dimension-bar-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.875rem;
+    }
+
+    .dimension-bar-header span:first-child {
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .dimension-bar-header span:last-child {
+      color: rgba(255, 255, 255, 0.7);
+      font-weight: 500;
+    }
+
+    .dimension-bar-track {
+      height: 6px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.05);
+      overflow: hidden;
+    }
+
+    .dimension-bar-fill {
+      height: 100%;
+      border-radius: 3px;
+      transition: width 1s ease;
+    }
+
+    .dimension-bar-fill.violet {
+      background: linear-gradient(90deg, #8b5cf6, #ec4899);
+    }
+
+    .dimension-bar-fill.blue {
+      background: linear-gradient(90deg, #3b82f6, #06b6d4);
+    }
+
+    .dimension-bar-fill.green {
+      background: linear-gradient(90deg, #10b981, #14b8a6);
+    }
+
+    /* CTA Button */
+    .cta-button {
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+      border: none;
+      border-radius: 1rem;
+      padding: 1.25rem;
+      font-size: 1.125rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      background: linear-gradient(135deg, rgba(202, 138, 4, 0.8) 0%, rgba(202, 138, 4, 0.4) 100%);
+      color: rgba(255, 255, 255, 0.9);
+      transition: all 0.5s ease;
+    }
+
+    .cta-button:hover {
+      background: linear-gradient(135deg, rgba(202, 138, 4, 1) 0%, rgba(234, 179, 8, 0.8) 50%, rgba(202, 138, 4, 1) 100%);
+      color: white;
+    }
+
+    .cta-button::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+      transform: translateX(-100%);
+      transition: transform 0.6s ease;
+    }
+
+    .cta-button:hover::before {
+      transform: translateX(100%);
+    }
+
+    /* Feature pills */
+    .feature-pills {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.75rem;
+      margin-top: 3rem;
+    }
+
+    .feature-pill {
+      padding: 0.75rem 1.25rem;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      color: rgba(255, 255, 255, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(10px);
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 4rem;
+      color: rgba(255, 255, 255, 0.2);
+      font-size: 0.875rem;
+      letter-spacing: 0.15em;
+    }
+
+    /* Selection */
+    ::selection {
+      background: rgba(202, 138, 4, 0.3);
+      color: white;
+    }
+
+    /* Smooth scroll */
+    html {
+      scroll-behavior: smooth;
+    }
+  </style>
+</head>
+<body>
+  <!-- Animated gradient background -->
+  <div class="gradient-bg">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <!-- Noise texture -->
+  <div class="noise"></div>
+
+  <!-- Main content -->
+  <div class="container">
+    <!-- Logo -->
+    <div class="logo">
+      <h1>VID<span>LUXE</span></h1>
+      <p>Premium Video Engine</p>
+    </div>
+
+    <!-- Liquid Glass Card -->
+    <div class="glass-card">
+      <div class="glass-card-inner">
+        <!-- Upload zone -->
+        <div class="upload-zone">
+          <div class="upload-icon">
+            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+          </div>
+          <p class="main">拖拽视频到这里</p>
+          <p class="sub">或点击选择文件</p>
+        </div>
+
+        <!-- Score section -->
+        <div class="score-section">
+          <!-- Overall score -->
+          <div>
+            <p class="score-label">高级感评分预览</p>
+            <div class="score-circle-container">
+              <div class="score-circle">
+                <div class="score-circle-inner">
+                  <span class="score-number">72</span>
+                  <span class="score-grade">GRADE B</span>
+                </div>
+              </div>
+              <div class="score-info">
+                <h3>良好</h3>
+                <p>距离顶级还需 18 分</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Dimension bars -->
+          <div class="dimension-bars">
+            <div class="dimension-bar">
+              <div class="dimension-bar-header">
+                <span>色彩协调度</span>
+                <span>78</span>
+              </div>
+              <div class="dimension-bar-track">
+                <div class="dimension-bar-fill violet" style="width: 78%"></div>
+              </div>
+            </div>
+            <div class="dimension-bar">
+              <div class="dimension-bar-header">
+                <span>排版舒适度</span>
+                <span>65</span>
+              </div>
+              <div class="dimension-bar-track">
+                <div class="dimension-bar-fill blue" style="width: 65%"></div>
+              </div>
+            </div>
+            <div class="dimension-bar">
+              <div class="dimension-bar-header">
+                <span>构图美感度</span>
+                <span>72</span>
+              </div>
+              <div class="dimension-bar-track">
+                <div class="dimension-bar-fill green" style="width: 72%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CTA Button -->
+        <button class="cta-button">
+          一键升级高级感
+        </button>
+      </div>
+    </div>
+
+    <!-- Feature pills -->
+    <div class="feature-pills">
+      <span class="feature-pill">色彩优化</span>
+      <span class="feature-pill">排版调整</span>
+      <span class="feature-pill">动效升级</span>
+      <span class="feature-pill">质感提升</span>
+    </div>
+
+    <!-- Footer -->
+    <p class="footer">LIQUID GLASS · PREMIUM UI DEMO</p>
+  </div>
+
+  <script>
+    // Add subtle mouse movement effect to blobs
+    document.addEventListener('mousemove', (e) => {
+      const blobs = document.querySelectorAll('.blob');
+      const x = (e.clientX / window.innerWidth - 0.5) * 20;
+      const y = (e.clientY / window.innerHeight - 0.5) * 20;
+
+      blobs.forEach((blob, i) => {
+        const factor = (i + 1) * 0.5;
+        blob.style.transform = `translate(${x * factor}px, ${y * factor}px)`;
+      });
+    });
+
+    // Animate dimension bars on load
+    window.addEventListener('load', () => {
+      const bars = document.querySelectorAll('.dimension-bar-fill');
+      bars.forEach(bar => {
+        const width = bar.style.width;
+        bar.style.width = '0%';
+        setTimeout(() => {
+          bar.style.width = width;
+        }, 500);
+      });
+    });
+  </script>
+</body>
+</html>
