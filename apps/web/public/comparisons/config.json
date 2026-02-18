@@ -1,0 +1,38 @@
+[
+  {
+    "id": "portrait-1",
+    "title": "人像升级",
+    "original": "/comparisons/portrait-1-original.jpg",
+    "enhanced": "/comparisons/portrait-1-enhanced.jpg"
+  },
+  {
+    "id": "product-1",
+    "title": "产品升级",
+    "original": "/comparisons/product-1-original.jpg",
+    "enhanced": "/comparisons/product-1-enhanced.jpg"
+  },
+  {
+    "id": "cafe-1",
+    "title": "咖啡探店升级",
+    "original": "/comparisons/cafe-1-original.jpg",
+    "enhanced": "/comparisons/cafe-1-enhanced.jpg"
+  },
+  {
+    "id": "fashion-1",
+    "title": "穿搭升级",
+    "original": "/comparisons/fashion-1-original.jpg",
+    "enhanced": "/comparisons/fashion-1-enhanced.jpg"
+  },
+  {
+    "id": "food-1",
+    "title": "美食升级",
+    "original": "/comparisons/food-1-original.jpg",
+    "enhanced": "/comparisons/food-1-enhanced.jpg"
+  },
+  {
+    "id": "lifestyle-1",
+    "title": "生活方式升级",
+    "original": "/comparisons/lifestyle-1-original.jpg",
+    "enhanced": "/comparisons/lifestyle-1-enhanced.jpg"
+  }
+]

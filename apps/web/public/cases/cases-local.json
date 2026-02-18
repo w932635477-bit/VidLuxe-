@@ -1,0 +1,90 @@
+[
+  {
+    "id": "fashion-1",
+    "category": "fashion",
+    "categoryLabel": "穿搭 OOTD",
+    "beforeUrl": "/cases/images/fashion-1-before.jpg",
+    "afterUrl": "/cases/images/fashion-1-after.jpg",
+    "recommendedStyle": "warmLuxury"
+  },
+  {
+    "id": "fashion-2",
+    "category": "fashion",
+    "categoryLabel": "穿搭 OOTD",
+    "beforeUrl": "/cases/images/fashion-2-before.jpg",
+    "afterUrl": "/cases/images/fashion-2-after.jpg",
+    "recommendedStyle": "minimal"
+  },
+  {
+    "id": "beauty-1",
+    "category": "beauty",
+    "categoryLabel": "美妆护肤",
+    "beforeUrl": "/cases/images/beauty-1-before.jpg",
+    "afterUrl": "/cases/images/beauty-1-after.jpg",
+    "recommendedStyle": "warmLuxury"
+  },
+  {
+    "id": "beauty-2",
+    "category": "beauty",
+    "categoryLabel": "美妆护肤",
+    "beforeUrl": "/cases/images/beauty-2-before.jpg",
+    "afterUrl": "/cases/images/beauty-2-after.jpg",
+    "recommendedStyle": "minimal"
+  },
+  {
+    "id": "cafe-1",
+    "category": "cafe",
+    "categoryLabel": "咖啡探店",
+    "beforeUrl": "/cases/images/cafe-1-before.jpg",
+    "afterUrl": "/cases/images/cafe-1-after.jpg",
+    "recommendedStyle": "warmLuxury"
+  },
+  {
+    "id": "cafe-2",
+    "category": "cafe",
+    "categoryLabel": "咖啡探店",
+    "beforeUrl": "/cases/images/cafe-2-before.jpg",
+    "afterUrl": "/cases/images/cafe-2-after.jpg",
+    "recommendedStyle": "morandi"
+  },
+  {
+    "id": "food-1",
+    "category": "food",
+    "categoryLabel": "探店美食",
+    "beforeUrl": "/cases/images/food-1-before.jpg",
+    "afterUrl": "/cases/images/food-1-after.jpg",
+    "recommendedStyle": "warmLuxury"
+  },
+  {
+    "id": "lifestyle-1",
+    "category": "lifestyle",
+    "categoryLabel": "生活方式",
+    "beforeUrl": "/cases/images/lifestyle-1-before.jpg",
+    "afterUrl": "/cases/images/lifestyle-1-after.jpg",
+    "recommendedStyle": "minimal"
+  },
+  {
+    "id": "lifestyle-2",
+    "category": "lifestyle",
+    "categoryLabel": "生活方式",
+    "beforeUrl": "/cases/images/lifestyle-2-before.jpg",
+    "afterUrl": "/cases/images/lifestyle-2-after.jpg",
+    "recommendedStyle": "morandi"
+  },
+  {
+    "id": "tech-1",
+    "category": "tech",
+    "categoryLabel": "数码产品",
+    "beforeUrl": "/cases/images/tech-1-before.jpg",
+    "afterUrl": "/cases/images/tech-1-after.jpg",
+    "recommendedStyle": "minimal"
+  },
+  {
+    "id": "tech-2",
+    "category": "tech",
+    "categoryLabel": "数码产品",
+    "beforeUrl": "/cases/images/tech-2-before.jpg",
+    "afterUrl": "/cases/images/tech-2-after.jpg",
+    "recommendedStyle": "coolPro"
+  }
+]

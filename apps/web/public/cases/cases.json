@@ -1,0 +1,90 @@
+[
+  {
+    "id": "fashion-1",
+    "category": "fashion",
+    "categoryLabel": "穿搭 OOTD",
+    "beforeUrl": "https://media.evolink.ai/aHR0cHM6Ly93ZWJzdGF0aWMuYWlwcm94eS52aXAvb3V0cHV0LzIwMjYwMjE4LzVkMzM1YjY1LTJjY2EtNGUxYi05ODJiLTQyZDdkNWUxYmFlNy5qcGc=",
+    "afterUrl": "https://media.evolink.ai/aHR0cHM6Ly93ZWJzdGF0aWMuYWlwcm94eS52aXAvb3V0cHV0LzIwMjYwMjE4L2Q3MGU3MWNlLTllYWQtNDY1ZC1hMGMxLWRiYTFlNjZkYmEyYS5qcGc=",
+    "recommendedStyle": "warmLuxury"
+  },
+  {
+    "id": "fashion-2",
+    "category": "fashion",
+    "categoryLabel": "穿搭 OOTD",
+    "beforeUrl": "https://media.evolink.ai/aHR0cHM6Ly93ZWJzdGF0aWMuYWlwcm94eS52aXAvb3V0cHV0LzIwMjYwMjE4LzA0ZTQ2NTlmLTM3ODAtNGZiYS1iMWU1LWUxNGVkYzQxZTNjOS5qcGc=",
+    "afterUrl": "https://media.evolink.ai/aHR0cHM6Ly93ZWJzdGF0aWMuYWlwcm94eS52aXAvb3V0cHV0LzIwMjYwMjE4L2E4OTBhMzkzLTk0MWItNGZkYS1hZGVlLTA0YmZmNTlmZjQxYi5qcGc=",
+    "recommendedStyle": "minimal"
+  },
+  {
+    "id": "beauty-1",
+    "category": "beauty",
+    "categoryLabel": "美妆护肤",
+    "beforeUrl": "https://media.evolink.ai/aHR0cHM6Ly93ZWJzdGF0aWMuYWlwcm94eS52aXAvb3V0cHV0LzIwMjYwMjE4Lzg3Y2ZhNWFkLTk2NTAtNGVhYi1hZGQ3LWNjZjJhMGJjYTQ1MC5qcGc=",
+    "afterUrl": "https://media.evolink.ai/aHR0cHM6Ly93ZWJzdGF0aWMuYWlwcm94eS52aXAvb3V0cHV0LzIwMjYwMjE4LzM5MmYyZjVjLTZlOTItNGM2OC04ODlmLTA3MTMyODE0MGY0OS5qcGc=",
+    "recommendedStyle": "warmLuxury"
+  },
+  {
+    "id": "beauty-2",
+    "category": "beauty",
+    "categoryLabel": "美妆护肤",
+    "beforeUrl": "https://media.evolink.ai/aHR0cHM6Ly93ZWJzdGF0aWMuYWlwcm94eS52aXAvb3V0cHV0LzIwMjYwMjE4L2FhZmFkNzAzLWY4YTEtNGRkMC04MGQzLWJhMDIyZThiODIyNy5qcGc=",
+    "afterUrl": "https://media.evolink.ai/aHR0cHM6Ly93ZWJzdGF0aWMuYWlwcm94eS52aXAvb3V0cHV0LzIwMjYwMjE4LzFhZmQxMWUyLTJlMDItNDFjZS1hYjg4LTczOGZkZGNkMzE4NC5qcGc=",
+    "recommendedStyle": "minimal"
+  },
+  {
+    "id": "cafe-1",
+    "category": "cafe",
+    "categoryLabel": "咖啡探店",
+    "beforeUrl": "https://media.evolink.ai/aHR0cHM6Ly93ZWJzdGF0aWMuYWlwcm94eS52aXAvb3V0cHV0LzIwMjYwMjE4L2IyMDQyZmE3LTg0NWQtNDE4Ny1iOTkxLTA5NTI1ZWY5OGYyYS5qcGc=",
+    "afterUrl": "https://media.evolink.ai/aHR0cHM6Ly93ZWJzdGF0aWMuYWlwcm94eS52aXAvb3V0cHV0LzIwMjYwMjE4L2JkOWFiNDdmLWNkN2EtNDU0NC04M2MwLTc4NmMxZGI2NWQxYS5qcGc=",
+    "recommendedStyle": "warmLuxury"
+  },
+  {
+    "id": "cafe-2",
+    "category": "cafe",
+    "categoryLabel": "咖啡探店",
+    "beforeUrl": "https://media.evolink.ai/aHR0cHM6Ly93ZWJzdGF0aWMuYWlwcm94eS52aXAvb3V0cHV0LzIwMjYwMjE4L2RiZjI4MTcwLTczY2QtNDRjYy05YTAwLTI5ZDQ2NGEzNmFmOC5qcGc=",
+    "afterUrl": "https://media.evolink.ai/aHR0cHM6Ly93ZWJzdGF0aWMuYWlwcm94eS52aXAvb3V0cHV0LzIwMjYwMjE4LzEzMDY4ZTg4LTYyYmQtNDRlZi04Zjg2LTFiNDE5NWYwMTYwZC5qcGc=",
+    "recommendedStyle": "morandi"
+  },
+  {
+    "id": "food-1",
+    "category": "food",
+    "categoryLabel": "探店美食",
+    "beforeUrl": "https://media.evolink.ai/aHR0cHM6Ly93ZWJzdGF0aWMuYWlwcm94eS52aXAvb3V0cHV0LzIwMjYwMjE4LzgzODE5YjI5LWM3MzYtNGJmMS05YzJiLTU4ZGIxMGNjMmExMi5qcGc=",
+    "afterUrl": "https://media.evolink.ai/aHR0cHM6Ly93ZWJzdGF0aWMuYWlwcm94eS52aXAvb3V0cHV0LzIwMjYwMjE4Lzc0ODQ0YTMyLTk3MWMtNGI2YS1hMTA1LTliOTkzNDY3Zjg0Yy5qcGc=",
+    "recommendedStyle": "warmLuxury"
+  },
+  {
+    "id": "lifestyle-1",
+    "category": "lifestyle",
+    "categoryLabel": "生活方式",
+    "beforeUrl": "https://media.evolink.ai/aHR0cHM6Ly93ZWJzdGF0aWMuYWlwcm94eS52aXAvb3V0cHV0LzIwMjYwMjE4L2FkZjM4YWUyLTkxYjAtNDA3OC1iNzJhLTc4YTk1M2Q4MzcwNS5qcGc=",
+    "afterUrl": "https://media.evolink.ai/aHR0cHM6Ly93ZWJzdGF0aWMuYWlwcm94eS52aXAvb3V0cHV0LzIwMjYwMjE4L2Y2YzU5NjQyLTk5ODAtNDlmYy1iN2VkLWQ0N2UwNjkyMzAzOC5qcGc=",
+    "recommendedStyle": "minimal"
+  },
+  {
+    "id": "lifestyle-2",
+    "category": "lifestyle",
+    "categoryLabel": "生活方式",
+    "beforeUrl": "https://media.evolink.ai/aHR0cHM6Ly93ZWJzdGF0aWMuYWlwcm94eS52aXAvb3V0cHV0LzIwMjYwMjE4L2EzNTA0ODVmLWEwYzItNGE2Mi1iMDRjLTJhNjE2YjRmMWRlMy5qcGc=",
+    "afterUrl": "https://media.evolink.ai/aHR0cHM6Ly93ZWJzdGF0aWMuYWlwcm94eS52aXAvb3V0cHV0LzIwMjYwMjE4LzZlMmE3YTUwLWQ0ZjQtNDY2Yy1hOTU3LTY4NGI5NjY5NjQyZi5qcGc=",
+    "recommendedStyle": "morandi"
+  },
+  {
+    "id": "tech-1",
+    "category": "tech",
+    "categoryLabel": "数码产品",
+    "beforeUrl": "https://media.evolink.ai/aHR0cHM6Ly93ZWJzdGF0aWMuYWlwcm94eS52aXAvb3V0cHV0LzIwMjYwMjE4LzI4OWVlODVkLTBkNzUtNDMwYS1iYzQ1LTgyMGQ0NDE1NTU1MC5qcGc=",
+    "afterUrl": "https://media.evolink.ai/aHR0cHM6Ly93ZWJzdGF0aWMuYWlwcm94eS52aXAvb3V0cHV0LzIwMjYwMjE4L2RjYzEyNzFlLWZkYTEtNDg3OC1hOTI3LTVhODkyMmZkOWM0YS5qcGc=",
+    "recommendedStyle": "minimal"
+  },
+  {
+    "id": "tech-2",
+    "category": "tech",
+    "categoryLabel": "数码产品",
+    "beforeUrl": "https://media.evolink.ai/aHR0cHM6Ly93ZWJzdGF0aWMuYWlwcm94eS52aXAvb3V0cHV0LzIwMjYwMjE4L2U2ODU3NWNmLWE5ZmItNGRhMS1hNjI0LTA2NGUzYTZlNzFlNC5qcGc=",
+    "afterUrl": "https://media.evolink.ai/aHR0cHM6Ly93ZWJzdGF0aWMuYWlwcm94eS52aXAvb3V0cHV0LzIwMjYwMjE4LzY2MTA1YzM2LTRmNDQtNDQ5MC1iYWFmLTg1MjkyMTJjOTI3My5qcGc=",
+    "recommendedStyle": "coolPro"
+  }
+]
