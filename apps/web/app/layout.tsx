@@ -1,24 +1,20 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter, Noto_Sans_SC, Noto_Serif_SC } from 'next/font/google';
+import { Playfair_Display, Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
 
-const inter = Inter({
+// Playfair Display - 优雅衬线体，用于标题，传递奢华感
+const playfairDisplay = Playfair_Display({
   subsets: ['latin'],
-  variable: '--font-inter',
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-serif',
   display: 'swap',
 });
 
-const notoSansSC = Noto_Sans_SC({
+// Plus Jakarta Sans - 现代几何无衬线体，用于正文，清晰精致
+const plusJakartaSans = Plus_Jakarta_Sans({
   subsets: ['latin'],
   weight: ['300', '400', '500', '600', '700'],
-  variable: '--font-noto-sans-sc',
-  display: 'swap',
-});
-
-const notoSerifSC = Noto_Serif_SC({
-  subsets: ['latin'],
-  weight: ['400', '700'],
-  variable: '--font-noto-serif-sc',
+  variable: '--font-sans',
   display: 'swap',
 });
 
@@ -32,6 +28,14 @@ export const metadata: Metadata = {
   keywords: ['小红书', '高级感', 'AI 图片处理', '内容升级', '博主工具'],
   authors: [{ name: 'VidLuxe Team' }],
   creator: 'VidLuxe',
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: '16x16' },
+      { url: '/icon.svg', type: 'image/svg+xml' },
+    ],
+    shortcut: '/favicon.ico',
+    apple: '/icon.svg',
+  },
   openGraph: {
     type: 'website',
     locale: 'zh_CN',
@@ -74,9 +78,9 @@ export default function RootLayout({
   return (
     <html
       lang="zh"
-      className={`${inter.variable} ${notoSansSC.variable} ${notoSerifSC.variable}`}
+      className={`${playfairDisplay.variable} ${plusJakartaSans.variable}`}
     >
-      <body className="font-sans">
+      <body className="font-sans antialiased">
         {children}
       </body>
     </html>

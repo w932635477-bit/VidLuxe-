@@ -5,8 +5,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 
 interface HorizontalHeroSliderProps {
-  originalImage: string;  // 用户原图
-  enhancedImage: string;  // AI 升级后图片
+  originalImage: string;
+  enhancedImage: string;
 }
 
 export function HorizontalHeroSlider({ originalImage, enhancedImage }: HorizontalHeroSliderProps) {
@@ -63,66 +63,89 @@ export function HorizontalHeroSlider({ originalImage, enhancedImage }: Horizonta
   }, [isDragging, handleMouseMove, handleMouseUp, handleTouchMove, handleTouchEnd]);
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-[#0a0a12]">
-      {/* 导航栏 */}
-      <nav className="absolute top-0 left-0 right-0 z-50 px-6 py-4 bg-gradient-to-b from-black/50 to-transparent">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+    <div className="relative w-full min-h-screen overflow-hidden bg-black">
+      {/* 导航栏 - Apple 风格 */}
+      <nav
+        className="fixed top-0 left-0 right-0 z-50"
+        style={{
+          background: 'rgba(0, 0, 0, 0.8)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderBottom: '0.5px solid rgba(255, 255, 255, 0.06)',
+        }}
+      >
+        <div className="max-w-6xl mx-auto px-8 h-14 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <span className="text-2xl font-bold tracking-tight text-white">
-              VID<span className="text-brand-500">★</span>LUXE
+            <span style={{ fontSize: '20px', fontWeight: 600, letterSpacing: '-0.02em' }}>
+              VidLuxe
             </span>
+            <span style={{ fontSize: '9px', color: '#D4AF37', marginTop: '-6px', letterSpacing: '0.05em' }}>PRO</span>
           </Link>
-          <div className="hidden md:flex items-center gap-8">
-            <Link href="/try" className="text-white/70 hover:text-white transition-colors text-sm">
-              体验中心
+          <div className="hidden md:flex items-center gap-10">
+            <Link href="/try" className="text-secondary hover:text-primary transition-colors" style={{ fontSize: '13px', letterSpacing: '0.02em' }}>
+              体验
             </Link>
-            <Link href="/dashboard" className="text-white/70 hover:text-white transition-colors text-sm">
+            <Link href="/dashboard" className="text-secondary hover:text-primary transition-colors" style={{ fontSize: '13px', letterSpacing: '0.02em' }}>
               Dashboard
             </Link>
-            <Link href="/pricing" className="text-white/70 hover:text-white transition-colors text-sm">
+            <Link href="/pricing" className="text-secondary hover:text-primary transition-colors" style={{ fontSize: '13px', letterSpacing: '0.02em' }}>
               定价
             </Link>
           </div>
           <div className="flex items-center gap-4">
-            <Link href="/auth" className="text-white/70 hover:text-white transition-colors text-sm">
+            <Link href="/auth" className="text-secondary hover:text-primary transition-colors" style={{ fontSize: '13px' }}>
               登录
             </Link>
             <Link
               href="/try"
-              className="px-5 py-2.5 bg-gradient-to-r from-brand-600 to-brand-500 rounded-full text-sm font-medium text-white hover:shadow-lg hover:shadow-brand-500/25 transition-all"
+              className="btn-primary"
+              style={{ padding: '8px 20px', fontSize: '13px' }}
             >
-              免费体验 ✨
+              免费体验
             </Link>
           </div>
         </div>
       </nav>
 
-      {/* 超大对比滑块 - 占满整个屏幕 */}
+      {/* 超大对比滑块 */}
       <div
         ref={containerRef}
-        className="absolute inset-0 cursor-ew-resizer select-none"
+        className="absolute inset-0 cursor-ew-resize select-none"
         onMouseDown={handleMouseDown}
         onTouchStart={handleTouchStart}
       >
-        {/* 原图 - 底层（全部可见） */}
+        {/* 原图 - 底层 */}
         <div className="absolute inset-0">
           <Image
             src={originalImage}
             alt="原图"
             fill
+            sizes="100vw"
             className="object-cover"
             draggable={false}
             priority
           />
-          {/* 原图标签 */}
-          <div className="absolute top-24 right-6 z-20">
-            <div className="bg-black/50 backdrop-blur-md px-4 py-2 rounded-full border border-white/10">
-              <span className="text-white text-sm font-medium">原图</span>
-            </div>
+          {/* 原图标签 - Apple 风格 */}
+          <div className="absolute top-24 right-8 z-20">
+            <span
+              style={{
+                display: 'inline-flex',
+                padding: '6px 14px',
+                background: 'rgba(0, 0, 0, 0.4)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                borderRadius: '980px',
+                fontSize: '13px',
+                color: 'rgba(255, 255, 255, 0.8)',
+                letterSpacing: '0.02em',
+              }}
+            >
+              原图
+            </span>
           </div>
         </div>
 
-        {/* 升级版 - 顶层（左侧部分可见） */}
+        {/* 升级版 - 顶层 */}
         <div
           className="absolute inset-0 overflow-hidden"
           style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
@@ -131,84 +154,130 @@ export function HorizontalHeroSlider({ originalImage, enhancedImage }: Horizonta
             src={enhancedImage}
             alt="升级版"
             fill
+            sizes="100vw"
             className="object-cover"
             draggable={false}
             priority
           />
-          {/* 升级版标签 */}
-          <div className="absolute top-24 left-6 z-20">
-            <div className="bg-brand-500/90 backdrop-blur-md px-4 py-2 rounded-full border border-white/10">
-              <span className="text-white text-sm font-medium">✨ 升级版</span>
-            </div>
+          {/* 升级版标签 - Apple 风格 */}
+          <div className="absolute top-24 left-8 z-20">
+            <span
+              style={{
+                display: 'inline-flex',
+                padding: '6px 14px',
+                background: 'rgba(212, 175, 55, 0.2)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                border: '1px solid rgba(212, 175, 55, 0.3)',
+                borderRadius: '980px',
+                fontSize: '13px',
+                color: '#D4AF37',
+                letterSpacing: '0.02em',
+              }}
+            >
+              升级版
+            </span>
           </div>
         </div>
 
-        {/* 滑块分隔线 */}
+        {/* 分隔线 - 极细设计 */}
         <div
-          className="absolute top-0 bottom-0 w-1 bg-white shadow-2xl z-30"
+          className="absolute top-0 bottom-0 z-30"
           style={{
             left: `${sliderPosition}%`,
             transform: 'translateX(-50%)',
+            width: '1px',
+            background: 'rgba(255, 255, 255, 0.7)',
+            boxShadow: '0 0 12px rgba(255, 255, 255, 0.4)',
           }}
         />
 
-        {/* 滑块手柄 */}
+        {/* 手柄 - Magnific.ai 风格 */}
         <div
-          className={`absolute top-0 bottom-0 flex items-center justify-center z-40 transition-transform duration-100 ${
-            isDragging ? 'scale-110' : ''
-          }`}
+          className="absolute top-0 bottom-0 flex items-center justify-center z-40"
           style={{
             left: `${sliderPosition}%`,
             transform: 'translateX(-50%)',
           }}
         >
-          <div className="w-14 h-14 md:w-16 md:h-16 rounded-full bg-white shadow-2xl flex items-center justify-center">
-            <svg
-              width="24"
-              height="24"
-              viewBox="0 0 24 24"
-              fill="none"
-              className="text-gray-700"
-            >
-              <path
-                d="M8 12L5 9M8 12L5 15M8 12H16M16 12L19 9M16 12L19 15"
-                stroke="currentColor"
-                strokeWidth="2.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
+          <div
+            className="flex items-center justify-center"
+            style={{
+              width: '56px',
+              height: '56px',
+              background: 'rgba(255, 255, 255, 0.98)',
+              borderRadius: '50%',
+              boxShadow: '0 4px 24px rgba(0, 0, 0, 0.3), 0 2px 10px rgba(0, 0, 0, 0.2)',
+            }}
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" style={{ opacity: 0.4 }}>
+              <path d="M10 16L6 12L10 8" stroke="#1a1a1a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M14 8L18 12L14 16" stroke="#1a1a1a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </div>
         </div>
 
         {/* 顶部渐变 */}
-        <div className="absolute top-0 left-0 right-0 h-32 bg-gradient-to-b from-black/60 to-transparent pointer-events-none z-10" />
+        <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-black/70 to-transparent pointer-events-none z-10" />
 
         {/* 底部渐变和内容区 */}
         <div className="absolute bottom-0 left-0 right-0 z-20">
-          <div className="bg-gradient-to-t from-black/80 via-black/50 to-transparent pt-32 pb-12 px-6">
+          <div
+            style={{
+              background: 'linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 50%, transparent 100%)',
+              paddingTop: '140px',
+              paddingBottom: '80px',
+              paddingLeft: '32px',
+              paddingRight: '32px',
+            }}
+          >
             <div className="max-w-4xl mx-auto text-center">
-              {/* 主标题 */}
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 leading-tight text-white">
-                <span className="bg-gradient-to-r from-brand-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                  让普通素材 秒变高级感 ✨
+              {/* 小标签 */}
+              <div className="mb-6">
+                <span
+                  style={{
+                    display: 'inline-block',
+                    padding: '8px 20px',
+                    background: 'rgba(212, 175, 55, 0.1)',
+                    border: '1px solid rgba(212, 175, 55, 0.2)',
+                    borderRadius: '980px',
+                    fontSize: '13px',
+                    color: '#D4AF37',
+                    letterSpacing: '0.04em',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  Introducing VidLuxe 2.0
                 </span>
+              </div>
+
+              {/* 主标题 - 超大衬线体 */}
+              <h1 style={{ marginBottom: '28px' }}>
+                <span style={{ color: '#FFFFFF' }}>让普通素材</span>
+                <br />
+                <span style={{ color: '#D4AF37' }}>秒变高级感</span>
               </h1>
 
-              {/* 副标题 */}
-              <p className="text-lg md:text-xl text-white/70 max-w-2xl mx-auto mb-8">
-                专为小红书博主打造，AI 保留主体、重构背景，一键升级内容质感
+              {/* 副标题 - 斜体衬线 */}
+              <p className="text-lead mb-12">
+                专为小红书创作者打造，AI 智能保留主体、重构背景，一键升级内容质感
               </p>
 
               {/* CTA 按钮 */}
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Link
                   href="/try"
-                  className="px-8 py-4 bg-gradient-to-r from-brand-600 to-brand-500 rounded-full text-lg font-medium text-white hover:shadow-xl hover:shadow-brand-500/30 hover:scale-105 transition-all"
+                  className="btn-primary"
+                  onClick={(e) => e.stopPropagation()}
+                  onMouseDown={(e) => e.stopPropagation()}
+                  onTouchStart={(e) => e.stopPropagation()}
                 >
-                  免费体验 ✨
+                  立即免费体验
+                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style={{ marginLeft: '8px' }}>
+                    <path d="M6 12L10 8L6 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
                 </Link>
-                <span className="text-white/50 text-sm">
+                <span className="text-muted" style={{ fontSize: '13px' }}>
                   无需注册 · 10 次免费额度
                 </span>
               </div>
@@ -218,8 +287,8 @@ export function HorizontalHeroSlider({ originalImage, enhancedImage }: Horizonta
 
         {/* 滚动提示 */}
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 animate-bounce">
-          <div className="text-white/40 text-sm flex items-center gap-2">
-            <span>向下滚动</span>
+          <div className="flex items-center gap-2 text-white/25" style={{ fontSize: '12px' }}>
+            <span>探索更多</span>
             <span>↓</span>
           </div>
         </div>

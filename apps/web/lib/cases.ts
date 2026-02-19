@@ -1,5 +1,5 @@
-// 自动生成的案例数据 - 2026-02-17T23:27:26.592Z
-// 图片已下载到本地存储
+// 案例数据 - 使用最新的图片生成图片数据
+// 更新时间: 2026-02-19
 
 export interface Case {
   id: string;
@@ -15,89 +15,49 @@ export const CASES: Case[] = [
     "id": "fashion-1",
     "category": "fashion",
     "categoryLabel": "穿搭 OOTD",
-    "originalUrl": "/cases/images/fashion-1-after.jpg",
-    "enhancedUrl": "/cases/images/fashion-1-before.jpg",
+    "originalUrl": "/comparisons/fashion-1-original.jpg",
+    "enhancedUrl": "/comparisons/fashion-1-enhanced.jpg",
     "recommendedStyle": "warmLuxury"
   },
   {
-    "id": "fashion-2",
-    "category": "fashion",
-    "categoryLabel": "穿搭 OOTD",
-    "originalUrl": "/cases/images/fashion-2-after.jpg",
-    "enhancedUrl": "/cases/images/fashion-2-before.jpg",
-    "recommendedStyle": "minimal"
-  },
-  {
-    "id": "beauty-1",
+    "id": "portrait-1",
     "category": "beauty",
-    "categoryLabel": "美妆护肤",
-    "originalUrl": "/cases/images/beauty-1-after.jpg",
-    "enhancedUrl": "/cases/images/beauty-1-before.jpg",
+    "categoryLabel": "背景升级",
+    "originalUrl": "/comparisons/portrait-1-original.jpg",
+    "enhancedUrl": "/comparisons/portrait-1-enhanced.jpg",
     "recommendedStyle": "warmLuxury"
-  },
-  {
-    "id": "beauty-2",
-    "category": "beauty",
-    "categoryLabel": "美妆护肤",
-    "originalUrl": "/cases/images/beauty-2-after.jpg",
-    "enhancedUrl": "/cases/images/beauty-2-before.jpg",
-    "recommendedStyle": "minimal"
   },
   {
     "id": "cafe-1",
     "category": "cafe",
     "categoryLabel": "咖啡探店",
-    "originalUrl": "/cases/images/cafe-1-after.jpg",
-    "enhancedUrl": "/cases/images/cafe-1-before.jpg",
+    "originalUrl": "/comparisons/cafe-1-original.jpg",
+    "enhancedUrl": "/comparisons/cafe-1-enhanced.jpg",
     "recommendedStyle": "warmLuxury"
-  },
-  {
-    "id": "cafe-2",
-    "category": "cafe",
-    "categoryLabel": "咖啡探店",
-    "originalUrl": "/cases/images/cafe-2-after.jpg",
-    "enhancedUrl": "/cases/images/cafe-2-before.jpg",
-    "recommendedStyle": "morandi"
   },
   {
     "id": "food-1",
     "category": "food",
     "categoryLabel": "探店美食",
-    "originalUrl": "/cases/images/food-1-after.jpg",
-    "enhancedUrl": "/cases/images/food-1-before.jpg",
+    "originalUrl": "/comparisons/food-1-original.jpg",
+    "enhancedUrl": "/comparisons/food-1-enhanced.jpg",
     "recommendedStyle": "warmLuxury"
   },
   {
     "id": "lifestyle-1",
     "category": "lifestyle",
     "categoryLabel": "生活方式",
-    "originalUrl": "/cases/images/lifestyle-1-after.jpg",
-    "enhancedUrl": "/cases/images/lifestyle-1-before.jpg",
+    "originalUrl": "/comparisons/lifestyle-1-original.jpg",
+    "enhancedUrl": "/comparisons/lifestyle-1-enhanced.jpg",
     "recommendedStyle": "minimal"
   },
   {
-    "id": "lifestyle-2",
-    "category": "lifestyle",
-    "categoryLabel": "生活方式",
-    "originalUrl": "/cases/images/lifestyle-2-after.jpg",
-    "enhancedUrl": "/cases/images/lifestyle-2-before.jpg",
-    "recommendedStyle": "morandi"
-  },
-  {
-    "id": "tech-1",
-    "category": "tech",
-    "categoryLabel": "数码产品",
-    "originalUrl": "/cases/images/tech-1-after.jpg",
-    "enhancedUrl": "/cases/images/tech-1-before.jpg",
-    "recommendedStyle": "minimal"
-  },
-  {
-    "id": "tech-2",
-    "category": "tech",
-    "categoryLabel": "数码产品",
-    "originalUrl": "/cases/images/tech-2-after.jpg",
-    "enhancedUrl": "/cases/images/tech-2-before.jpg",
-    "recommendedStyle": "coolPro"
+    "id": "product-1",
+    "category": "beauty",
+    "categoryLabel": "美妆升级",
+    "originalUrl": "/comparisons/product-1-original.jpg",
+    "enhancedUrl": "/comparisons/product-1-enhanced.jpg",
+    "recommendedStyle": "warmLuxury"
   }
 ];
 

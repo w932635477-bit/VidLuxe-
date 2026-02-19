@@ -5,63 +5,108 @@ import Link from 'next/link';
 import { BeforeAfterSlider } from '@/components/features/landing/BeforeAfterSlider';
 import { HorizontalHeroSlider } from '@/components/features/landing/HorizontalHeroSlider';
 import { LargeComparisonSection } from '@/components/features/landing/LargeComparisonSection';
+import { PricingSection } from '@/components/features/pricing/PricingSection';
 import { CASES, CATEGORIES } from '@/lib/cases';
+
+// Apple 缓动曲线
+const APPLE_EASE = 'cubic-bezier(0.25, 0.1, 0.25, 1)';
 
 // 滚动动画 Hook
 function useScrollReveal() {
   useEffect(() => {
+    if (!('IntersectionObserver' in window)) {
+      document.querySelectorAll('.reveal').forEach((el) => {
+        el.classList.add('revealed');
+      });
+      return;
+    }
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             entry.target.classList.add('revealed');
+            observer.unobserve(entry.target);
           }
         });
       },
-      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+      { threshold: 0.1, rootMargin: '0px' }
     );
 
-    document.querySelectorAll('.scroll-reveal').forEach((el) => {
-      observer.observe(el);
+    requestAnimationFrame(() => {
+      document.querySelectorAll('.reveal').forEach((el) => {
+        observer.observe(el);
+      });
+
+      document.querySelectorAll('.reveal').forEach((el) => {
+        const rect = el.getBoundingClientRect();
+        if (rect.top < window.innerHeight && rect.bottom > 0) {
+          el.classList.add('revealed');
+        }
+      });
     });
 
     return () => observer.disconnect();
   }, []);
 }
 
-// FAQ 手风琴组件
+// FAQ 手风琴组件 - Apple 风格
 function FAQItem({ question, answer }: { question: string; answer: string }) {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <div className="border-b border-white/10">
+    <div style={{ borderBottom: '0.5px solid rgba(255, 255, 255, 0.06)' }}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full py-6 flex items-center justify-between text-left group"
+        className="w-full flex items-center justify-between text-left group"
+        style={{ padding: '24px 0' }}
       >
-        <span className="text-lg font-medium text-white group-hover:text-brand-500 transition-colors pr-8">
+        <span
+          style={{
+            fontSize: '17px',
+            fontWeight: 500,
+            color: 'rgba(255, 255, 255, 0.95)',
+            letterSpacing: '-0.02em',
+            transition: `color 0.3s ${APPLE_EASE}`,
+          }}
+          className="group-hover:text-[#D4AF37]"
+        >
           {question}
         </span>
         <span
-          className={`text-2xl text-white/50 transition-transform duration-300 ${
-            isOpen ? 'rotate-45' : ''
-          }`}
+          style={{
+            fontSize: '20px',
+            color: 'rgba(255, 255, 255, 0.3)',
+            transition: `transform 0.3s ${APPLE_EASE}`,
+            transform: isOpen ? 'rotate(45deg)' : 'rotate(0deg)',
+          }}
         >
           +
         </span>
       </button>
       <div
-        className={`overflow-hidden transition-all duration-300 ${
-          isOpen ? 'max-h-96 pb-6' : 'max-h-0'
-        }`}
+        style={{
+          overflow: 'hidden',
+          maxHeight: isOpen ? '200px' : '0',
+          transition: `max-height 0.4s ${APPLE_EASE}`,
+        }}
       >
-        <p className="text-white/60 leading-relaxed">{answer}</p>
+        <p
+          style={{
+            fontSize: '15px',
+            lineHeight: 1.65,
+            color: 'rgba(255, 255, 255, 0.5)',
+            paddingBottom: '24px',
+          }}
+        >
+          {answer}
+        </p>
       </div>
     </div>
   );
 }
 
-// 评价卡片
+// 评价卡片 - Apple 风格
 function TestimonialCard({
   quote,
   author,
@@ -72,38 +117,54 @@ function TestimonialCard({
   handle: string;
 }) {
   return (
-    <div className="bg-[#1a1a2e] rounded-2xl p-6 border border-white/5 hover:border-white/10 transition-colors">
-      <p className="text-white mb-4 leading-relaxed">&ldquo;{quote}&rdquo;</p>
+    <div
+      className="apple-card"
+      style={{ padding: '28px' }}
+    >
+      <p
+        style={{
+          fontSize: '15px',
+          lineHeight: 1.65,
+          color: 'rgba(255, 255, 255, 0.85)',
+          marginBottom: '20px',
+        }}
+      >
+        &ldquo;{quote}&rdquo;
+      </p>
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-500 to-purple-500 flex items-center justify-center text-white font-bold">
+        <div
+          style={{
+            width: '36px',
+            height: '36px',
+            borderRadius: '50%',
+            background: 'linear-gradient(135deg, #D4AF37, #B8962E)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: '#000000',
+            fontSize: '14px',
+            fontWeight: 600,
+          }}
+        >
           {author[0]}
         </div>
         <div>
-          <p className="text-white font-medium">{author}</p>
-          <p className="text-white/40 text-sm">@{handle}</p>
+          <p style={{ fontSize: '14px', fontWeight: 500 }}>{author}</p>
+          <p style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.4)' }}>@{handle}</p>
         </div>
       </div>
     </div>
   );
 }
 
-// 分类标签
-const CATEGORY_EMOJIS: Record<string, string> = {
-  fashion: '👗',
-  beauty: '💄',
-  cafe: '☕',
-  food: '🍽️',
-  lifestyle: '🌿',
-  tech: '📱',
-};
-
+// Apple 风格：简化分类名称
 const CATEGORY_NAMES: Record<string, string> = {
-  fashion: '穿搭 OOTD',
-  beauty: '美妆护肤',
-  cafe: '咖啡探店',
-  food: '探店美食',
-  lifestyle: '生活方式',
-  tech: '数码产品',
+  fashion: '穿搭',
+  beauty: '美妆',
+  cafe: '探店',
+  food: '美食',
+  lifestyle: '生活',
+  tech: '数码',
 };
 
 export default function HomePage() {
@@ -119,220 +180,105 @@ export default function HomePage() {
     {
       question: 'VidLuxe 的 AI 升级是如何工作的？',
       answer:
-        '就像拥有魔法棒一样！VidLuxe 会将你的图片升级到更高分辨率，并根据你选择的风格添加细节。你可以通过自然语言描述来引导升级过程，让 AI 按照你的想法重新构背景。',
+        '就像魔法一样简单。VidLuxe 会智能识别你的图片主体，将其升级到更高分辨率，并根据你选择的风格重构背景。你可以通过自然语言描述来精确控制升级效果。',
     },
     {
-      question: 'VidLuxe 适合新手吗？',
+      question: 'VidLuxe 适合新手使用吗？',
       answer:
-        'VidLuxe 专为各类创作者设计，无论你是专业博主还是刚开始做内容。直观的界面、详细的教程和活跃的社区都会帮助你快速上手。',
+        '完全适合。VidLuxe 专为各类创作者设计，无论你是专业博主还是刚起步的内容创作者。直观的界面设计让你能快速上手。',
     },
     {
-      question: '谁可以使用 VidLuxe？',
+      question: '哪些创作者最适合使用 VidLuxe？',
       answer:
-        'VidLuxe 适合穿搭博主、美妆达人、美食探店、生活方式分享者等各类小红书创作者。无论你是需要提升图片质感，还是想要统一账号风格，VidLuxe 都能帮你实现。',
+        'VidLuxe 完美适配小红书生态中的各类创作者：穿搭博主、美妆达人、美食探店、生活方式分享者等。',
     },
     {
-      question: '升级后的图片会有瑕疵吗？',
+      question: '升级后的图片质量如何保证？',
       answer:
-        '大多数情况下不会。你可以通过调整创造力参数和使用自然语言描述来控制效果。我们建议先用默认设置尝试，然后根据效果微调。',
+        '大多数情况下效果都非常出色。你可以通过调整创造力参数和使用精准的自然语言描述来精确控制效果。',
     },
     {
       question: '支持哪些图片格式？',
       answer:
-        '支持 JPG、PNG、WebP 等常见格式。建议上传清晰度较高的原图，以获得最佳升级效果。输出为高清 JPG 格式，完美适配小红书。',
+        '支持 JPG、PNG、WebP 等主流图片格式。建议上传清晰度较高的原图以获得最佳升级效果。',
     },
   ];
 
   const testimonials = [
     {
-      quote: '这简直是魔法！一张普通的咖啡店照片瞬间变成了杂志封面质感。',
+      quote: '一张普通的咖啡店照片，瞬间升级成了杂志封面质感。',
       author: '小雨',
       handle: 'xiaoyu_cafe',
     },
     {
-      quote: '终于找到了能保持我穿搭风格同时提升整体质感的工具！',
+      quote: '终于找到了能完美保留穿搭风格，同时提升整体高级感的工具。',
       author: 'Mia',
       handle: 'mia_ootd',
     },
     {
-      quote: '我的护肤品照片现在看起来像大牌广告，粉丝都问我是不是换了摄影师。',
+      quote: '护肤品照片升级后像大牌广告，粉丝都在问我是不是换了专业摄影师。',
       author: '林琳',
       handle: 'linlin_beauty',
     },
     {
-      quote: '一键升级，省下了我每天两小时的后期时间。太强了！',
+      quote: '每天省下两小时后期时间，一键升级，效率拉满。',
       author: '阿杰',
       handle: 'ajie_tech',
     },
   ];
 
+  const features = [
+    { icon: '✦', title: '智能主体锁定', desc: 'AI 精准识别并锁定人物、产品等核心主体' },
+    { icon: '◈', title: '风格化重构', desc: '四种高级感风格一键切换' },
+    { icon: '◎', title: '四维评分', desc: '全方位量化内容高级感' },
+    { icon: '◇', title: '秒级处理', desc: '平均 15 秒完成升级' },
+  ];
+
   return (
-    <div className="min-h-screen bg-[#0a0a12] text-white overflow-x-hidden">
-      {/* 超大横版 Hero 区 */}
+    <div style={{ background: '#000000', minHeight: '100vh' }}>
+      {/* 全局动画样式 */}
+      <style jsx global>{`
+        .reveal {
+          opacity: 0;
+          transform: translateY(40px);
+          transition: opacity 0.8s ${APPLE_EASE}, transform 0.8s ${APPLE_EASE};
+        }
+        .reveal.revealed {
+          opacity: 1;
+          transform: translateY(0);
+        }
+        .reveal-delay-1 { transition-delay: 0.1s; }
+        .reveal-delay-2 { transition-delay: 0.2s; }
+        .reveal-delay-3 { transition-delay: 0.3s; }
+      `}</style>
+
+      {/* Hero 区 */}
       <HorizontalHeroSlider
-        originalImage="/hero/hero-before.jpg"
-        enhancedImage="/hero/hero-after.jpg"
+        originalImage="/hero/hero-new-before.jpg"
+        enhancedImage="/hero/hero-new-after.jpg"
       />
 
-      {/* 多组大幅对比展示区 */}
+      {/* 大对比展示区 */}
       <LargeComparisonSection />
 
-      {/* 视频滑块展示区 */}
-      <section className="py-20 px-6 relative">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12 scroll-reveal">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              保留主体，重构背景 ✨
-            </h2>
-            <p className="text-white/60 text-lg">
-              AI 理解你的内容，智能升级每一个细节
-            </p>
+      {/* 功能区 - Apple 风格：极简 */}
+      <section style={{ padding: '200px 32px' }}>
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-32 reveal">
+            <h2 style={{ marginBottom: '12px', fontSize: '48px' }}>核心能力</h2>
+            <p style={{ fontSize: '21px', color: 'rgba(255, 255, 255, 0.5)' }}>四项技术，无限可能</p>
           </div>
 
-          {/* 三个滑块展示 */}
-          <div className="grid md:grid-cols-3 gap-6 scroll-reveal">
-            {['fashion-2', 'beauty-1', 'cafe-1'].map((caseId) => {
-              const caseItem = CASES.find((c) => c.id === caseId);
-              if (!caseItem) return null;
-              return (
-                <div
-                  key={caseId}
-                  className="relative aspect-[9/16] rounded-2xl overflow-hidden ring-1 ring-white/10 group hover:ring-white/20 transition-all hover:scale-[1.02]"
-                >
-                  <BeforeAfterSlider
-                    originalImage={caseItem.originalUrl}
-                    enhancedImage={caseItem.enhancedUrl}
-                  />
-                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
-                    <p className="text-sm font-medium">{CATEGORY_NAMES[caseItem.category]}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* 功能标签 */}
-          <div className="flex flex-wrap justify-center gap-4 mt-12 scroll-reveal">
-            {['保留主体', '智能抠图', '背景重构', '光影优化', '质感提升'].map((tag) => (
-              <span
-                key={tag}
-                className="px-4 py-2 bg-white/5 rounded-full text-sm text-white/60 border border-white/10"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 分类案例展示 */}
-      <section className="py-20 px-6 bg-gradient-to-b from-transparent via-white/[0.02] to-transparent">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12 scroll-reveal">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              覆盖小红书主流内容类型 ✨
-            </h2>
-            <p className="text-white/60 text-lg">
-              选择你的内容类型，查看升级效果
-            </p>
-          </div>
-
-          {/* 分类筛选 */}
-          <div className="flex flex-wrap justify-center gap-3 mb-12 scroll-reveal">
-            <button
-              onClick={() => setActiveCategory(null)}
-              className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all ${
-                activeCategory === null
-                  ? 'bg-brand-500 text-black'
-                  : 'bg-white/5 text-white/60 hover:bg-white/10 border border-white/10'
-              }`}
-            >
-              全部
-            </button>
-            {CATEGORIES.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setActiveCategory(cat.id)}
-                className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all ${
-                  activeCategory === cat.id
-                    ? 'bg-brand-500 text-black'
-                    : 'bg-white/5 text-white/60 hover:bg-white/10 border border-white/10'
-                }`}
-              >
-                {cat.icon} {cat.label}
-              </button>
-            ))}
-          </div>
-
-          {/* 案例网格 */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 scroll-reveal">
-            {filteredCases.map((caseItem) => (
-              <div
-                key={caseItem.id}
-                className="relative aspect-[9/16] rounded-2xl overflow-hidden ring-1 ring-white/10 group cursor-pointer hover:ring-brand-500/50 transition-all hover:scale-[1.02]"
-              >
-                <BeforeAfterSlider
-                  originalImage={caseItem.originalUrl}
-                  enhancedImage={caseItem.enhancedUrl}
-                />
-                <div className="absolute bottom-0 left-0 right-0 p-3 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-white/80">
-                      {CATEGORY_EMOJIS[caseItem.category]} {CATEGORY_NAMES[caseItem.category]}
-                    </span>
-                    <span className="text-xs text-brand-400">查看详情 →</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 核心功能展示 */}
-      <section className="py-20 px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16 scroll-reveal">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              四大核心功能 ✨
-            </h2>
-            <p className="text-white/60 text-lg">
-              每一个细节都为提升内容质感而设计
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 scroll-reveal">
-            {[
-              {
-                icon: '🎯',
-                title: '智能保留主体',
-                desc: 'AI 精准识别人物、产品等主体，确保升级后主体不变',
-              },
-              {
-                icon: '🎨',
-                title: '风格化背景',
-                desc: '4 种高级感风格，一键重构背景，统一账号调性',
-              },
-              {
-                icon: '📊',
-                title: '4 维评分系统',
-                desc: '色彩、构图、排版、细节，量化评估内容高级感',
-              },
-              {
-                icon: '⚡',
-                title: '快速处理',
-                desc: '平均 15 秒完成升级，支持批量处理，高效省时',
-              },
-            ].map((feature, index) => (
-              <div
-                key={index}
-                className="p-6 bg-white/[0.03] rounded-2xl border border-white/5 hover:border-brand-500/30 hover:bg-white/[0.05] transition-all group"
-              >
-                <div className="text-4xl mb-4 group-hover:scale-110 transition-transform">
+          <div className="grid md:grid-cols-4 gap-8">
+            {features.map((feature, index) => (
+              <div key={index} className="reveal text-center" style={{ padding: '24px 0' }}>
+                <div style={{ fontSize: '32px', marginBottom: '16px', color: '#D4AF37' }}>
                   {feature.icon}
                 </div>
-                <h3 className="text-lg font-semibold mb-2">{feature.title}</h3>
-                <p className="text-white/60 text-sm leading-relaxed">
+                <h3 style={{ fontSize: '17px', fontWeight: 600, marginBottom: '8px', letterSpacing: '-0.02em' }}>
+                  {feature.title}
+                </h3>
+                <p style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.4)', lineHeight: 1.5 }}>
                   {feature.desc}
                 </p>
               </div>
@@ -341,61 +287,106 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 四种风格展示 */}
-      <section className="py-20 px-6 bg-gradient-to-b from-transparent via-purple-900/10 to-transparent">
+      {/* 案例展示区 - Apple 风格：大图为主 */}
+      <section style={{ padding: '200px 32px', background: '#0a0a0a' }}>
         <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16 scroll-reveal">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              四种高级感风格 ✨
-            </h2>
-            <p className="text-white/60 text-lg">
-              选择最适合你内容调性的风格
-            </p>
+          <div className="text-center mb-32 reveal">
+            <h2 style={{ marginBottom: '12px', fontSize: '48px' }}>全场景覆盖</h2>
+            <p style={{ fontSize: '21px', color: 'rgba(255, 255, 255, 0.5)' }}>拖动对比，感受升级</p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 scroll-reveal">
-            {[
-              {
-                name: '极简',
-                nameEn: 'Minimal',
-                color: 'from-gray-600 to-gray-400',
-                desc: '克制干净 · Apple 风',
-                icon: '◻️',
-              },
-              {
-                name: '暖调奢华',
-                nameEn: 'Warm Luxury',
-                color: 'from-amber-600 to-orange-400',
-                desc: '温暖高级 · 有质感',
-                icon: '🌅',
-              },
-              {
-                name: '冷调专业',
-                nameEn: 'Cool Pro',
-                color: 'from-blue-600 to-cyan-400',
-                desc: '专业冷静 · 可信赖',
-                icon: '💎',
-              },
-              {
-                name: '莫兰迪',
-                nameEn: 'Morandi',
-                color: 'from-stone-500 to-stone-400',
-                desc: '低饱和 · 高级灰调',
-                icon: '🎨',
-              },
-            ].map((style, index) => (
-              <div
-                key={index}
-                className="relative p-6 bg-white/[0.03] rounded-2xl border border-white/5 overflow-hidden group hover:border-white/20 transition-all cursor-pointer"
+          {/* 分类筛选 - Apple 风格：简洁 */}
+          <div className="flex flex-wrap justify-center gap-2 mb-20 reveal">
+            <button
+              onClick={() => setActiveCategory(null)}
+              style={{
+                padding: '8px 16px',
+                fontSize: '13px',
+                fontWeight: 500,
+                borderRadius: '980px',
+                border: 'none',
+                cursor: 'pointer',
+                transition: `all 0.3s ${APPLE_EASE}`,
+                background: activeCategory === null ? '#D4AF37' : 'transparent',
+                color: activeCategory === null ? '#000000' : 'rgba(255, 255, 255, 0.5)',
+              }}
+            >
+              全部
+            </button>
+            {CATEGORIES.slice(0, 4).map((cat) => (
+              <button
+                key={cat.id}
+                onClick={() => setActiveCategory(cat.id)}
+                style={{
+                  padding: '8px 16px',
+                  fontSize: '13px',
+                  fontWeight: 500,
+                  borderRadius: '980px',
+                  border: 'none',
+                  cursor: 'pointer',
+                  transition: `all 0.3s ${APPLE_EASE}`,
+                  background: activeCategory === cat.id ? '#D4AF37' : 'transparent',
+                  color: activeCategory === cat.id ? '#000000' : 'rgba(255, 255, 255, 0.5)',
+                }}
               >
-                <div
-                  className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${style.color} opacity-20 blur-2xl group-hover:opacity-40 transition-opacity`}
+                {cat.label}
+              </button>
+            ))}
+          </div>
+
+          {/* 案例网格 - Magnific.ai 风格：横向大图展示 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 reveal">
+            {filteredCases.map((caseItem) => (
+              <div
+                key={caseItem.id}
+                className="relative overflow-hidden cursor-pointer group"
+                style={{
+                  borderRadius: '24px',
+                  transition: `transform 0.4s ${APPLE_EASE}, box-shadow 0.4s ${APPLE_EASE}`,
+                  aspectRatio: '16/10',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'scale(1.01)';
+                  e.currentTarget.style.boxShadow = '0 20px 60px rgba(0, 0, 0, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'scale(1)';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                <BeforeAfterSlider
+                  originalImage={caseItem.originalUrl}
+                  enhancedImage={caseItem.enhancedUrl}
+                  sizes="(max-width: 768px) 100vw, 50vw"
                 />
-                <div className="relative">
-                  <span className="text-3xl mb-4 block">{style.icon}</span>
-                  <h3 className="text-xl font-semibold mb-1">{style.name}</h3>
-                  <p className="text-white/40 text-sm mb-3">{style.nameEn}</p>
-                  <p className="text-white/60 text-sm">{style.desc}</p>
+                {/* 底部标签 */}
+                <div
+                  className="absolute bottom-0 left-0 right-0 p-5"
+                  style={{
+                    background: 'linear-gradient(to top, rgba(0,0,0,0.85), rgba(0,0,0,0.4), transparent)',
+                  }}
+                >
+                  <div className="flex items-center justify-between">
+                    <span style={{ fontSize: '15px', fontWeight: 500, color: 'rgba(255, 255, 255, 0.95)' }}>
+                      {CATEGORY_NAMES[caseItem.category]}
+                    </span>
+                    <span
+                      className="opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                      style={{
+                        fontSize: '13px',
+                        color: '#D4AF37',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                      }}
+                    >
+                      拖动对比
+                      <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <path d="M5 10L2 7L5 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        <path d="M9 4L12 7L9 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    </span>
+                  </div>
                 </div>
               </div>
             ))}
@@ -403,110 +394,111 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 用户评价 */}
-      <section className="py-20 px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12 scroll-reveal">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              创作者们的真实反馈 ✨
-            </h2>
-            <p className="text-white/60 text-lg">
-              超过 10,000+ 博主正在使用 VidLuxe
-            </p>
+      {/* 用户评价 - Apple 风格：精选 3 条 */}
+      <section style={{ padding: '200px 32px' }}>
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-32 reveal">
+            <h2 style={{ marginBottom: '12px', fontSize: '48px' }}>用户心声</h2>
+            <p style={{ fontSize: '21px', color: 'rgba(255, 255, 255, 0.5)' }}>来自真实创作者的反馈</p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 scroll-reveal">
-            {testimonials.map((item, index) => (
-              <TestimonialCard key={index} {...item} />
+          <div className="grid md:grid-cols-3 gap-6 reveal">
+            {testimonials.slice(0, 3).map((item, index) => (
+              <div
+                key={index}
+                className="text-center"
+                style={{ padding: '32px' }}
+              >
+                <p
+                  style={{
+                    fontSize: '17px',
+                    lineHeight: 1.6,
+                    color: 'rgba(255, 255, 255, 0.85)',
+                    marginBottom: '24px',
+                    fontStyle: 'italic',
+                  }}
+                >
+                  "{item.quote}"
+                </p>
+                <div style={{ fontWeight: 500, color: '#D4AF37' }}>{item.author}</div>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* FAQ */}
-      <section className="py-20 px-6 bg-gradient-to-b from-transparent via-white/[0.02] to-transparent">
+      {/* FAQ - Apple 风格：精简为 3 个核心问题 */}
+      <section style={{ padding: '200px 32px', background: '#0a0a0a' }}>
         <div className="max-w-3xl mx-auto">
-          <div className="text-center mb-12 scroll-reveal">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              常见问题 ✨
-            </h2>
+          <div className="text-center mb-32 reveal">
+            <h2 style={{ marginBottom: '12px', fontSize: '48px' }}>常见问题</h2>
           </div>
 
-          <div className="scroll-reveal">
-            {faqs.map((faq, index) => (
+          <div className="reveal">
+            {faqs.slice(0, 3).map((faq, index) => (
               <FAQItem key={index} question={faq.question} answer={faq.answer} />
             ))}
           </div>
         </div>
       </section>
 
-      {/* 底部 CTA */}
-      <section className="py-20 px-6">
-        <div className="max-w-4xl mx-auto text-center scroll-reveal">
-          <div className="relative p-12 bg-gradient-to-br from-brand-600/20 via-purple-600/10 to-pink-600/20 rounded-3xl border border-white/10 overflow-hidden">
-            {/* 装饰 */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-brand-500/20 rounded-full blur-3xl" />
-            <div className="absolute bottom-0 left-0 w-48 h-48 bg-purple-500/20 rounded-full blur-3xl" />
+      {/* 定价 */}
+      <PricingSection showTitle={true} compact={false} />
 
-            <div className="relative">
-              <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                准备好升级你的内容了吗？ ✨
-              </h2>
-              <p className="text-white/60 text-lg mb-8">
-                10 次免费额度，无需信用卡，立即开始
-              </p>
-              <Link
-                href="/try"
-                className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-brand-600 to-brand-500 rounded-full text-lg font-medium hover:shadow-xl hover:shadow-brand-500/30 hover:scale-105 transition-all"
-              >
-                免费体验
-                <span className="text-xl">→</span>
-              </Link>
-            </div>
-          </div>
+      {/* 底部 CTA - Apple 风格：更大更简洁 */}
+      <section style={{ padding: '240px 32px', background: '#0a0a0a' }}>
+        <div className="max-w-4xl mx-auto text-center reveal">
+          <h2 style={{ marginBottom: '16px', fontSize: '56px', lineHeight: 1.1 }}>
+            开始升级
+          </h2>
+          <p className="text-lead mb-16" style={{ fontSize: '21px' }}>
+            免费体验，无需信用卡
+          </p>
+          <Link
+            href="/try"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '18px 40px',
+              fontSize: '17px',
+              fontWeight: 500,
+              borderRadius: '980px',
+              background: '#D4AF37',
+              color: '#000000',
+              textDecoration: 'none',
+              transition: 'all 0.3s ease',
+            }}
+          >
+            立即体验
+          </Link>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-12 px-6 border-t border-white/5">
-        <div className="max-w-6xl mx-auto">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-2">
-              <span className="text-xl font-bold">
-                VID<span className="text-brand-500">★</span>LUXE
-              </span>
-              <span className="text-white/40 text-sm">· AI 内容升级引擎</span>
-            </div>
-            <div className="flex items-center gap-6 text-sm text-white/50">
-              <Link href="#" className="hover:text-white transition-colors">
-                用户协议
-              </Link>
-              <Link href="#" className="hover:text-white transition-colors">
-                隐私政策
-              </Link>
-              <Link href="#" className="hover:text-white transition-colors">
-                联系我们
-              </Link>
-            </div>
-            <p className="text-white/40 text-sm">
-              © 2026 VidLuxe. All rights reserved.
-            </p>
+      {/* Footer - Apple 风格：极简 */}
+      <footer
+        style={{
+          padding: '24px 32px',
+          borderTop: '0.5px solid rgba(255, 255, 255, 0.06)',
+        }}
+      >
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+          <span style={{ fontSize: '13px', fontWeight: 500, color: 'rgba(255, 255, 255, 0.5)' }}>
+            VidLuxe © 2026
+          </span>
+          <div className="flex items-center gap-6">
+            <Link href="#" style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.35)' }}>
+              隐私
+            </Link>
+            <Link href="#" style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.35)' }}>
+              协议
+            </Link>
+            <Link href="#" style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.35)' }}>
+              联系
+            </Link>
           </div>
         </div>
       </footer>
-
-      {/* 滚动动画样式 */}
-      <style jsx global>{`
-        .scroll-reveal {
-          opacity: 0;
-          transform: translateY(40px);
-          transition: opacity 0.8s ease, transform 0.8s ease;
-        }
-        .scroll-reveal.revealed {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      `}</style>
     </div>
   );
 }

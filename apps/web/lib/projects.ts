@@ -1,4 +1,5 @@
 // 项目数据类型和模拟数据
+// 更新时间: 2026-02-19
 
 export interface Project {
   id: string;
@@ -18,14 +19,14 @@ export interface Project {
   createdAt: Date;
 }
 
-// 模拟项目数据
+// 模拟项目数据 - 使用最新的图片
 export const MOCK_PROJECTS: Project[] = [
   {
     id: 'proj-1',
     title: '穿搭照片',
-    thumbnailUrl: '/cases/images/fashion-1-before.jpg',
-    originalUrl: '/cases/images/fashion-1-after.jpg',
-    enhancedUrl: '/cases/images/fashion-1-before.jpg',
+    thumbnailUrl: '/comparisons/fashion-1-original.jpg',
+    originalUrl: '/comparisons/fashion-1-original.jpg',
+    enhancedUrl: '/comparisons/fashion-1-enhanced.jpg',
     style: 'warmLuxury',
     score: 82,
     dimensions: { color: 85, composition: 80, typography: 78, detail: 84 },
@@ -35,9 +36,9 @@ export const MOCK_PROJECTS: Project[] = [
   {
     id: 'proj-2',
     title: '咖啡探店',
-    thumbnailUrl: '/cases/images/cafe-1-before.jpg',
-    originalUrl: '/cases/images/cafe-1-after.jpg',
-    enhancedUrl: '/cases/images/cafe-1-before.jpg',
+    thumbnailUrl: '/comparisons/cafe-1-original.jpg',
+    originalUrl: '/comparisons/cafe-1-original.jpg',
+    enhancedUrl: '/comparisons/cafe-1-enhanced.jpg',
     style: 'warmLuxury',
     score: 78,
     dimensions: { color: 82, composition: 75, typography: 76, detail: 80 },
@@ -46,10 +47,10 @@ export const MOCK_PROJECTS: Project[] = [
   },
   {
     id: 'proj-3',
-    title: '护肤品拍摄',
-    thumbnailUrl: '/cases/images/beauty-1-before.jpg',
-    originalUrl: '/cases/images/beauty-1-after.jpg',
-    enhancedUrl: '/cases/images/beauty-1-before.jpg',
+    title: '人像美妆',
+    thumbnailUrl: '/comparisons/portrait-1-original.jpg',
+    originalUrl: '/comparisons/portrait-1-original.jpg',
+    enhancedUrl: '/comparisons/portrait-1-enhanced.jpg',
     style: 'minimal',
     score: 85,
     dimensions: { color: 88, composition: 85, typography: 82, detail: 86 },
@@ -59,9 +60,9 @@ export const MOCK_PROJECTS: Project[] = [
   {
     id: 'proj-4',
     title: '数码产品',
-    thumbnailUrl: '/cases/images/tech-2-before.jpg',
-    originalUrl: '/cases/images/tech-2-after.jpg',
-    enhancedUrl: '/cases/images/tech-2-before.jpg',
+    thumbnailUrl: '/comparisons/product-1-original.jpg',
+    originalUrl: '/comparisons/product-1-original.jpg',
+    enhancedUrl: '/comparisons/product-1-enhanced.jpg',
     style: 'coolPro',
     score: 79,
     dimensions: { color: 78, composition: 80, typography: 82, detail: 76 },
@@ -71,9 +72,9 @@ export const MOCK_PROJECTS: Project[] = [
   {
     id: 'proj-5',
     title: '生活方式',
-    thumbnailUrl: '/cases/images/lifestyle-2-before.jpg',
-    originalUrl: '/cases/images/lifestyle-2-after.jpg',
-    enhancedUrl: '/cases/images/lifestyle-2-before.jpg',
+    thumbnailUrl: '/comparisons/lifestyle-1-original.jpg',
+    originalUrl: '/comparisons/lifestyle-1-original.jpg',
+    enhancedUrl: '/comparisons/lifestyle-1-enhanced.jpg',
     style: 'morandi',
     score: 81,
     dimensions: { color: 83, composition: 79, typography: 80, detail: 82 },

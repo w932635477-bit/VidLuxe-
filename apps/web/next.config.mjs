@@ -13,7 +13,8 @@ const nextConfig = {
         pathname: '/**',
       },
     ],
-    unoptimized: false,
+    // 跳过图片优化，直接使用原图
+    unoptimized: true,
   },
 };
 

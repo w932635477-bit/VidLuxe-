@@ -10,6 +10,7 @@ interface ComparisonSliderProps {
   enhancedLabel?: string;
   className?: string;
   showLabels?: boolean;
+  sizes?: string;  // 响应式尺寸
 }
 
 export function BeforeAfterSlider({
@@ -19,6 +20,7 @@ export function BeforeAfterSlider({
   enhancedLabel = '升级版',
   className = '',
   showLabels = true,
+  sizes = '(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw',
 }: ComparisonSliderProps) {
   const [sliderPosition, setSliderPosition] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
@@ -94,17 +96,33 @@ export function BeforeAfterSlider({
           src={originalImage}
           alt={originalLabel}
           fill
+          sizes={sizes}
           className="object-cover"
           draggable={false}
           priority
         />
         {showLabels && (
           <div
-            className={`absolute top-3 right-3 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-full transition-opacity duration-300 ${
-              isHovered || isDragging ? 'opacity-100' : 'opacity-70'
+            className={`absolute top-4 right-4 transition-opacity duration-300 ${
+              isHovered || isDragging ? 'opacity-100' : 'opacity-60'
             }`}
           >
-            <span className="text-white text-xs font-medium">{originalLabel}</span>
+            <span
+              style={{
+                display: 'inline-flex',
+                padding: '6px 14px',
+                background: 'rgba(0, 0, 0, 0.5)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                borderRadius: '980px',
+                fontSize: '12px',
+                fontWeight: 500,
+                color: 'rgba(255, 255, 255, 0.85)',
+                letterSpacing: '0.02em',
+              }}
+            >
+              {originalLabel}
+            </span>
           </div>
         )}
       </div>
@@ -118,34 +136,54 @@ export function BeforeAfterSlider({
           src={enhancedImage}
           alt={enhancedLabel}
           fill
+          sizes={sizes}
           className="object-cover"
           draggable={false}
           priority
         />
         {showLabels && (
           <div
-            className={`absolute top-3 left-3 bg-brand-500/90 backdrop-blur-md px-3 py-1.5 rounded-full transition-opacity duration-300 ${
-              isHovered || isDragging ? 'opacity-100' : 'opacity-70'
+            className={`absolute top-4 left-4 transition-opacity duration-300 ${
+              isHovered || isDragging ? 'opacity-100' : 'opacity-60'
             }`}
           >
-            <span className="text-white text-xs font-medium">✨ {enhancedLabel}</span>
+            <span
+              style={{
+                display: 'inline-flex',
+                padding: '6px 14px',
+                background: 'rgba(212, 175, 55, 0.2)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                border: '1px solid rgba(212, 175, 55, 0.3)',
+                borderRadius: '980px',
+                fontSize: '12px',
+                fontWeight: 500,
+                color: '#D4AF37',
+                letterSpacing: '0.02em',
+              }}
+            >
+              {enhancedLabel}
+            </span>
           </div>
         )}
       </div>
 
-      {/* 滑块分隔线 */}
+      {/* 滑块分隔线 - 极细设计 */}
       <div
-        className="absolute top-0 bottom-0 w-0.5 bg-white/80 shadow-lg transition-all duration-150"
+        className="absolute top-0 bottom-0"
         style={{
           left: `${sliderPosition}%`,
           transform: 'translateX(-50%)',
+          width: '1px',
+          background: 'rgba(255, 255, 255, 0.7)',
+          boxShadow: '0 0 10px rgba(255, 255, 255, 0.3)',
         }}
       />
 
-      {/* 滑块手柄 */}
+      {/* 滑块手柄 - Magnific.ai 风格 */}
       <div
         className={`absolute top-0 bottom-0 flex items-center justify-center transition-transform duration-150 ${
-          isDragging ? 'scale-110' : ''
+          isDragging ? 'scale-105' : ''
         }`}
         style={{
           left: `${sliderPosition}%`,
@@ -153,22 +191,36 @@ export function BeforeAfterSlider({
         }}
       >
         <div
-          className={`w-10 h-10 rounded-full bg-white shadow-xl flex items-center justify-center transition-all duration-300 ${
+          className={`flex items-center justify-center transition-all duration-300 ${
             isHovered || isDragging
-              ? 'scale-110 shadow-2xl ring-4 ring-white/20'
+              ? 'scale-105 shadow-2xl'
               : 'scale-100'
           }`}
+          style={{
+            width: '48px',
+            height: '48px',
+            borderRadius: '50%',
+            background: 'rgba(255, 255, 255, 0.98)',
+            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.25), 0 2px 8px rgba(0, 0, 0, 0.15)',
+          }}
         >
           <svg
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
+            width="20"
+            height="20"
+            viewBox="0 0 20 20"
             fill="none"
-            className="text-gray-600"
+            style={{ opacity: 0.5 }}
           >
             <path
-              d="M5 8L3 6M5 8L3 10M5 8H11M11 8L13 6M11 8L13 10"
-              stroke="currentColor"
+              d="M7 14L4 10L7 6"
+              stroke="#1a1a1a"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M13 6L16 10L13 14"
+              stroke="#1a1a1a"
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -177,8 +229,11 @@ export function BeforeAfterSlider({
         </div>
       </div>
 
-      {/* 底部渐变遮罩 */}
-      <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
+      {/* 底部微弱渐变 - 不干扰视觉 */}
+      <div
+        className="absolute bottom-0 left-0 right-0 h-12 pointer-events-none"
+        style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.2), transparent)' }}
+      />
     </div>
   );
 }

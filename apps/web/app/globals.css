@@ -2,24 +2,39 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;600;700&family=Noto+Serif+SC:wght@400;700&display=swap');
-
 :root {
+  /* Apple 风格品牌色 - 香槟金 */
+  --brand-primary: #D4AF37;
+  --brand-light: #E5C04B;
+  --brand-dark: #B8962E;
+
+  /* 文字色级 - Apple 灰阶 */
+  --text-primary: rgba(255, 255, 255, 0.95);
+  --text-secondary: rgba(255, 255, 255, 0.6);
+  --text-tertiary: rgba(255, 255, 255, 0.45);
+  --text-muted: rgba(255, 255, 255, 0.3);
+  --text-subtle: rgba(255, 255, 255, 0.15);
+
   /* 评分等级色 */
   --grade-s: #FFD700;
-  --grade-a: #4CAF50;
-  --grade-b: #2196F3;
-  --grade-c: #FF9800;
-  --grade-d: #EF4444;
+  --grade-a: #34C759;
+  --grade-b: #007AFF;
+  --grade-c: #FF9500;
+  --grade-d: #FF3B30;
 
-  /* 品牌色 */
-  --brand-primary: #CA8A04;
-  --brand-light: #EAB308;
+  /* 背景色 - 纯黑系 */
+  --bg-primary: #000000;
+  --bg-secondary: #0a0a0a;
+  --bg-elevated: #1c1c1e;
+  --bg-card: rgba(255, 255, 255, 0.03);
 
-  /* 背景 */
-  --bg-dark: #0a0a0f;
-  --bg-card: #14141e;
+  /* 边框色 */
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-default: rgba(255, 255, 255, 0.1);
+
+  /* Apple 缓动曲线 */
+  --ease-apple: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 * {
@@ -28,67 +43,200 @@
 
 html {
   scroll-behavior: smooth;
+  font-feature-settings: 'kern' 1, 'liga' 1;
 }
 
 body {
-  color: rgba(255, 255, 255, 0.9);
-  background: linear-gradient(180deg, #0f0f18, #0a0a0f);
+  color: var(--text-primary);
+  background: var(--bg-primary);
   min-height: 100vh;
-  font-family: 'Noto Sans SC', 'Inter', system-ui, sans-serif;
+  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+  font-weight: 400;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  letter-spacing: -0.015em;
+  line-height: 1.6;
 }
 
-/* 玻璃卡片效果 */
+/* ========================================
+   Typography System - Apple Design Style
+   ======================================== */
+
+/* 超大标题 - Hero Section */
+h1 {
+  font-family: var(--font-serif), Georgia, 'Times New Roman', serif !important;
+  font-size: clamp(56px, 10vw, 104px);
+  font-weight: 500 !important;
+  letter-spacing: -0.045em;
+  line-height: 1.02;
+}
+
+/* 大标题 - Section */
+h2 {
+  font-family: var(--font-serif), Georgia, 'Times New Roman', serif !important;
+  font-size: clamp(40px, 5vw, 64px);
+  font-weight: 500 !important;
+  letter-spacing: -0.035em;
+  line-height: 1.08;
+}
+
+/* 中标题 - Card/Subsection */
+h3 {
+  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: clamp(22px, 2.5vw, 28px);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+}
+
+h4, h5, h6 {
+  font-family: var(--font-sans), -apple-system, BlinkMacSystemFont, sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+
+/* 强制 font-serif 类生效 */
+.font-serif {
+  font-family: var(--font-serif), Georgia, 'Times New Roman', serif !important;
+}
+
+/* 段落 */
+p {
+  line-height: 1.65;
+  letter-spacing: -0.01em;
+  font-weight: 400;
+}
+
+/* 小号文字 */
+.text-small {
+  font-size: 13px;
+  letter-spacing: 0.02em;
+  font-weight: 500;
+}
+
+/* 大号引言 - Apple 风格斜体衬线 */
+.text-lead {
+  font-family: var(--font-serif), Georgia, 'Times New Roman', serif;
+  font-size: clamp(18px, 2vw, 21px);
+  line-height: 1.6;
+  color: var(--text-secondary);
+  font-weight: 400;
+  font-style: italic;
+  letter-spacing: -0.01em;
+}
+
+/* 数字强调 */
+.font-numeric {
+  font-feature-settings: 'tnum' 1, 'lnum' 1;
+}
+
+/* Apple 风格大写小标签 */
+.label-uppercase {
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+/* ========================================
+   Text Color Utilities
+   ======================================== */
+
+.text-primary { color: var(--text-primary); }
+.text-secondary { color: var(--text-secondary); }
+.text-tertiary { color: var(--text-tertiary); }
+.text-muted { color: var(--text-muted); }
+.text-subtle { color: var(--text-subtle); }
+.text-brand { color: var(--brand-primary); }
+
+/* ========================================
+   Components - Apple Design System
+   ======================================== */
+
 @layer components {
+  /* Apple 风格卡片 */
+  .apple-card {
+    background: var(--bg-card);
+    border: 0.5px solid var(--border-subtle);
+    border-radius: 24px;
+    box-shadow:
+      0 4px 24px rgba(0, 0, 0, 0.12),
+      0 1px 2px rgba(0, 0, 0, 0.08);
+    transition: all 0.4s var(--ease-apple);
+  }
+
+  .apple-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    transform: translateY(-4px);
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.16),
+      0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  /* 玻璃卡片效果 */
   .glass-card {
     @apply relative rounded-3xl p-[1px];
     background: linear-gradient(
       135deg,
-      rgba(255,255,255,0.1) 0%,
+      rgba(255,255,255,0.06) 0%,
       rgba(255,255,255,0.02) 50%,
-      rgba(255,255,255,0.08) 100%
+      rgba(255,255,255,0.04) 100%
     );
   }
 
   .glass-card-inner {
     @apply rounded-3xl p-6;
-    background: rgba(20, 20, 30, 0.6);
+    background: rgba(28, 28, 30, 0.6);
     backdrop-filter: blur(40px) saturate(150%);
     -webkit-backdrop-filter: blur(40px) saturate(150%);
   }
 
-  /* 金色按钮 */
+  /* Apple 主按钮 - 无渐变纯色 */
   .btn-primary {
-    @apply inline-flex items-center justify-center px-8 py-4 rounded-xl
-           font-medium tracking-wide text-white
-           transition-all duration-300 ease-out;
-    background: linear-gradient(135deg, #CA8A04, #EAB308);
-    box-shadow: 0 0 20px rgba(202, 138, 4, 0.3);
+    @apply inline-flex items-center justify-center;
+    padding: 16px 40px;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: #000000;
+    background: var(--brand-primary);
+    border: none;
+    border-radius: 980px;
+    transition: all 0.3s var(--ease-apple);
+    cursor: pointer;
   }
 
   .btn-primary:hover {
-    background: linear-gradient(135deg, #EAB308, #FDE047);
-    box-shadow: 0 0 30px rgba(202, 138, 4, 0.5);
-    transform: translateY(-2px);
+    background: var(--brand-light);
+    box-shadow: 0 4px 16px rgba(212, 175, 55, 0.35);
+    transform: translateY(-1px);
   }
 
   .btn-primary:active {
     transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(212, 175, 55, 0.25);
   }
 
-  /* 次级按钮 */
+  /* Apple 次级按钮 */
   .btn-secondary {
-    @apply inline-flex items-center justify-center px-6 py-3 rounded-xl
-           font-medium text-content-secondary
-           border border-white/10
-           transition-all duration-300;
-    background: rgba(255, 255, 255, 0.05);
+    @apply inline-flex items-center justify-center;
+    padding: 14px 32px;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: var(--text-primary);
+    background: transparent;
+    border: 1px solid var(--border-default);
+    border-radius: 980px;
+    transition: all 0.3s var(--ease-apple);
+    cursor: pointer;
   }
 
   .btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.25);
   }
 
   /* 评分等级样式 */
@@ -104,78 +252,81 @@ body {
   .grade-bg-c { background-color: var(--grade-c); }
   .grade-bg-d { background-color: var(--grade-d); }
 
-  /* 进度条 */
+  /* 进度条 - Apple 风格 */
   .progress-bar {
-    @apply relative h-2 rounded-full overflow-hidden;
-    background: rgba(255, 255, 255, 0.1);
+    @apply relative h-1.5 rounded-full overflow-hidden;
+    background: rgba(255, 255, 255, 0.08);
   }
 
   .progress-bar-fill {
     @apply absolute top-0 left-0 h-full rounded-full;
-    background: linear-gradient(90deg, #CA8A04, #EAB308);
-    transition: width 0.3s ease-out;
+    background: var(--brand-primary);
+    transition: width 0.4s var(--ease-apple);
   }
 
-  /* 风格选择卡片 */
+  /* 风格选择卡片 - Apple 风格 */
   .style-card {
-    @apply relative p-4 rounded-2xl cursor-pointer
-           border-2 border-transparent
-           transition-all duration-300;
-    background: rgba(255, 255, 255, 0.05);
+    @apply relative cursor-pointer;
+    padding: 32px;
+    background: var(--bg-card);
+    border: 0.5px solid var(--border-subtle);
+    border-radius: 24px;
+    transition: all 0.4s var(--ease-apple);
   }
 
   .style-card:hover {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    transform: translateY(-4px);
   }
 
   .style-card.selected {
-    border-color: #CA8A04;
-    box-shadow: 0 0 20px rgba(202, 138, 4, 0.3);
+    border-color: var(--brand-primary);
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
   }
 
-  /* 上传区域 */
+  /* 上传区域 - Apple 风格 */
   .upload-zone {
-    @apply relative flex flex-col items-center justify-center
-           p-12 rounded-3xl cursor-pointer
-           border-2 border-dashed border-white/20
-           transition-all duration-300;
-    background: rgba(255, 255, 255, 0.02);
+    @apply relative flex flex-col items-center justify-center cursor-pointer;
+    padding: 48px;
+    background: var(--bg-card);
+    border: 1px dashed var(--border-default);
+    border-radius: 24px;
+    transition: all 0.3s var(--ease-apple);
   }
 
   .upload-zone:hover {
-    border-color: #CA8A04;
-    background: rgba(202, 138, 4, 0.05);
+    border-color: var(--brand-primary);
+    background: rgba(212, 175, 55, 0.03);
   }
 
   .upload-zone.dragging {
-    border-color: #EAB308;
-    background: rgba(234, 179, 8, 0.1);
+    border-color: var(--brand-light);
+    background: rgba(212, 175, 55, 0.06);
   }
 }
 
-/* 背景光斑效果 */
+/* ========================================
+   Visual Effects - Apple Style
+   ======================================== */
+
+/* Apple 风格背景光斑 - 更克制 */
 .bg-orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.15;
+  filter: blur(100px);
+  opacity: 0.08;
   pointer-events: none;
 }
 
-.bg-orb-purple {
-  background: radial-gradient(circle, rgba(139, 92, 246, 1) 0%, transparent 70%);
+.bg-orb-gold {
+  background: radial-gradient(circle, rgba(212, 175, 55, 1) 0%, transparent 70%);
 }
 
-.bg-orb-pink {
-  background: radial-gradient(circle, rgba(236, 72, 153, 1) 0%, transparent 70%);
+.bg-orb-white {
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.5) 0%, transparent 70%);
 }
 
-.bg-orb-blue {
-  background: radial-gradient(circle, rgba(59, 130, 246, 1) 0%, transparent 70%);
-}
-
-/* 滑块样式 */
+/* 滑块样式 - Apple 风格 */
 .comparison-slider {
   position: relative;
   overflow: hidden;
@@ -186,9 +337,8 @@ body {
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 4px;
-  background: linear-gradient(180deg, #CA8A04, #EAB308);
-  box-shadow: 0 0 20px rgba(202, 138, 4, 0.5);
+  width: 1px;
+  background: rgba(255, 255, 255, 0.6);
   cursor: ew-resize;
   z-index: 10;
 }
@@ -199,11 +349,11 @@ body {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: white;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  width: 44px;
+  height: 44px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 /* 评分圆环 */
@@ -220,16 +370,16 @@ body {
 
 .score-circle-bg {
   fill: none;
-  stroke: rgba(255, 255, 255, 0.1);
+  stroke: rgba(255, 255, 255, 0.08);
 }
 
 .score-circle-progress {
   fill: none;
   stroke-linecap: round;
-  transition: stroke-dashoffset 0.5s ease-out;
+  transition: stroke-dashoffset 0.6s var(--ease-apple);
 }
 
-/* Shimmer 效果 */
+/* Shimmer 效果 - 更微妙 */
 .shimmer {
   position: relative;
   overflow: hidden;
@@ -245,11 +395,11 @@ body {
   background: linear-gradient(
     90deg,
     transparent,
-    rgba(255, 255, 255, 0.1),
+    rgba(255, 255, 255, 0.04),
     transparent
   );
   background-size: 200% 100%;
-  animation: shimmer 2s infinite;
+  animation: shimmer 3s infinite;
 }
 
 @keyframes shimmer {
@@ -257,41 +407,70 @@ body {
   100% { background-position: 200% 0; }
 }
 
-/* 滚动条样式 */
+/* ========================================
+   Scrollbar & Selection - Apple Style
+   ======================================== */
+
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.12);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.2);
 }
 
-/* 选中文字样式 */
 ::selection {
-  background: rgba(202, 138, 4, 0.3);
+  background: rgba(212, 175, 55, 0.3);
   color: white;
 }
 
-/* 焦点样式 */
+/* 焦点样式 - Apple 风格 */
 :focus-visible {
-  outline: 2px solid #CA8A04;
+  outline: 2px solid var(--brand-primary);
   outline-offset: 2px;
 }
+
+/* ========================================
+   Utility Classes - Apple Style
+   ======================================== */
 
 /* 9:16 比例容器 */
 .aspect-9-16 {
   aspect-ratio: 9 / 16;
+}
+
+/* Apple 风格分隔线 */
+.divider {
+  height: 0.5px;
+  background: var(--border-subtle);
+}
+
+/* Apple 风格小标签 */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 980px;
+}
+
+.tag-brand {
+  background: rgba(212, 175, 55, 0.12);
+  color: var(--brand-primary);
+  border: 1px solid rgba(212, 175, 55, 0.2);
 }
 
 /* 响应式隐藏 */

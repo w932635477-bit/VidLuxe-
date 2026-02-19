@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { MiniScore } from '@/components/features/landing/ScoreCard';
 import {
   getRecentProjects,
   MOCK_QUOTA,
@@ -10,187 +9,275 @@ import {
   type Project,
 } from '@/lib/projects';
 
-// 项目卡片组件
+// Apple 风格：极简导航
+function DashboardNav() {
+  return (
+    <nav style={{
+      position: 'fixed',
+      top: 0,
+      left: 0,
+      right: 0,
+      zIndex: 50,
+      padding: '0 24px',
+      height: '52px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      background: 'rgba(0, 0, 0, 0.8)',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+      borderBottom: '0.5px solid rgba(255, 255, 255, 0.06)',
+    }}>
+      <Link href="/" style={{ fontSize: '17px', fontWeight: 600, letterSpacing: '-0.02em' }}>
+        VidLuxe
+      </Link>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+        <Link href="/try" style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.6)' }}>
+          体验
+        </Link>
+        <Link href="/pricing" style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.6)' }}>
+          定价
+        </Link>
+        <div style={{
+          width: '32px',
+          height: '32px',
+          borderRadius: '50%',
+          background: 'linear-gradient(135deg, #D4AF37, #B8962E)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '14px',
+          fontWeight: 600,
+          color: '#000',
+        }}>
+          U
+        </div>
+      </div>
+    </nav>
+  );
+}
+
+// Apple 风格：简洁配额显示
+function QuotaBar() {
+  const quota = MOCK_QUOTA;
+  const remaining = quota.total - quota.used;
+  const percentage = (quota.used / quota.total) * 100;
+
+  return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: '16px 20px',
+      borderRadius: '14px',
+      background: 'rgba(255, 255, 255, 0.03)',
+      marginBottom: '40px',
+    }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+        <div style={{
+          width: '48px',
+          height: '48px',
+          borderRadius: '12px',
+          background: 'rgba(212, 175, 55, 0.15)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}>
+          <span style={{ fontSize: '24px' }}>✨</span>
+        </div>
+        <div>
+          <p style={{ fontSize: '15px', fontWeight: 500, marginBottom: '2px' }}>
+            剩余 {remaining} 次免费额度
+          </p>
+          <p style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.4)' }}>
+            已使用 {quota.used}/{quota.total} 次
+          </p>
+        </div>
+      </div>
+
+      {/* 进度环 */}
+      <div style={{ position: 'relative', width: '44px', height: '44px' }}>
+        <svg viewBox="0 0 44 44" style={{ transform: 'rotate(-90deg)' }}>
+          <circle
+            cx="22"
+            cy="22"
+            r="18"
+            fill="none"
+            stroke="rgba(255, 255, 255, 0.1)"
+            strokeWidth="4"
+          />
+          <circle
+            cx="22"
+            cy="22"
+            r="18"
+            fill="none"
+            stroke="#D4AF37"
+            strokeWidth="4"
+            strokeLinecap="round"
+            strokeDasharray={`${(100 - percentage) * 1.13} 113`}
+          />
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+// Apple 风格：大图项目卡片
 function ProjectCard({ project }: { project: Project }) {
   return (
-    <div className="glass-card group cursor-pointer hover:scale-[1.02] transition-transform">
-      <div className="glass-card-inner p-0 overflow-hidden rounded-3xl">
-        {/* 缩略图 */}
-        <div className="relative aspect-9-16">
-          <Image
-            src={project.thumbnailUrl}
-            alt={project.title}
-            fill
-            className="object-cover"
-          />
-          {/* 评分标签 */}
-          <div className="absolute top-3 right-3">
-            <MiniScore score={project.score} />
-          </div>
-        </div>
-        {/* 信息区 */}
-        <div className="p-4">
-          <h3 className="font-medium text-content-primary mb-1">{project.title}</h3>
-          <div className="flex items-center justify-between text-sm text-content-secondary">
-            <span>{formatRelativeTime(project.createdAt)}</span>
-            <span className="text-brand-500">+{project.score - 60}分</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// 配额卡片组件
-function QuotaCard() {
-  const quota = MOCK_QUOTA;
-  const percentage = (quota.used / quota.total) * 100;
-  const isNearLimit = percentage >= 80;
-
-  return (
-    <div className="glass-card">
-      <div className="glass-card-inner">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-medium text-content-primary">使用量统计</h3>
-          <span className={`text-sm px-2 py-1 rounded-full ${
-            quota.plan === 'free' ? 'bg-white/10 text-content-secondary' : 'bg-brand-500/20 text-brand-500'
-          }`}>
-            {quota.plan === 'free' ? '免费版' : 'Pro 版'}
+    <Link
+      href={`/dashboard/projects/${project.id}`}
+      style={{
+        display: 'block',
+        borderRadius: '20px',
+        overflow: 'hidden',
+        background: 'rgba(255, 255, 255, 0.02)',
+        transition: 'transform 0.3s ease',
+      }}
+    >
+      {/* 图片 */}
+      <div style={{ position: 'relative', aspectRatio: '9/16' }}>
+        <Image
+          src={project.thumbnailUrl}
+          alt={project.title}
+          fill
+          className="object-cover"
+          unoptimized
+        />
+        {/* 评分徽章 */}
+        <div style={{
+          position: 'absolute',
+          top: '12px',
+          right: '12px',
+          padding: '6px 12px',
+          borderRadius: '980px',
+          background: 'rgba(0, 0, 0, 0.6)',
+          backdropFilter: 'blur(10px)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '6px',
+        }}>
+          <span style={{ fontSize: '15px', fontWeight: 600, color: '#D4AF37' }}>
+            {project.score}
+          </span>
+          <span style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.6)' }}>
+            分
           </span>
         </div>
-
-        {/* 进度条 */}
-        <div className="mb-4">
-          <div className="flex justify-between text-sm mb-2">
-            <span className="text-content-secondary">
-              本月已用：<span className="text-content-primary">{quota.used}</span>/{quota.total} 次
-            </span>
-            <span className="text-content-secondary">{percentage.toFixed(0)}%</span>
-          </div>
-          <div className="h-2 bg-white/5 rounded-full overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all ${
-                isNearLimit ? 'bg-gradient-to-r from-orange-500 to-red-500' : 'bg-gradient-to-r from-brand-600 to-brand-500'
-              }`}
-              style={{ width: `${percentage}%` }}
-            />
-          </div>
-        </div>
-
-        {/* 升级提示 */}
-        {quota.plan === 'free' && (
-          <Link
-            href="/pricing"
-            className="block text-center py-3 px-4 rounded-xl bg-gradient-to-r from-brand-600 to-brand-500 text-dark-bg font-medium hover:opacity-90 transition-opacity"
-          >
-            升级 Pro 版，无限次使用
-          </Link>
-        )}
       </div>
-    </div>
+
+      {/* 信息 */}
+      <div style={{ padding: '16px' }}>
+        <p style={{ fontSize: '15px', fontWeight: 500, marginBottom: '4px' }}>
+          {project.title}
+        </p>
+        <p style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.4)' }}>
+          {formatRelativeTime(project.createdAt)}
+        </p>
+      </div>
+    </Link>
   );
 }
 
-// 快捷操作卡片
-function QuickActionsCard() {
+// 空状态
+function EmptyState() {
   return (
-    <div className="glass-card">
-      <div className="glass-card-inner">
-        <h3 className="text-lg font-medium text-content-primary mb-4">快捷操作</h3>
-        <div className="grid grid-cols-3 gap-3">
-          <Link
-            href="/try"
-            className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
-          >
-            <span className="text-2xl">✨</span>
-            <span className="text-sm text-content-secondary">新建项目</span>
-          </Link>
-          <Link
-            href="/dashboard/projects"
-            className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
-          >
-            <span className="text-2xl">📊</span>
-            <span className="text-sm text-content-secondary">评分历史</span>
-          </Link>
-          <button
-            className="flex flex-col items-center gap-2 p-4 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"
-          >
-            <span className="text-2xl">⚙️</span>
-            <span className="text-sm text-content-secondary">设置</span>
-          </button>
-        </div>
+    <div style={{
+      textAlign: 'center',
+      padding: '80px 24px',
+    }}>
+      <div style={{
+        width: '80px',
+        height: '80px',
+        margin: '0 auto 24px',
+        borderRadius: '50%',
+        background: 'rgba(255, 255, 255, 0.05)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}>
+        <span style={{ fontSize: '36px' }}>✨</span>
       </div>
-    </div>
-  );
-}
-
-// 统计数据卡片
-function StatCard({ label, value, trend }: { label: string; value: string | number; trend?: string }) {
-  return (
-    <div className="glass-card">
-      <div className="glass-card-inner text-center">
-        <p className="text-sm text-content-secondary mb-1">{label}</p>
-        <p className="text-2xl font-medium text-content-primary">{value}</p>
-        {trend && (
-          <p className="text-xs text-green-400 mt-1">{trend}</p>
-        )}
-      </div>
+      <h2 style={{ fontSize: '24px', fontWeight: 600, marginBottom: '8px' }}>
+        开始你的第一个项目
+      </h2>
+      <p style={{
+        fontSize: '17px',
+        color: 'rgba(255, 255, 255, 0.5)',
+        marginBottom: '32px',
+        maxWidth: '300px',
+        margin: '0 auto 32px',
+      }}>
+        上传一张图片，让 AI 为它注入高级感
+      </p>
+      <Link
+        href="/try"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '16px 32px',
+          borderRadius: '980px',
+          background: '#D4AF37',
+          color: '#000000',
+          fontSize: '17px',
+          fontWeight: 500,
+          textDecoration: 'none',
+        }}
+      >
+        立即体验
+      </Link>
     </div>
   );
 }
 
 export default function DashboardPage() {
-  const recentProjects = getRecentProjects(3);
+  const recentProjects = getRecentProjects(6);
 
   return (
-    <div className="space-y-8">
-      {/* 页面标题 */}
-      <div>
-        <h1 className="text-2xl font-medium text-content-primary">概览</h1>
-        <p className="text-content-secondary mt-1">查看你的使用情况和最近项目</p>
-      </div>
+    <main style={{ minHeight: '100vh', background: '#000000' }}>
+      <DashboardNav />
 
-      {/* 统计卡片 */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard label="本月使用" value="8次" />
-        <StatCard label="平均评分" value="81分" trend="↑ 较上月提升5分" />
-        <StatCard label="最高评分" value="85分" />
-        <StatCard label="项目总数" value="12个" />
-      </div>
+      <div style={{
+        maxWidth: '800px',
+        margin: '0 auto',
+        padding: '88px 24px 60px',
+      }}>
+        {/* 页面标题 */}
+        <h1 style={{
+          fontSize: '34px',
+          fontWeight: 600,
+          letterSpacing: '-0.02em',
+          marginBottom: '8px',
+        }}>
+          项目
+        </h1>
+        <p style={{
+          fontSize: '17px',
+          color: 'rgba(255, 255, 255, 0.5)',
+          marginBottom: '32px',
+        }}>
+          管理你的 AI 升级作品
+        </p>
 
-      {/* 配额和快捷操作 */}
-      <div className="grid md:grid-cols-2 gap-6">
-        <QuotaCard />
-        <QuickActionsCard />
-      </div>
+        {/* 配额信息 */}
+        <QuotaBar />
 
-      {/* 最近项目 */}
-      <div>
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-medium text-content-primary">最近项目</h2>
-          <Link
-            href="/dashboard/projects"
-            className="text-sm text-brand-500 hover:text-brand-400 transition-colors"
-          >
-            查看全部 →
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-          {recentProjects.map((project) => (
-            <ProjectCard key={project.id} project={project} />
-          ))}
-        </div>
-
-        {recentProjects.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-content-secondary mb-4">还没有项目</p>
-            <Link href="/try" className="btn-gold px-6 py-3">
-              创建第一个项目
-            </Link>
+        {/* 项目列表 或 空状态 */}
+        {recentProjects.length > 0 ? (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+            gap: '16px',
+          }}>
+            {recentProjects.map((project) => (
+              <ProjectCard key={project.id} project={project} />
+            ))}
           </div>
+        ) : (
+          <EmptyState />
         )}
       </div>
-    </div>
+    </main>
   );
 }

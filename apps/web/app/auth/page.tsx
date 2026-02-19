@@ -38,8 +38,6 @@ export default function AuthPage() {
   // 登录
   const handleLogin = async () => {
     setLoading(true);
-
-    // 模拟登录
     setTimeout(() => {
       setLoading(false);
       router.push('/dashboard');
@@ -47,182 +45,263 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen bg-dark-bg flex items-center justify-center px-4">
-      <div className="w-full max-w-md">
+    <main style={{ minHeight: '100vh', background: '#000000', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
+      <div style={{ width: '100%', maxWidth: '360px' }}>
         {/* Logo */}
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-block">
-            <span className="text-3xl font-display font-bold tracking-tight">
-              VID<span className="text-brand-500">★</span>LUXE
-            </span>
+        <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+          <Link href="/" style={{ fontSize: '24px', fontWeight: 600, letterSpacing: '-0.02em' }}>
+            VidLuxe
           </Link>
-          <p className="text-content-secondary mt-4">欢迎回来</p>
+          <p style={{ marginTop: '12px', fontSize: '17px', color: 'rgba(255, 255, 255, 0.5)' }}>
+            欢迎回来
+          </p>
         </div>
 
         {/* 登录卡片 */}
-        <div className="glass-card">
-          <div className="glass-card-inner">
-            {/* 登录方式切换 */}
-            <div className="flex gap-2 mb-6">
+        <div style={{
+          padding: '24px',
+          borderRadius: '20px',
+          background: 'rgba(255, 255, 255, 0.02)',
+          border: '1px solid rgba(255, 255, 255, 0.06)',
+        }}>
+          {/* 登录方式切换 - Apple 风格药丸 */}
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
+            {[
+              { id: 'phone' as LoginMethod, label: '手机', icon: '📱' },
+              { id: 'wechat' as LoginMethod, label: '微信', icon: '💬' },
+              { id: 'email' as LoginMethod, label: '邮箱', icon: '📧' },
+            ].map((item) => (
               <button
-                onClick={() => setMethod('phone')}
-                className={`flex-1 py-2 rounded-lg text-sm transition-colors ${
-                  method === 'phone'
-                    ? 'bg-brand-500/20 text-brand-500'
-                    : 'bg-white/5 text-content-secondary hover:bg-white/10'
-                }`}
+                key={item.id}
+                onClick={() => setMethod(item.id)}
+                style={{
+                  flex: 1,
+                  padding: '10px',
+                  borderRadius: '10px',
+                  border: 'none',
+                  background: method === item.id ? 'rgba(212, 175, 55, 0.15)' : 'rgba(255, 255, 255, 0.03)',
+                  color: method === item.id ? '#D4AF37' : 'rgba(255, 255, 255, 0.5)',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                }}
               >
-                📱 手机号
+                {item.icon} {item.label}
               </button>
-              <button
-                onClick={() => setMethod('wechat')}
-                className={`flex-1 py-2 rounded-lg text-sm transition-colors ${
-                  method === 'wechat'
-                    ? 'bg-brand-500/20 text-brand-500'
-                    : 'bg-white/5 text-content-secondary hover:bg-white/10'
-                }`}
-              >
-                💬 微信
-              </button>
-              <button
-                onClick={() => setMethod('email')}
-                className={`flex-1 py-2 rounded-lg text-sm transition-colors ${
-                  method === 'email'
-                    ? 'bg-brand-500/20 text-brand-500'
-                    : 'bg-white/5 text-content-secondary hover:bg-white/10'
-                }`}
-              >
-                📧 邮箱
-              </button>
-            </div>
-
-            {/* 手机号登录表单 */}
-            {method === 'phone' && (
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm text-content-secondary mb-2">手机号码</label>
-                  <div className="flex gap-2">
-                    <span className="flex items-center px-3 py-3 rounded-lg bg-white/5 text-content-secondary text-sm">
-                      +86
-                    </span>
-                    <input
-                      type="tel"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 11))}
-                      placeholder="请输入手机号"
-                      className="flex-1 px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-content-primary placeholder:text-content-tertiary focus:outline-none focus:border-brand-500/50"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm text-content-secondary mb-2">验证码</label>
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={code}
-                      onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-                      placeholder="请输入验证码"
-                      className="flex-1 px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-content-primary placeholder:text-content-tertiary focus:outline-none focus:border-brand-500/50"
-                    />
-                    <button
-                      onClick={sendCode}
-                      disabled={countdown > 0 || phone.length !== 11}
-                      className={`px-4 py-3 rounded-lg text-sm whitespace-nowrap transition-colors ${
-                        countdown > 0 || phone.length !== 11
-                          ? 'bg-white/5 text-content-tertiary cursor-not-allowed'
-                          : 'bg-brand-500/20 text-brand-500 hover:bg-brand-500/30'
-                      }`}
-                    >
-                      {countdown > 0 ? `${countdown}s` : '获取验证码'}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* 微信登录 */}
-            {method === 'wechat' && (
-              <div className="text-center py-8">
-                <div className="inline-block p-4 bg-white rounded-2xl mb-4">
-                  {/* 微信二维码占位 */}
-                  <div className="w-48 h-48 bg-gray-100 flex items-center justify-center text-gray-400">
-                    微信扫码登录
-                  </div>
-                </div>
-                <p className="text-sm text-content-secondary">
-                  打开微信扫一扫，快速登录
-                </p>
-              </div>
-            )}
-
-            {/* 邮箱登录 */}
-            {method === 'email' && (
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm text-content-secondary mb-2">邮箱地址</label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="请输入邮箱"
-                    className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-content-primary placeholder:text-content-tertiary focus:outline-none focus:border-brand-500/50"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm text-content-secondary mb-2">密码</label>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="请输入密码"
-                    className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/10 text-content-primary placeholder:text-content-tertiary focus:outline-none focus:border-brand-500/50"
-                  />
-                </div>
-
-                <div className="text-right">
-                  <Link href="#" className="text-sm text-brand-500 hover:text-brand-400">
-                    忘记密码？
-                  </Link>
-                </div>
-              </div>
-            )}
-
-            {/* 登录按钮 */}
-            {method !== 'wechat' && (
-              <button
-                onClick={handleLogin}
-                disabled={loading}
-                className="w-full mt-6 btn-gold py-3 text-center disabled:opacity-50"
-              >
-                {loading ? '登录中...' : '登录'}
-              </button>
-            )}
-
-            {/* 协议提示 */}
-            <p className="mt-6 text-center text-xs text-content-tertiary">
-              首次登录将自动注册账号
-              <br />
-              登录即表示同意{' '}
-              <Link href="#" className="text-content-secondary hover:text-content-primary">
-                用户协议
-              </Link>{' '}
-              和{' '}
-              <Link href="#" className="text-content-secondary hover:text-content-primary">
-                隐私政策
-              </Link>
-            </p>
+            ))}
           </div>
+
+          {/* 手机号登录表单 */}
+          {method === 'phone' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', color: 'rgba(255, 255, 255, 0.5)', marginBottom: '8px' }}>
+                  手机号码
+                </label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <span style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '12px 16px',
+                    borderRadius: '12px',
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    color: 'rgba(255, 255, 255, 0.5)',
+                    fontSize: '14px',
+                  }}>
+                    +86
+                  </span>
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 11))}
+                    placeholder="请输入手机号"
+                    style={{
+                      flex: 1,
+                      padding: '12px 16px',
+                      borderRadius: '12px',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      background: 'rgba(255, 255, 255, 0.03)',
+                      color: 'rgba(255, 255, 255, 0.9)',
+                      fontSize: '15px',
+                      outline: 'none',
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', color: 'rgba(255, 255, 255, 0.5)', marginBottom: '8px' }}>
+                  验证码
+                </label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input
+                    type="text"
+                    value={code}
+                    onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    placeholder="请输入验证码"
+                    style={{
+                      flex: 1,
+                      padding: '12px 16px',
+                      borderRadius: '12px',
+                      border: '1px solid rgba(255, 255, 255, 0.1)',
+                      background: 'rgba(255, 255, 255, 0.03)',
+                      color: 'rgba(255, 255, 255, 0.9)',
+                      fontSize: '15px',
+                      outline: 'none',
+                    }}
+                  />
+                  <button
+                    onClick={sendCode}
+                    disabled={countdown > 0 || phone.length !== 11}
+                    style={{
+                      padding: '12px 16px',
+                      borderRadius: '12px',
+                      border: 'none',
+                      background: countdown > 0 || phone.length !== 11
+                        ? 'rgba(255, 255, 255, 0.05)'
+                        : 'rgba(212, 175, 55, 0.15)',
+                      color: countdown > 0 || phone.length !== 11
+                        ? 'rgba(255, 255, 255, 0.3)'
+                        : '#D4AF37',
+                      fontSize: '14px',
+                      cursor: countdown > 0 || phone.length !== 11 ? 'not-allowed' : 'pointer',
+                      whiteSpace: 'nowrap',
+                    }}
+                  >
+                    {countdown > 0 ? `${countdown}s` : '获取验证码'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 微信登录 */}
+          {method === 'wechat' && (
+            <div style={{ textAlign: 'center', padding: '32px 0' }}>
+              <div style={{
+                display: 'inline-block',
+                padding: '16px',
+                background: '#fff',
+                borderRadius: '16px',
+                marginBottom: '16px',
+              }}>
+                <div style={{
+                  width: '180px',
+                  height: '180px',
+                  background: 'linear-gradient(135deg, #f0f0f0, #e0e0e0)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#999',
+                  fontSize: '14px',
+                }}>
+                  微信扫码登录
+                </div>
+              </div>
+              <p style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.5)' }}>
+                打开微信扫一扫，快速登录
+              </p>
+            </div>
+          )}
+
+          {/* 邮箱登录 */}
+          {method === 'email' && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', color: 'rgba(255, 255, 255, 0.5)', marginBottom: '8px' }}>
+                  邮箱地址
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="请输入邮箱"
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    borderRadius: '12px',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    color: 'rgba(255, 255, 255, 0.9)',
+                    fontSize: '15px',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '13px', color: 'rgba(255, 255, 255, 0.5)', marginBottom: '8px' }}>
+                  密码
+                </label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="请输入密码"
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    borderRadius: '12px',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background: 'rgba(255, 255, 255, 0.03)',
+                    color: 'rgba(255, 255, 255, 0.9)',
+                    fontSize: '15px',
+                    outline: 'none',
+                    boxSizing: 'border-box',
+                  }}
+                />
+              </div>
+
+              <div style={{ textAlign: 'right' }}>
+                <Link href="#" style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.5)' }}>
+                  忘记密码？
+                </Link>
+              </div>
+            </div>
+          )}
+
+          {/* 登录按钮 */}
+          {method !== 'wechat' && (
+            <button
+              onClick={handleLogin}
+              disabled={loading}
+              style={{
+                width: '100%',
+                marginTop: '24px',
+                padding: '14px',
+                borderRadius: '12px',
+                border: 'none',
+                background: '#D4AF37',
+                color: '#000',
+                fontSize: '16px',
+                fontWeight: 500,
+                cursor: loading ? 'wait' : 'pointer',
+                opacity: loading ? 0.7 : 1,
+              }}
+            >
+              {loading ? '登录中...' : '登录'}
+            </button>
+          )}
+
+          {/* 协议提示 */}
+          <p style={{ marginTop: '20px', textAlign: 'center', fontSize: '12px', color: 'rgba(255, 255, 255, 0.35)', lineHeight: 1.6 }}>
+            首次登录将自动注册账号
+            <br />
+            登录即表示同意{' '}
+            <Link href="#" style={{ color: 'rgba(255, 255, 255, 0.5)' }}>用户协议</Link>
+            {' '}和{' '}
+            <Link href="#" style={{ color: 'rgba(255, 255, 255, 0.5)' }}>隐私政策</Link>
+          </p>
         </div>
 
         {/* 返回首页 */}
-        <div className="mt-6 text-center">
-          <Link href="/" className="text-sm text-content-secondary hover:text-content-primary">
+        <div style={{ marginTop: '24px', textAlign: 'center' }}>
+          <Link href="/" style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.4)' }}>
             ← 返回首页
           </Link>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

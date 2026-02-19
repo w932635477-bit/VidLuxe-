@@ -9,58 +9,62 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // 品牌金色
+        // Apple 风格品牌金色 - 香槟金
         brand: {
           50: '#fefce8',
           100: '#fef9c3',
           200: '#fef08a',
           300: '#fde047',
-          400: '#facc15',
-          500: '#eab308',
-          600: '#ca8a04',
-          700: '#a16207',
-          800: '#854d0e',
-          900: '#713f12',
+          400: '#E5C04B',
+          500: '#D4AF37',
+          600: '#B8962E',
+          700: '#9A7D26',
+          800: '#7C641E',
+          900: '#5E4B16',
         },
-        // 评分等级色（与后端对齐）
+        // 评分等级色 - Apple 风格
         grade: {
-          s: '#FFD700',  // 顶级 - 金色
-          a: '#4CAF50',  // 优秀 - 绿色
-          b: '#2196F3',  // 良好 - 蓝色
-          c: '#FF9800',  // 普通 - 橙色
-          d: '#EF4444',  // 需改进 - 红色
+          s: '#FFD700',
+          a: '#34C759',
+          b: '#007AFF',
+          c: '#FF9500',
+          d: '#FF3B30',
         },
-        // 背景色
+        // 背景色 - 纯黑系
         dark: {
-          bg: '#0a0a0f',
-          card: '#14141e',
-          elevated: '#1a1a28',
+          bg: '#000000',
+          secondary: '#0a0a0a',
+          card: 'rgba(255, 255, 255, 0.03)',
+          elevated: '#1c1c1e',
         },
-        // 文字色
+        // 文字色 - Apple 灰阶
         content: {
-          primary: 'rgba(255, 255, 255, 0.9)',
+          primary: 'rgba(255, 255, 255, 0.95)',
           secondary: 'rgba(255, 255, 255, 0.6)',
-          tertiary: 'rgba(255, 255, 255, 0.4)',
-          disabled: 'rgba(255, 255, 255, 0.2)',
+          tertiary: 'rgba(255, 255, 255, 0.45)',
+          muted: 'rgba(255, 255, 255, 0.3)',
+          disabled: 'rgba(255, 255, 255, 0.15)',
         },
-        // 高级感风格色
+        // 高级感风格色 - Apple 风格
         style: {
-          minimal: '#4A90A4',      // 极简 - 冷蓝
-          warmLuxury: '#C9A962',   // 暖调奢华 - 金色
-          coolPro: '#5B7C99',      // 冷调专业 - 灰蓝
-          morandi: '#9CAF88',      // 莫兰迪 - 灰绿
+          minimal: '#8E8E93',
+          warmLuxury: '#D4AF37',
+          coolPro: '#5E6C84',
+          morandi: '#9CAF88',
         },
       },
       fontFamily: {
-        // 中文优先字体
-        display: ['"Noto Serif SC"', '"Bodoni Moda"', 'serif'],
-        sans: ['"Noto Sans SC"', 'Inter', 'system-ui', 'sans-serif'],
+        // Premium Typography System
+        sans: ['var(--font-sans)', 'system-ui', '-apple-system', 'sans-serif'],
+        serif: ['var(--font-serif)', 'Georgia', 'Times New Roman', 'serif'],
+        display: ['var(--font-serif)', 'Georgia', 'Times New Roman', 'serif'],
         mono: ['"JetBrains Mono"', 'monospace'],
       },
       fontSize: {
-        'hero': ['clamp(32px, 5vw, 72px)', { lineHeight: '1.1', letterSpacing: '-0.02em' }],
-        'h1': ['clamp(24px, 3vw, 48px)', { lineHeight: '1.2', letterSpacing: '-0.01em' }],
-        'h2': ['clamp(20px, 2.5vw, 32px)', { lineHeight: '1.3' }],
+        'hero': ['clamp(48px, 8vw, 88px)', { lineHeight: '1.05', letterSpacing: '-0.04em', fontWeight: '600' }],
+        'h1': ['clamp(32px, 5vw, 56px)', { lineHeight: '1.1', letterSpacing: '-0.03em', fontWeight: '600' }],
+        'h2': ['clamp(24px, 4vw, 40px)', { lineHeight: '1.15', letterSpacing: '-0.03em', fontWeight: '500' }],
+        'h3': ['clamp(18px, 2.5vw, 24px)', { lineHeight: '1.2', letterSpacing: '-0.02em', fontWeight: '500' }],
       },
       backgroundImage: {
         // 金色渐变
