@@ -37,3 +37,9 @@ npm-debug.log*
 temp/
 tmp/
 *.tmp
+
+# Build artifacts
+*.tsbuildinfo
+
+# User uploads (should not be committed)
+**/uploads/

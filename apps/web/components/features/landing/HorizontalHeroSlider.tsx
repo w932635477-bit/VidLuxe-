@@ -253,14 +253,15 @@ export function HorizontalHeroSlider({ originalImage, enhancedImage }: Horizonta
 
               {/* 主标题 - 超大衬线体 */}
               <h1 style={{ marginBottom: '28px' }}>
-                <span style={{ color: '#FFFFFF' }}>让普通素材</span>
-                <br />
-                <span style={{ color: '#D4AF37' }}>秒变高级感</span>
+                <span style={{ color: '#D4AF37' }}>VidLuxe AI</span>
+                <span style={{ color: '#FFFFFF' }}>学习了</span>
+                <span style={{ color: '#D4AF37' }}>10000+</span>
+                <span style={{ color: '#FFFFFF' }}>高级感设计</span>
               </h1>
 
               {/* 副标题 - 斜体衬线 */}
               <p className="text-lead mb-12">
-                专为小红书创作者打造，AI 智能保留主体、重构背景，一键升级内容质感
+                专治各种随手拍，秒变高级感
               </p>
 
               {/* CTA 按钮 */}

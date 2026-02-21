@@ -252,10 +252,10 @@ export default function HomePage() {
         .reveal-delay-3 { transition-delay: 0.3s; }
       `}</style>
 
-      {/* Hero 区 */}
+      {/* Hero 区 - 美妆对比图 */}
       <HorizontalHeroSlider
-        originalImage="/hero/hero-new-before.jpg"
-        enhancedImage="/hero/hero-new-after.jpg"
+        originalImage="/hero/hero-beauty-before.jpg"
+        enhancedImage="/hero/hero-beauty-after.jpg"
       />
 
       {/* 大对比展示区 */}

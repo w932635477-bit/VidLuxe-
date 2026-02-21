@@ -224,9 +224,9 @@ interface ComparisonData {
 const DEMO_COMPARISONS: ComparisonData[] = [
   {
     id: 'hero',
-    title: '穿搭博主升级',
-    original: '/hero/hero-new-before.jpg',
-    enhanced: '/hero/hero-new-after.jpg',
+    title: '美妆升级',
+    original: '/hero/hero-beauty-before.jpg',
+    enhanced: '/hero/hero-beauty-after.jpg',
   },
   {
     id: 'fashion-1',
@@ -235,10 +235,10 @@ const DEMO_COMPARISONS: ComparisonData[] = [
     enhanced: '/comparisons/fashion-1-enhanced.jpg',
   },
   {
-    id: 'portrait-1',
-    title: '美妆升级',
-    original: '/comparisons/portrait-1-original.jpg',
-    enhanced: '/comparisons/portrait-1-enhanced.jpg',
+    id: 'product-1',
+    title: '美妆产品升级',
+    original: '/comparisons/product-1-original.jpg',
+    enhanced: '/comparisons/product-1-enhanced.jpg',
   },
   {
     id: 'cafe-1',

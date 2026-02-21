@@ -1,163 +1,152 @@
+/**
+ * 升级任务 API
+ *
+ * POST /api/enhance - 创建升级任务
+ */
+
 import { NextRequest, NextResponse } from 'next/server';
+import { getTaskQueue, type Task } from '@/lib/task-queue';
+import { getQuotaManager } from '@/lib/quota';
+import { processEnhancement } from '@/lib/workflow';
+import type { PresetStyle } from '@/lib/style-prompts';
 
-// API 路由：图片升级处理
-// 使用 Nano Banana API（国内代理 evolink.ai）
-
-const NANO_BANANA_API_URL = 'https://api.evolink.ai';
-
+// 请求参数
 interface EnhanceRequest {
-  imageUrl: string;
-  style: 'minimal' | 'warmLuxury' | 'coolPro' | 'morandi';
+  content: {
+    type: 'image' | 'video';
+    url: string;
+  };
+  styleSource: {
+    type: 'reference' | 'preset';
+    referenceUrl?: string;
+    presetStyle?: PresetStyle;
+  };
+  anonymousId: string;
 }
 
-interface TaskResponse {
-  id: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
-  progress: number;
-  results?: string[];
-}
-
-// 风格对应的 Prompt
-const STYLE_PROMPTS: Record<string, string> = {
-  minimal: `
-    Premium minimalist photo style, Apple keynote aesthetic,
-    clean background with subtle gradient from charcoal to soft gray,
-    soft diffused lighting, professional product photography,
-    generous negative space, elegant and refined,
-    low saturation colors, high contrast subject
-  `,
-  warmLuxury: `
-    Luxurious warm-toned photo style, Chanel campaign aesthetic,
-    warm beige to deep brown tones, soft golden hour lighting,
-    subtle marble texture, elegant and sophisticated,
-    rich warm colors, premium quality,
-    fashion magazine style
-  `,
-  coolPro: `
-    Professional cool-toned photo style, tech aesthetic,
-    steel blue to slate gray tones, clean and modern,
-    high-key lighting with soft shadows,
-    trustworthy and authoritative,
-    corporate premium style, sharp details
-  `,
-  morandi: `
-    Morandi-style photo, Kinfolk magazine aesthetic,
-    muted sage green, dusty pink, warm gray palette,
-    soft diffused natural lighting,
-    artistic and refined, low saturation,
-    elegant earth tones, editorial quality
-  `,
+// 预估处理时间（秒）
+const ESTIMATED_TIME = {
+  image: 30,
+  video: 120,
 };
 
 export async function POST(request: NextRequest) {
   try {
     const body: EnhanceRequest = await request.json();
-    const { imageUrl, style = 'warmLuxury' } = body;
+    const { content, styleSource, anonymousId } = body;
 
-    if (!imageUrl) {
+    // 参数验证
+    if (!content?.url || !content?.type) {
       return NextResponse.json(
-        { error: 'imageUrl is required' },
+        { success: false, error: 'Missing content information' },
         { status: 400 }
       );
     }
 
-    const apiKey = process.env.NEXT_PUBLIC_NANO_BANANA_API_KEY;
-    if (!apiKey) {
+    if (!['image', 'video'].includes(content.type)) {
       return NextResponse.json(
-        { error: 'API key not configured' },
-        { status: 500 }
+        { success: false, error: 'Invalid content type' },
+        { status: 400 }
       );
     }
 
-    const prompt = STYLE_PROMPTS[style] || STYLE_PROMPTS.warmLuxury;
+    if (!styleSource?.type) {
+      return NextResponse.json(
+        { success: false, error: 'Missing style source' },
+        { status: 400 }
+      );
+    }
 
-    // 创建图片生成任务
-    const taskResponse = await fetch(`${NANO_BANANA_API_URL}/v1/images/generations`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: 'nano-banana-2-lite',
-        prompt: prompt.trim().replace(/\s+/g, ' '),
-        image_urls: [imageUrl],
-        size: '9:16',
-        quality: '2K',
-      }),
+    if (!anonymousId) {
+      return NextResponse.json(
+        { success: false, error: 'Missing anonymous ID' },
+        { status: 400 }
+      );
+    }
+
+    // 检查额度
+    const quotaManager = getQuotaManager();
+    if (!quotaManager.hasQuota(anonymousId)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Quota exceeded',
+          quota: quotaManager.getQuotaInfo(anonymousId),
+        },
+        { status: 429 }
+      );
+    }
+
+    // 创建任务
+    const taskQueue = getTaskQueue();
+    const task = taskQueue.create({
+      contentType: content.type,
+      contentUrl: content.url,
+      styleSourceType: styleSource.type,
+      presetStyle: styleSource.presetStyle,
+      referenceUrl: styleSource.referenceUrl,
+      anonymousId,
     });
 
-    if (!taskResponse.ok) {
-      const error = await taskResponse.json();
-      return NextResponse.json(
-        { error: error.error?.message || 'Failed to create task' },
-        { status: taskResponse.status }
-      );
-    }
+    // 预扣额度
+    quotaManager.deduct(anonymousId);
 
-    const task: TaskResponse = await taskResponse.json();
+    // 异步执行任务
+    executeTaskAsync(task);
 
     return NextResponse.json({
+      success: true,
       taskId: task.id,
-      status: task.status,
-      estimatedTime: 45, // 预计 45 秒
+      estimatedTime: ESTIMATED_TIME[content.type],
+      quota: quotaManager.getQuotaInfo(anonymousId),
     });
   } catch (error) {
-    console.error('Enhance error:', error);
+    console.error('[Enhance API] Error:', error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { success: false, error: 'Failed to create task' },
       { status: 500 }
     );
   }
 }
 
-// 查询任务状态
-export async function GET(request: NextRequest) {
-  const taskId = request.nextUrl.searchParams.get('taskId');
-
-  if (!taskId) {
-    return NextResponse.json(
-      { error: 'taskId is required' },
-      { status: 400 }
-    );
-  }
-
-  const apiKey = process.env.NEXT_PUBLIC_NANO_BANANA_API_KEY;
-  if (!apiKey) {
-    return NextResponse.json(
-      { error: 'API key not configured' },
-      { status: 500 }
-    );
-  }
+/**
+ * 异步执行任务
+ */
+async function executeTaskAsync(task: Task): Promise<void> {
+  console.log(`[Enhance API] Starting async execution for task ${task.id}`);
+  const taskQueue = getTaskQueue();
+  const quotaManager = getQuotaManager();
 
   try {
-    const response = await fetch(`${NANO_BANANA_API_URL}/v1/tasks/${taskId}`, {
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
+    // 开始处理
+    taskQueue.startProcessing(task.id);
+    console.log(`[Enhance API] Task ${task.id} marked as processing`);
+
+    // 执行升级工作流
+    console.log(`[Enhance API] Executing enhancement workflow for task ${task.id}`);
+    const result = await processEnhancement({
+      contentType: task.input.contentType,
+      contentUrl: task.input.contentUrl,
+      styleSourceType: task.input.styleSourceType,
+      presetStyle: task.input.presetStyle as PresetStyle,
+      referenceUrl: task.input.referenceUrl,
+      onProgress: (progress, stage) => {
+        console.log(`[Enhance API] Task ${task.id} progress: ${progress}% - ${stage}`);
+        taskQueue.updateProgress(task.id, progress, stage);
       },
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      return NextResponse.json(
-        { error: error.error?.message || 'Failed to get task status' },
-        { status: response.status }
-      );
-    }
-
-    const task: TaskResponse = await response.json();
-
-    return NextResponse.json({
-      taskId: task.id,
-      status: task.status,
-      progress: task.progress,
-      results: task.results,
-    });
+    // 完成
+    console.log(`[Enhance API] Task ${task.id} completed successfully`);
+    taskQueue.complete(task.id, result);
+    console.log(`[Enhance API] Task ${task.id} marked as completed`);
   } catch (error) {
-    console.error('Task status error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.error(`[Enhance API] Task ${task.id} failed:`, error);
+
+    // 标记失败
+    taskQueue.fail(task.id, error instanceof Error ? error.message : 'Unknown error');
+
+    // 退还额度
+    quotaManager.refund(task.input.anonymousId);
   }
 }
