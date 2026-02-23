@@ -180,11 +180,13 @@ export async function POST(request: NextRequest): Promise<NextResponse<EmbedResp
     const outputPath = path.join(outputDir, outputFilename);
 
     try {
-      // 步骤 1: 将封面图片转换为短视频（2秒）
+      // 步骤 1: 将封面图片转换为短视频（2秒），添加静音音频
       console.log('[EmbedCover] Step 1: Converting cover to video...');
       const coverArgs = [
         '-loop', '1',
         '-i', coverPath,
+        '-f', 'lavfi',
+        '-i', 'anullsrc=channel_layout=stereo:sample_rate=44100',
         '-t', String(coverDuration),
         '-vf', `scale=${videoInfo.width}:${videoInfo.height}:force_original_aspect_ratio=decrease,pad=${videoInfo.width}:${videoInfo.height}:(ow-iw)/2:(oh-ih)/2,setsar=1`,
         '-c:v', 'libx264',
@@ -192,6 +194,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<EmbedResp
         '-crf', '23',
         '-pix_fmt', 'yuv420p',
         '-r', String(videoInfo.fps),
+        '-c:a', 'aac',
+        '-shortest',
         '-f', 'mp4',
         '-y',
         coverVideoPath,
@@ -203,7 +207,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<EmbedResp
       const concatList = `file '${coverVideoPath}'\nfile '${videoPath}'`;
       fs.writeFileSync(concatListPath, concatList);
 
-      // 步骤 3: 拼接视频
+      // 步骤 3: 拼接视频（重新编码以确保兼容性）
       console.log('[EmbedCover] Step 2: Concatenating videos...');
       const concatArgs = [
         '-f', 'concat',
@@ -212,7 +216,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<EmbedResp
         '-c:v', 'libx264',
         '-preset', 'ultrafast',
         '-crf', '23',
-        '-c:a', 'copy',
+        '-c:a', 'aac',
+        '-b:a', '128k',
         '-movflags', '+faststart',
         '-y',
         outputPath,
