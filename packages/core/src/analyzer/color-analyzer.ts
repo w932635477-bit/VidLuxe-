@@ -313,13 +313,15 @@ export class ColorAnalyzer {
     return Math.max(0, consistency);
   }
 
-  private aggregateMetric(metrics: { mean: number; std: number }[]) {
+  private aggregateMetric(metrics: { mean: number; std: number; highRatio?: number }[]) {
     const means = metrics.map(m => m.mean);
     const stds = metrics.map(m => m.std);
+    const highRatios = metrics.map(m => m.highRatio ?? 0);
 
     return {
       mean: means.reduce((a, b) => a + b, 0) / means.length,
       std: stds.reduce((a, b) => a + b, 0) / stds.length,
+      highRatio: highRatios.reduce((a, b) => a + b, 0) / highRatios.length,
     };
   }
 
