@@ -448,7 +448,7 @@ export function getDefaultAnalysis(): ColorAnalysis {
 /**
  * 生成专业解释文案
  */
-function generateExplanation(analysis: ColorAnalysis): string {
+export function generateExplanation(analysis: ColorAnalysis): string {
   const issues: string[] = [];
   const suggestions: string[] = [];
 
