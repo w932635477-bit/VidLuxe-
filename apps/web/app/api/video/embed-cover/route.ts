@@ -175,7 +175,6 @@ export async function POST(request: NextRequest): Promise<NextResponse<EmbedResp
     // 生成临时文件名
     const videoId = crypto.randomBytes(8).toString('hex');
     const coverVideoPath = path.join(outputDir, `cover_temp_${videoId}.mp4`);
-    const concatListPath = path.join(outputDir, `concat_${videoId}.txt`);
     const outputFilename = `with_cover_${Date.now()}_${videoId}.mp4`;
     const outputPath = path.join(outputDir, outputFilename);
 
@@ -203,16 +202,14 @@ export async function POST(request: NextRequest): Promise<NextResponse<EmbedResp
       await execFFmpeg(coverArgs, 30000);
       console.log('[EmbedCover] Cover video created');
 
-      // 步骤 2: 创建 concat 列表文件
-      const concatList = `file '${coverVideoPath}'\nfile '${videoPath}'`;
-      fs.writeFileSync(concatListPath, concatList);
-
-      // 步骤 3: 拼接视频（重新编码以确保兼容性）
+      // 步骤 2: 使用 filter_complex 拼接视频（支持不同编码）
       console.log('[EmbedCover] Step 2: Concatenating videos...');
       const concatArgs = [
-        '-f', 'concat',
-        '-safe', '0',
-        '-i', concatListPath,
+        '-i', coverVideoPath,
+        '-i', videoPath,
+        '-filter_complex', '[0:v][0:a][1:v][1:a]concat=n=2:v=1:a=1[outv][outa]',
+        '-map', '[outv]',
+        '-map', '[outa]',
         '-c:v', 'libx264',
         '-preset', 'ultrafast',
         '-crf', '23',
@@ -229,9 +226,6 @@ export async function POST(request: NextRequest): Promise<NextResponse<EmbedResp
       // 清理临时文件
       if (fs.existsSync(coverVideoPath)) {
         fs.unlinkSync(coverVideoPath);
-      }
-      if (fs.existsSync(concatListPath)) {
-        fs.unlinkSync(concatListPath);
       }
     }
 
