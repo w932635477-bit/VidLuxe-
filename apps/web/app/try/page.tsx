@@ -245,7 +245,7 @@ export default function TryPage() {
     }
 
     // 检查文件大小
-    const maxSize = isVideo ? 100 * 1024 * 1024 : 10 * 1024 * 1024;
+    const maxSize = isVideo ? 500 * 1024 * 1024 : 10 * 1024 * 1024; // 视频 500MB，图片 10MB
     if (file.size > maxSize) {
       setError(`文件过大，最大支持 ${maxSize / 1024 / 1024}MB`);
       return;
@@ -607,7 +607,7 @@ export default function TryPage() {
                 <div style={{ display: 'flex', gap: '16px', fontSize: '13px', color: 'rgba(255, 255, 255, 0.35)' }}>
                   <span>JPG / PNG 最大 10MB</span>
                   <span>·</span>
-                  <span>MP4 / MOV 最大 100MB</span>
+                  <span>MP4 / MOV 最大 500MB</span>
                 </div>
               </>
             )}

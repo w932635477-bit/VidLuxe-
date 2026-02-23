@@ -16,7 +16,7 @@ import { getFileStorage } from '@/lib/file-storage';
 // 文件大小限制
 const FILE_SIZE_LIMITS = {
   image: 10 * 1024 * 1024, // 10MB
-  video: 1024 * 1024 * 1024, // 1GB
+  video: 500 * 1024 * 1024, // 500MB（视频）
 } as const;
 
 // 允许的 MIME 类型
@@ -118,3 +118,8 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+// 配置 Next.js 路由 - 增加请求体大小限制
+// Note: App Router 使用 route segment config
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';

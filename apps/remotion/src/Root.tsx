@@ -1,5 +1,5 @@
 import React from 'react';
-import { Composition } from 'remotion';
+import { Composition, registerRoot } from 'remotion';
 import { PremiumScoreDemo } from './compositions/PremiumScoreDemo';
 import {
   VideoEnhancementComposition,
@@ -42,6 +42,9 @@ export const RemotionRoot: React.FC = () => {
     </>
   );
 };
+
+// 注册 Root - Remotion 要求
+registerRoot(RemotionRoot);
 
 // 导出类型供外部使用
 export type { VideoEnhancementProps };
