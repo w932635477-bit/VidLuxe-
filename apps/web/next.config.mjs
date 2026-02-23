@@ -16,6 +16,21 @@ const nextConfig = {
     // 跳过图片优化，直接使用原图
     unoptimized: true,
   },
+  // 将使用 WebAssembly 的包排除在 bundler 之外
+  experimental: {
+    serverComponentsExternalPackages: ['@imgly/background-removal'],
+  },
+  // Webpack 配置
+  webpack: (config, { isServer }) => {
+    // 排除 WASM 相关的包
+    if (isServer) {
+      config.externals = config.externals || [];
+      if (Array.isArray(config.externals)) {
+        config.externals.push('@imgly/background-removal');
+      }
+    }
+    return config;
+  },
 };
 
 export default nextConfig;
