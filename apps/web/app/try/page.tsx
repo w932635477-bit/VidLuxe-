@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
   StyleSourceSelector,
@@ -258,6 +258,62 @@ export default function TryPage() {
   // 额度
   const [quotaRemaining, setQuotaRemaining] = useState(10);
 
+  // 模拟进度动画
+  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const stageMessages = [
+    '分析图像特征...',
+    '提取主体轮廓...',
+    'AI 构思场景...',
+    '渲染高级质感...',
+    '优化光影效果...',
+    '精细调色处理...',
+    '生成最终画面...',
+  ];
+
+  // 启动模拟进度
+  const startSimulatedProgress = useCallback((targetProgress: number = 90) => {
+    // 清除之前的 interval
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current);
+    }
+
+    let currentProgress = 0;
+    let messageIndex = 0;
+
+    progressIntervalRef.current = setInterval(() => {
+      // 缓慢增加进度
+      if (currentProgress < targetProgress) {
+        // 越接近目标，增长越慢
+        const increment = Math.max(0.5, (targetProgress - currentProgress) / 20);
+        currentProgress = Math.min(currentProgress + increment, targetProgress);
+        setProgress(Math.round(currentProgress));
+
+        // 每隔一段时间更新消息
+        if (currentProgress > (messageIndex + 1) * (targetProgress / stageMessages.length)) {
+          messageIndex = Math.min(messageIndex + 1, stageMessages.length - 1);
+          setCurrentStage(stageMessages[messageIndex]);
+        }
+      }
+    }, 200);
+  }, []);
+
+  // 停止模拟进度
+  const stopSimulatedProgress = useCallback(() => {
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current);
+      progressIntervalRef.current = null;
+    }
+  }, []);
+
+  // 组件卸载时清理
+  useEffect(() => {
+    return () => {
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+      }
+    };
+  }, []);
+
   // 风格相关
   const [styleSourceType, setStyleSourceType] = useState<StyleSourceType>('preset');
   const [selectedPreset, setSelectedPreset] = useState<StyleType>('magazine');
@@ -484,6 +540,9 @@ export default function TryPage() {
     setProgress(0);
     setCurrentStage('AI 生成高级感封面...');
 
+    // 启动模拟进度动画（第一阶段到 45%）
+    startSimulatedProgress(45);
+
     try {
       // 步骤 1: 调用封面增强 API
       const enhanceResponse = await fetch('/api/video/enhance-cover', {
@@ -501,9 +560,14 @@ export default function TryPage() {
         throw new Error(enhanceData.error || '封面增强失败');
       }
 
-      setEnhancedCoverUrl(enhanceData.enhancedUrl);
+      // 第一阶段完成，更新进度到 50%
+      stopSimulatedProgress();
       setProgress(50);
+      setEnhancedCoverUrl(enhanceData.enhancedUrl);
       setCurrentStage('嵌入视频封面...');
+
+      // 启动第二阶段模拟进度（50% 到 95%）
+      startSimulatedProgress(95);
 
       // 步骤 2: 调用封面嵌入 API
       const embedResponse = await fetch('/api/video/embed-cover', {
@@ -517,6 +581,9 @@ export default function TryPage() {
 
       const embedData = await embedResponse.json();
 
+      // 停止模拟进度
+      stopSimulatedProgress();
+
       let finalVideoUrl = uploadedFileUrl || '';
       if (embedData.success && embedData.videoUrl) {
         finalVideoUrl = embedData.videoUrl;
@@ -526,6 +593,7 @@ export default function TryPage() {
       }
 
       setProgress(100);
+      setCurrentStage('完成！');
 
       // 设置结果
       setResultData({
@@ -547,9 +615,11 @@ export default function TryPage() {
 
       setStep('result');
     } catch (err) {
+      stopSimulatedProgress();
       setError(err instanceof Error ? err.message : '封面增强失败');
       setStep('keyframe');
     } finally {
+      stopSimulatedProgress();
       setIsLoading(false);
     }
   };

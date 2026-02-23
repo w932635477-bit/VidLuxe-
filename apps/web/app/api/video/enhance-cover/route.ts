@@ -20,9 +20,9 @@ const NANO_BANANA_CONFIG = {
   timeout: {
     create: 30000,
     poll: 10000,
-    total: 120000,
+    total: 300000, // 5 分钟总超时
   },
-  maxPollAttempts: 60,
+  maxPollAttempts: 150, // 增加轮询次数
   pollInterval: 2000,
 };
 
