@@ -135,7 +135,9 @@ async function getTaskStatus(taskId: string): Promise<{
   );
 
   if (!response.ok) {
-    throw new Error('Failed to get task status');
+    const errorText = await response.text().catch(() => 'Unknown error');
+    console.error(`[EnhanceCover] Task status error (${response.status}):`, errorText);
+    throw new Error(`Failed to get task status: ${response.status}`);
   }
 
   return response.json();
