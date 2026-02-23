@@ -1,89 +1,35 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import Link from 'next/link';
+
+// 组件
 import {
+  MinimalNav,
+  StepIndicator,
+  UploadSection,
+  ProcessingSection,
+  ResultSection,
   StyleSourceSelector,
-  type StyleType,
-  type StyleSourceType,
+  CategorySelector,
+  SeedingTypeSelector,
+  SeedingScoreCard,
   getStylePreset,
-} from '@/components/features/try/StyleSelector';
-import { CategorySelector } from '@/components/features/try/CategorySelector';
-import { SeedingTypeSelector } from '@/components/features/try/SeedingTypeSelector';
-import { SeedingScoreCard } from '@/components/features/try/SeedingScoreCard';
+} from '@/components/features/try';
+import type { StyleType, StyleSourceType } from '@/components/features/try';
+
+// 类型
 import type { CategoryType, SeedingType, SeedingScore } from '@/lib/types/seeding';
-
-type Step = 'upload' | 'recognition' | 'style' | 'keyframe' | 'processing' | 'result';
-type ContentType = 'image' | 'video';
-
-// API 响应类型
-interface UploadResponse {
-  success: boolean;
-  file?: {
-    id: string;
-    url: string;
-    type: ContentType;
-    filename: string;
-    size: number;
-  };
-  error?: string;
-}
-
-interface EnhanceResponse {
-  success: boolean;
-  taskId?: string;
-  estimatedTime?: number;
-  quota?: {
-    remaining: number;
-  };
-  error?: string;
-}
-
-interface TaskStatusResponse {
-  success: boolean;
-  taskId: string;
-  status: 'pending' | 'processing' | 'completed' | 'failed';
-  progress: number;
-  currentStage?: string;
-  result?: {
-    type: ContentType;
-    enhancedUrl: string;
-    originalUrl: string;
-    score?: SeedingScore;
-  };
-  error?: string;
-}
-
-// 关键帧类型
-interface KeyFrame {
-  url: string;
-  timestamp: number;
-  score: number;
-  details: {
-    sharpness: number;
-    composition: number;
-    brightness: number;
-    hasFace: boolean;
-  };
-}
-
-// 视频分析响应
-interface VideoAnalyzeResponse {
-  success: boolean;
-  keyframes?: KeyFrame[];
-  videoInfo?: {
-    duration: number;
-    hasAudio: boolean;
-  };
-  error?: string;
-}
-
-// 封面增强响应
-interface EnhanceCoverResponse {
-  success: boolean;
-  enhancedUrl?: string;
-  error?: string;
-}
+import type {
+  Step,
+  ContentType,
+  KeyFrame,
+  VideoAnalyzeResponse,
+  EnhanceCoverResponse,
+  ResultData,
+  UploadResponse,
+  EnhanceResponse,
+  TaskStatusResponse,
+} from '@/lib/types/try-page';
 
 // 生成匿名 ID
 function generateAnonymousId(): string {
@@ -93,136 +39,6 @@ function generateAnonymousId(): string {
   const id = `anon_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
   localStorage.setItem('vidluxe_anonymous_id', id);
   return id;
-}
-
-// Apple 风格：极简导航
-function MinimalNav() {
-  return (
-    <nav
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 50,
-        padding: '0 24px',
-        height: '52px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        background: 'rgba(0, 0, 0, 0.8)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        borderBottom: '0.5px solid rgba(255, 255, 255, 0.06)',
-      }}
-    >
-      <Link
-        href="/"
-        style={{ fontSize: '17px', fontWeight: 600, letterSpacing: '-0.02em' }}
-      >
-        VidLuxe
-      </Link>
-      <Link
-        href="/pricing"
-        style={{
-          fontSize: '13px',
-          color: 'rgba(255, 255, 255, 0.6)',
-        }}
-      >
-        定价
-      </Link>
-    </nav>
-  );
-}
-
-// 处理步骤指示器 (5步 - 视频) / (4步 - 图片)
-function StepIndicator({ currentStep, contentType }: { currentStep: Step; contentType: ContentType }) {
-  const videoSteps = [
-    { id: 'upload', label: '上传' },
-    { id: 'recognition', label: '识别' },
-    { id: 'style', label: '风格' },
-    { id: 'keyframe', label: '选帧' },
-    { id: 'result', label: '完成' },
-  ];
-
-  const imageSteps = [
-    { id: 'upload', label: '上传' },
-    { id: 'recognition', label: '识别' },
-    { id: 'style', label: '风格' },
-    { id: 'processing', label: '处理' },
-    { id: 'result', label: '完成' },
-  ];
-
-  const steps = contentType === 'video' ? videoSteps : imageSteps;
-  const currentIndex = steps.findIndex((s) => s.id === currentStep);
-
-  return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '8px',
-        marginBottom: '32px',
-      }}
-    >
-      {steps.map((step, index) => {
-        const isActive = index === currentIndex;
-        const isCompleted = index < currentIndex;
-
-        return (
-          <div key={step.id} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div
-              style={{
-                width: '28px',
-                height: '28px',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '13px',
-                fontWeight: 600,
-                background: isActive
-                  ? '#D4AF37'
-                  : isCompleted
-                  ? 'rgba(212, 175, 55, 0.3)'
-                  : 'rgba(255, 255, 255, 0.1)',
-                color: isActive ? '#000' : 'rgba(255, 255, 255, 0.6)',
-                transition: 'all 0.3s ease',
-              }}
-            >
-              {isCompleted ? (
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M5 12L10 17L19 8"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              ) : (
-                index + 1
-              )}
-            </div>
-            {index < steps.length - 1 && (
-              <div
-                style={{
-                  width: '24px',
-                  height: '2px',
-                  borderRadius: '1px',
-                  background: isCompleted
-                    ? 'rgba(212, 175, 55, 0.5)'
-                    : 'rgba(255, 255, 255, 0.1)',
-                  transition: 'all 0.3s ease',
-                }}
-              />
-            )}
-          </div>
-        );
-      })}
-    </div>
-  );
 }
 
 export default function TryPage() {
