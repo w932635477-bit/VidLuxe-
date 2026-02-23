@@ -5,7 +5,7 @@
 import type { SeedingScore } from './seeding';
 
 // 步骤类型
-export type Step = 'upload' | 'recognition' | 'style' | 'keyframe' | 'processing' | 'result';
+export type Step = 'upload' | 'recognition' | 'style' | 'colorGrade' | 'keyframe' | 'processing' | 'result';
 
 // 内容类型
 export type ContentType = 'image' | 'video';
@@ -93,6 +93,22 @@ export interface ResultData {
 export interface AiRecognition {
   category: import('./seeding').CategoryType;
   seedingType: import('./seeding').SeedingType;
+}
+
+// 调色分析响应
+export interface ColorGradeResponse {
+  success: boolean;
+  analysis?: {
+    brightness: { value: number; status: string; adjustment: number };
+    contrast: { value: number; status: string; adjustment: number };
+    saturation: { value: number; status: string; adjustment: number };
+    colorTemp: { value: number; status: string; adjustment: number };
+    sharpness: { value: number; status: string; adjustment: number };
+    noise: { value: number; status: string; adjustment: number };
+  };
+  explanation?: string;
+  gradedVideoUrl?: string;
+  error?: string;
 }
 
 // Try Page 状态

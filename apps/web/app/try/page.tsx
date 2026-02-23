@@ -29,6 +29,7 @@ import type {
   UploadResponse,
   EnhanceResponse,
   TaskStatusResponse,
+  ColorGradeResponse,
 } from '@/lib/types/try-page';
 
 // 生成匿名 ID
@@ -140,6 +141,10 @@ export default function TryPage() {
   const [keyframes, setKeyframes] = useState<KeyFrame[]>([]);
   const [selectedKeyframe, setSelectedKeyframe] = useState<KeyFrame | null>(null);
   const [enhancedCoverUrl, setEnhancedCoverUrl] = useState<string | null>(null);
+
+  // 调色相关
+  const [colorGradeExplanation, setColorGradeExplanation] = useState<string>('');
+  const [gradedVideoUrl, setGradedVideoUrl] = useState<string | null>(null);
 
   // 匿名 ID
   const [anonymousId, setAnonymousId] = useState<string>('');
@@ -262,32 +267,36 @@ export default function TryPage() {
       return;
     }
 
-    // 视频处理：先分析提取关键帧
+    // 视频处理：先调色，再分析提取关键帧
     if (contentType === 'video') {
       setIsLoading(true);
       setError(null);
       setProgress(0);
-      setCurrentStage('分析视频中...');
+      setCurrentStage('分析视频色彩...');
 
       try {
-        // 调用视频分析 API
-        const analyzeResponse = await fetch('/api/video/analyze', {
+        // 步骤 1: 调色分析
+        const colorGradeResponse = await fetch('/api/video/color-grade', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ videoUrl: uploadedFileUrl }),
+          body: JSON.stringify({
+            videoUrl: uploadedFileUrl,
+            action: 'analyze',
+          }),
         });
 
-        const analyzeData: VideoAnalyzeResponse = await analyzeResponse.json();
+        const colorGradeData: ColorGradeResponse = await colorGradeResponse.json();
 
-        if (!analyzeData.success || !analyzeData.keyframes?.length) {
-          throw new Error(analyzeData.error || '视频分析失败');
+        if (!colorGradeData.success) {
+          throw new Error(colorGradeData.error || '色彩分析失败');
         }
 
-        setKeyframes(analyzeData.keyframes);
-        setSelectedKeyframe(analyzeData.keyframes[analyzeData.keyframes.length - 1]); // 默认选择最后一帧（通常是最终效果）
-        setStep('keyframe');
+        // 保存解释和进入调色确认步骤
+        setColorGradeExplanation(colorGradeData.explanation || '');
+        setStep('colorGrade');
+        return;
       } catch (err) {
-        setError(err instanceof Error ? err.message : '视频分析失败');
+        setError(err instanceof Error ? err.message : '色彩分析失败');
       } finally {
         setIsLoading(false);
       }
@@ -390,7 +399,7 @@ export default function TryPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          videoUrl: uploadedFileUrl,
+          videoUrl: gradedVideoUrl || uploadedFileUrl,
           coverUrl: enhanceData.enhancedUrl,
         }),
       });
@@ -436,6 +445,63 @@ export default function TryPage() {
       setStep('keyframe');
     } finally {
       stopSimulatedProgress();
+      setIsLoading(false);
+    }
+  };
+
+  // 确认调色并继续处理
+  const handleConfirmColorGrade = async () => {
+    if (!uploadedFileUrl) {
+      setError('视频URL丢失');
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+    setProgress(0);
+    setCurrentStage('应用智能调色...');
+
+    try {
+      // 步骤 1: 应用调色
+      const gradeResponse = await fetch('/api/video/color-grade', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          videoUrl: uploadedFileUrl,
+          action: 'process',
+          previewOnly: false,
+        }),
+      });
+
+      const gradeData: ColorGradeResponse = await gradeResponse.json();
+
+      if (!gradeData.success || !gradeData.gradedVideoUrl) {
+        throw new Error(gradeData.error || '调色处理失败');
+      }
+
+      setGradedVideoUrl(gradeData.gradedVideoUrl);
+      setProgress(50);
+      setCurrentStage('分析调色后视频...');
+
+      // 步骤 2: 从调色后视频提取关键帧
+      const analyzeResponse = await fetch('/api/video/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ videoUrl: gradeData.gradedVideoUrl }),
+      });
+
+      const analyzeData: VideoAnalyzeResponse = await analyzeResponse.json();
+
+      if (!analyzeData.success || !analyzeData.keyframes?.length) {
+        throw new Error(analyzeData.error || '视频分析失败');
+      }
+
+      setKeyframes(analyzeData.keyframes);
+      setSelectedKeyframe(analyzeData.keyframes[analyzeData.keyframes.length - 1]);
+      setStep('keyframe');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '处理失败');
+    } finally {
       setIsLoading(false);
     }
   };
@@ -498,6 +564,8 @@ export default function TryPage() {
     setKeyframes([]);
     setSelectedKeyframe(null);
     setEnhancedCoverUrl(null);
+    setColorGradeExplanation('');
+    setGradedVideoUrl(null);
   };
 
   // 获取风格描述
@@ -925,6 +993,114 @@ export default function TryPage() {
             <p style={{ textAlign: 'center', marginTop: '16px', fontSize: '13px', color: 'rgba(255, 255, 255, 0.35)' }}>
               剩余 {quotaRemaining} 次免费额度
             </p>
+          </div>
+        </div>
+      )}
+
+      {/* ===== 步骤: 调色确认 ===== */}
+      {step === 'colorGrade' && previewUrl && (
+        <div
+          style={{
+            minHeight: '100vh',
+            display: 'flex',
+            flexDirection: 'column',
+            padding: '80px 24px 40px',
+            maxWidth: '480px',
+            margin: '0 auto',
+          }}
+        >
+          <StepIndicator currentStep="colorGrade" contentType={contentType} />
+
+          {/* 预览图 */}
+          <div style={{ marginBottom: '24px' }}>
+            <div
+              style={{
+                position: 'relative',
+                borderRadius: '16px',
+                overflow: 'hidden',
+                background: 'rgba(255, 255, 255, 0.03)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+              }}
+            >
+              <video
+                src={previewUrl}
+                style={{ width: '100%', aspectRatio: '9/16', objectFit: 'cover', display: 'block' }}
+                muted autoPlay loop playsInline
+              />
+              <div
+                style={{
+                  position: 'absolute',
+                  top: '12px',
+                  left: '12px',
+                  padding: '6px 12px',
+                  borderRadius: '8px',
+                  background: 'rgba(0, 0, 0, 0.6)',
+                  backdropFilter: 'blur(8px)',
+                  fontSize: '12px',
+                  fontWeight: 500,
+                  color: 'rgba(255, 255, 255, 0.9)',
+                }}
+              >
+                原视频
+              </div>
+            </div>
+          </div>
+
+          {/* AI 分析结果 */}
+          <div
+            style={{
+              padding: '20px',
+              borderRadius: '16px',
+              background: 'rgba(212, 175, 55, 0.06)',
+              border: '1px solid rgba(212, 175, 55, 0.12)',
+              marginBottom: '24px',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+              <span style={{ fontSize: '20px' }}></span>
+              <span style={{ fontSize: '16px', fontWeight: 600, color: '#D4AF37' }}>
+                AI 色彩分析结果
+              </span>
+            </div>
+            <p style={{ fontSize: '15px', lineHeight: 1.7, color: 'rgba(255, 255, 255, 0.85)' }}>
+              {colorGradeExplanation}
+            </p>
+          </div>
+
+          {/* 操作按钮 */}
+          <div style={{ display: 'flex', gap: '12px', marginTop: 'auto' }}>
+            <button
+              onClick={() => setStep('keyframe')}
+              style={{
+                flex: 1,
+                padding: '16px',
+                borderRadius: '12px',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                background: 'transparent',
+                color: 'rgba(255, 255, 255, 0.7)',
+                fontSize: '17px',
+                cursor: 'pointer',
+              }}
+            >
+              跳过调色
+            </button>
+            <button
+              onClick={handleConfirmColorGrade}
+              disabled={isLoading}
+              style={{
+                flex: 2,
+                padding: '16px',
+                borderRadius: '12px',
+                border: 'none',
+                background: isLoading ? '#8E8E93' : '#D4AF37',
+                color: '#000000',
+                fontSize: '17px',
+                fontWeight: 600,
+                cursor: isLoading ? 'wait' : 'pointer',
+              }}
+            >
+              {isLoading ? '处理中...' : '应用智能调色'}
+            </button>
           </div>
         </div>
       )}
