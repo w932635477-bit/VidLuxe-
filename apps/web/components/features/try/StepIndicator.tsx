@@ -18,6 +18,7 @@ export function StepIndicator({ currentStep, contentType }: StepIndicatorProps) 
     { id: 'upload', label: '上传' },
     { id: 'recognition', label: '识别' },
     { id: 'style', label: '风格' },
+    { id: 'colorGrade', label: '调色' },
     { id: 'keyframe', label: '封面' },
     { id: 'processing', label: '处理' },
     { id: 'result', label: '完成' },
