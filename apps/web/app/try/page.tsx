@@ -9,8 +9,12 @@ import {
   getStylePreset,
 } from '@/components/features/try/StyleSelector';
 import { BeforeAfterSlider } from '@/components/features/landing/BeforeAfterSlider';
+import { CategorySelector } from '@/components/features/try/CategorySelector';
+import { SeedingTypeSelector } from '@/components/features/try/SeedingTypeSelector';
+import { SeedingScoreCard } from '@/components/features/try/SeedingScoreCard';
+import type { CategoryType, SeedingType, SeedingScore } from '@/lib/types/seeding';
 
-type Step = 'upload' | 'style' | 'processing' | 'result';
+type Step = 'upload' | 'recognition' | 'style' | 'processing' | 'result';
 type ContentType = 'image' | 'video';
 
 // API 响应类型
@@ -46,16 +50,7 @@ interface TaskStatusResponse {
     type: ContentType;
     enhancedUrl: string;
     originalUrl: string;
-    score?: {
-      overall: number;
-      grade: string;
-      dimensions: {
-        color: number;
-        composition: number;
-        typography: number;
-        detail: number;
-      };
-    };
+    score?: SeedingScore;
   };
   error?: string;
 }
@@ -68,12 +63,6 @@ function generateAnonymousId(): string {
   const id = `anon_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
   localStorage.setItem('vidluxe_anonymous_id', id);
   return id;
-}
-
-// 内容类型检测
-function detectContentType(file: File): ContentType {
-  if (file.type.startsWith('video/')) return 'video';
-  return 'image';
 }
 
 // Apple 风格：极简导航
@@ -116,10 +105,11 @@ function MinimalNav() {
   );
 }
 
-// 处理步骤指示器
+// 处理步骤指示器 (5步)
 function StepIndicator({ currentStep }: { currentStep: Step }) {
   const steps = [
     { id: 'upload', label: '上传' },
+    { id: 'recognition', label: '识别' },
     { id: 'style', label: '风格' },
     { id: 'processing', label: '处理' },
     { id: 'result', label: '完成' },
@@ -208,20 +198,21 @@ export default function TryPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // 品类和种草类型
+  const [selectedCategory, setSelectedCategory] = useState<CategoryType | null>(null);
+  const [selectedSeedingType, setSelectedSeedingType] = useState<SeedingType | null>(null);
+
+  // AI 识别结果
+  const [aiRecognition, setAiRecognition] = useState<{
+    category: CategoryType;
+    seedingType: SeedingType;
+  } | null>(null);
+
   // 结果
   const [resultData, setResultData] = useState<{
     enhancedUrl: string;
     originalUrl: string;
-    score?: {
-      overall: number;
-      grade: string;
-      dimensions: {
-        color: number;
-        composition: number;
-        typography: number;
-        detail: number;
-      };
-    };
+    score?: SeedingScore;
   } | null>(null);
 
   // 额度
@@ -283,7 +274,50 @@ export default function TryPage() {
 
       if (data.success && data.file) {
         setUploadedFileUrl(data.file.url);
-        setStep('style');
+
+        // 调用 AI 识别 API
+        try {
+          const recognizeResponse = await fetch('/api/recognize', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              imageUrl: data.file.url,
+              filename: file.name,
+            }),
+          });
+
+          const recognizeData = await recognizeResponse.json();
+
+          if (recognizeData.success && recognizeData.data) {
+            const { category, seedingType, categoryConfidence, seedingTypeConfidence } = recognizeData.data;
+            setAiRecognition({
+              category,
+              seedingType,
+            });
+            setSelectedCategory(category);
+            setSelectedSeedingType(seedingType);
+          } else {
+            // 识别失败时使用默认值
+            console.warn('[TryPage] AI recognition failed, using defaults');
+            setAiRecognition({
+              category: 'beauty',
+              seedingType: 'product',
+            });
+            setSelectedCategory('beauty');
+            setSelectedSeedingType('product');
+          }
+        } catch (recognizeError) {
+          // 识别出错时使用默认值
+          console.warn('[TryPage] AI recognition error:', recognizeError);
+          setAiRecognition({
+            category: 'beauty',
+            seedingType: 'product',
+          });
+          setSelectedCategory('beauty');
+          setSelectedSeedingType('product');
+        }
+
+        setStep('recognition'); // 跳转到 AI 识别步骤
       } else {
         setError(data.error || '上传失败');
       }
@@ -332,6 +366,8 @@ export default function TryPage() {
             referenceUrl: referenceFileUrl,
             presetStyle: selectedPreset,
           },
+          category: selectedCategory,
+          seedingType: selectedSeedingType,
           anonymousId,
         }),
       });
@@ -409,6 +445,9 @@ export default function TryPage() {
     setReferenceFileUrl(null);
     setResultData(null);
     setError(null);
+    setSelectedCategory(null);
+    setSelectedSeedingType(null);
+    setAiRecognition(null);
   };
 
   // 获取风格描述
@@ -486,7 +525,7 @@ export default function TryPage() {
                 maxWidth: '400px',
               }}
             >
-              让 AI 为你的内容注入高级感
+              让 AI 为你的内容注入种草力
             </p>
           </div>
 
@@ -594,7 +633,123 @@ export default function TryPage() {
         </div>
       )}
 
-      {/* ===== 步骤 2: 选择风格 ===== */}
+      {/* ===== 步骤 2: AI 识别 ===== */}
+      {step === 'recognition' && previewUrl && (
+        <div
+          style={{
+            minHeight: '100vh',
+            display: 'flex',
+            flexDirection: 'column',
+            padding: '80px 24px 40px',
+            maxWidth: '480px',
+            margin: '0 auto',
+          }}
+        >
+          <StepIndicator currentStep="recognition" />
+
+          {/* 预览图 */}
+          <div style={{ marginBottom: '24px' }}>
+            <div
+              style={{
+                position: 'relative',
+                borderRadius: '16px',
+                overflow: 'hidden',
+                background: 'rgba(255, 255, 255, 0.03)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+              }}
+            >
+              {contentType === 'video' ? (
+                <video
+                  src={previewUrl}
+                  style={{ width: '100%', aspectRatio: '9/16', objectFit: 'cover', display: 'block' }}
+                  muted autoPlay loop playsInline
+                />
+              ) : (
+                <img
+                  src={previewUrl}
+                  alt="预览"
+                  style={{ width: '100%', aspectRatio: '9/16', objectFit: 'cover', display: 'block' }}
+                />
+              )}
+            </div>
+          </div>
+
+          {/* AI 识别提示 */}
+          <div
+            style={{
+              padding: '16px 20px',
+              borderRadius: '16px',
+              background: 'rgba(212, 175, 55, 0.06)',
+              border: '1px solid rgba(212, 175, 55, 0.12)',
+              marginBottom: '24px',
+            }}
+          >
+            <p style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.6)' }}>
+              💡 <span style={{ color: '#D4AF37' }}>AI 识别结果</span> - 请确认或修改
+            </p>
+          </div>
+
+          {/* 品类选择 */}
+          <div style={{ marginBottom: '24px' }}>
+            <CategorySelector
+              selected={selectedCategory}
+              onChange={setSelectedCategory}
+              aiSuggested={aiRecognition?.category}
+            />
+          </div>
+
+          {/* 种草类型选择 */}
+          <div style={{ flex: 1, marginBottom: '24px' }}>
+            <SeedingTypeSelector
+              selected={selectedSeedingType}
+              onChange={setSelectedSeedingType}
+              aiSuggested={aiRecognition?.seedingType}
+            />
+          </div>
+
+          {/* 操作按钮 */}
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button
+              onClick={() => setStep('upload')}
+              style={{
+                flex: 1,
+                padding: '16px',
+                borderRadius: '12px',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                background: 'transparent',
+                color: 'rgba(255, 255, 255, 0.7)',
+                fontSize: '17px',
+                cursor: 'pointer',
+              }}
+            >
+              重新上传
+            </button>
+            <button
+              onClick={() => {
+                if (selectedCategory && selectedSeedingType) {
+                  setStep('style');
+                }
+              }}
+              disabled={!selectedCategory || !selectedSeedingType}
+              style={{
+                flex: 2,
+                padding: '16px',
+                borderRadius: '12px',
+                border: 'none',
+                background: !selectedCategory || !selectedSeedingType ? '#8E8E93' : '#D4AF37',
+                color: '#000000',
+                fontSize: '17px',
+                fontWeight: 600,
+                cursor: !selectedCategory || !selectedSeedingType ? 'not-allowed' : 'pointer',
+              }}
+            >
+              确认，下一步
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ===== 步骤 3: 选择风格 ===== */}
       {step === 'style' && previewUrl && (
         <div
           style={{
@@ -684,7 +839,7 @@ export default function TryPage() {
 
             <div style={{ display: 'flex', gap: '12px' }}>
               <button
-                onClick={() => setStep('upload')}
+                onClick={() => setStep('recognition')}
                 style={{
                   flex: 1,
                   padding: '16px',
@@ -696,7 +851,7 @@ export default function TryPage() {
                   cursor: 'pointer',
                 }}
               >
-                更换内容
+                返回修改
               </button>
               <button
                 onClick={handleStartProcessing}
@@ -724,7 +879,7 @@ export default function TryPage() {
         </div>
       )}
 
-      {/* ===== 步骤 3: 处理中 ===== */}
+      {/* ===== 步骤 4: 处理中 ===== */}
       {step === 'processing' && (
         <div
           style={{
@@ -767,7 +922,7 @@ export default function TryPage() {
               { label: '提取主体轮廓', threshold: 40 },
               { label: contentType === 'video' ? '逐帧抠像处理' : 'AI 重构场景', threshold: 70 },
               { label: '融合调色', threshold: 90 },
-              { label: '生成评分', threshold: 100 },
+              { label: '生成种草力评分', threshold: 100 },
             ].map((item, index) => {
               const isCompleted = progress >= item.threshold;
               const isCurrent = progress < item.threshold && (index === 0 || progress >= [20, 40, 70, 90][index - 1] || 0);
@@ -818,7 +973,7 @@ export default function TryPage() {
         </div>
       )}
 
-      {/* ===== 步骤 4: 结果 ===== */}
+      {/* ===== 步骤 5: 结果 ===== */}
       {step === 'result' && resultData && (
         <div
           style={{
@@ -842,79 +997,9 @@ export default function TryPage() {
             </div>
           </div>
 
-          {/* 评分区域 */}
+          {/* 种草力评分卡片 */}
           {resultData.score && (
-            <div
-              style={{
-                padding: '20px',
-                borderRadius: '20px',
-                background: 'rgba(255, 255, 255, 0.03)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-                marginBottom: '20px',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
-                <div>
-                  <p style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.5)', marginBottom: '4px' }}>
-                    高级感评分
-                  </p>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
-                    <span style={{ fontSize: '36px', fontWeight: 600, color: '#D4AF37', letterSpacing: '-0.02em' }}>
-                      {resultData.score.overall}
-                    </span>
-                    <span style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.5)' }}>/ 100</span>
-                  </div>
-                </div>
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    padding: '10px 18px',
-                    borderRadius: '100px',
-                    background: 'rgba(212, 175, 55, 0.15)',
-                    border: '1px solid rgba(212, 175, 55, 0.3)',
-                  }}
-                >
-                  <span style={{ fontSize: '20px', fontWeight: 700, color: '#D4AF37' }}>
-                    {resultData.score.grade}
-                  </span>
-                  <span style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.7)' }}>
-                    {resultData.score.grade === 'S' ? '完美' : resultData.score.grade === 'A' ? '优秀' : resultData.score.grade === 'B' ? '良好' : '一般'}
-                  </span>
-                </div>
-              </div>
-
-              {/* 维度分数 */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                {[
-                  { label: '色彩协调', score: resultData.score.dimensions.color },
-                  { label: '构图美感', score: resultData.score.dimensions.composition },
-                  { label: '排版舒适', score: resultData.score.dimensions.typography },
-                  { label: '细节精致', score: resultData.score.dimensions.detail },
-                ].map((item) => (
-                  <div key={item.label} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <span style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.6)', width: '56px', flexShrink: 0 }}>
-                      {item.label}
-                    </span>
-                    <div style={{ flex: 1, height: '4px', borderRadius: '2px', background: 'rgba(255, 255, 255, 0.1)', overflow: 'hidden' }}>
-                      <div
-                        style={{
-                          width: `${item.score}%`,
-                          height: '100%',
-                          borderRadius: '2px',
-                          background: item.score >= 80 ? '#D4AF37' : item.score >= 60 ? '#B8962E' : '#8E8E93',
-                          transition: 'width 0.6s ease',
-                        }}
-                      />
-                    </div>
-                    <span style={{ fontSize: '13px', fontWeight: 500, color: '#D4AF37', width: '28px', textAlign: 'right' }}>
-                      {item.score}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <SeedingScoreCard score={resultData.score} />
           )}
 
           {/* 主按钮 */}
@@ -935,6 +1020,7 @@ export default function TryPage() {
               textAlign: 'center',
               textDecoration: 'none',
               display: 'block',
+              marginTop: '20px',
             }}
           >
             {contentType === 'video' ? '下载高清视频' : '下载高清图'}
