@@ -19,11 +19,11 @@ const EXTRACTOR_CONFIG = {
   // 输出目录
   outputDir: process.env.KEYFRAME_DIR || './public/uploads/keyframes',
   // 帧提取间隔（秒）
-  extractInterval: 2,
+  extractInterval: 1.5,
   // 最大提取帧数
-  maxFrames: 20,
-  // 返回的 top 帧数
-  topFrames: 10,
+  maxFrames: 24,
+  // 返回的帧数（供用户选择）
+  topFrames: 20,
   // FFmpeg 路径
   ffmpegPath: process.env.FFMPEG_PATH || 'ffmpeg',
   // FFprobe 路径
@@ -348,7 +348,7 @@ function scoreFrame(frame: { localPath: string; timestamp: number }): FrameScore
  *
  * @param videoPath 视频文件路径（本地路径或 URL）
  * @param options 选项
- * @returns 评分排序后的关键帧列表
+ * @returns 按时间顺序排列的关键帧列表（供用户选择）
  */
 export async function extractKeyFrames(
   videoPath: string,
@@ -369,21 +369,22 @@ export async function extractKeyFrames(
   const frames = await extractFrames(videoPath, sessionId);
   console.log(`[KeyframeExtractor] Extracted ${frames.length} frames`);
 
-  // 评分
+  // 评分（用于展示参考）
   const scoredFrames = frames.map(scoreFrame);
 
-  // 按评分排序
-  const sortedFrames = scoredFrames.sort((a, b) => b.score - a.score);
+  // 按时间顺序排列（供用户选择）
+  // 不再按评分排序，让用户自己选择
+  const sortedByTime = scoredFrames.sort((a, b) => a.timestamp - b.timestamp);
 
-  // 返回 top N
-  const topFrames = sortedFrames.slice(0, topN);
+  // 返回最多 topN 帧
+  const result = sortedByTime.slice(0, topN);
 
-  console.log(`[KeyframeExtractor] Returning top ${topFrames.length} frames`);
-  topFrames.forEach((f, i) => {
-    console.log(`  ${i + 1}. Score: ${f.score}, Face: ${f.details.hasFace}, Time: ${f.timestamp}s`);
+  console.log(`[KeyframeExtractor] Returning ${result.length} frames in time order`);
+  result.forEach((f, i) => {
+    console.log(`  ${i + 1}. Time: ${f.timestamp}s, Score: ${f.score}, Face: ${f.details.hasFace}`);
   });
 
-  return topFrames;
+  return result;
 }
 
 /**

@@ -13,6 +13,7 @@
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
 // 存储配置
 const STORAGE_CONFIG = {
@@ -275,12 +276,69 @@ function getExtension(mimetype: string): string {
  */
 export class FileStorage {
   private basePath: string;
+  private r2Client: S3Client | null = null;
 
   constructor() {
     this.basePath = path.resolve(process.cwd(), STORAGE_CONFIG.localPath);
     ensureDirectory(this.basePath);
     ensureDirectory(path.join(this.basePath, 'images'));
     ensureDirectory(path.join(this.basePath, 'videos'));
+
+    // 初始化 R2 客户端（如果配置了）
+    if (!STORAGE_CONFIG.useLocal && STORAGE_CONFIG.r2.accountId) {
+      this.r2Client = new S3Client({
+        region: 'auto',
+        endpoint: `https://${STORAGE_CONFIG.r2.accountId}.r2.cloudflarestorage.com`,
+        credentials: {
+          accessKeyId: STORAGE_CONFIG.r2.accessKeyId || '',
+          secretAccessKey: STORAGE_CONFIG.r2.secretAccessKey || '',
+        },
+      });
+    }
+  }
+
+  /**
+   * 上传文件到临时托管服务（litterbox.catbox.moe）
+   * 用于本地开发时获取公网 URL
+   * litterbox 支持 1-72 小时临时存储，可被 AI API 访问
+   */
+  private async uploadToTmpfiles(localPath: string): Promise<string | null> {
+    try {
+      const fileBuffer = fs.readFileSync(localPath);
+      const filename = path.basename(localPath);
+
+      // 使用 litterbox.catbox.moe API（临时存储）
+      // 文档: https://litterbox.catbox.moe/
+      // 注意：catbox.moe 的永久链接不被某些 AI API 支持，改用 litterbox
+      const blob = new Blob([fileBuffer], { type: 'image/jpeg' });
+      const formData = new FormData();
+      formData.append('reqtype', 'fileupload');
+      formData.append('time', '1h'); // 1 小时后过期，足够处理
+      formData.append('fileToUpload', blob, filename);
+
+      const response = await fetch('https://litterbox.catbox.moe/resources/internals/api.php', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        console.warn('[FileStorage] litterbox upload failed:', response.status);
+        return null;
+      }
+
+      // litterbox 直接返回图片 URL
+      const url = (await response.text()).trim();
+      if (url && url.startsWith('https://')) {
+        console.log('[FileStorage] Uploaded to litterbox:', url);
+        return url;
+      }
+
+      console.warn('[FileStorage] Invalid response from litterbox:', url);
+      return null;
+    } catch (error) {
+      console.warn('[FileStorage] Temp file upload error:', error);
+      return null;
+    }
   }
 
   /**
@@ -447,6 +505,89 @@ export class FileStorage {
     // 直接从项目根目录的 public 文件夹解析
     const publicDir = path.resolve(process.cwd(), 'public');
     return path.join(publicDir, relativePath);
+  }
+
+  /**
+   * 上传文件到 R2 获取公网 URL
+   * 用于 Image-to-Image API 需要公网可访问的图片
+   */
+  async uploadToR2(localPath: string): Promise<string> {
+    if (!this.r2Client) {
+      throw new Error('R2 client not configured. Please set R2 environment variables.');
+    }
+
+    if (!fs.existsSync(localPath)) {
+      throw new Error(`File not found: ${localPath}`);
+    }
+
+    const fileBuffer = fs.readFileSync(localPath);
+    const filename = path.basename(localPath);
+    const key = `keyframes/${Date.now()}_${filename}`;
+
+    const command = new PutObjectCommand({
+      Bucket: STORAGE_CONFIG.r2.bucketName,
+      Key: key,
+      Body: fileBuffer,
+      ContentType: filename.endsWith('.jpg') || filename.endsWith('.jpeg')
+        ? 'image/jpeg'
+        : filename.endsWith('.png')
+          ? 'image/png'
+          : 'image/webp',
+    });
+
+    await this.r2Client.send(command);
+
+    const publicUrl = `${STORAGE_CONFIG.r2.publicUrl}/${key}`;
+    console.log('[FileStorage] Uploaded to R2:', publicUrl);
+
+    return publicUrl;
+  }
+
+  /**
+   * 将本地文件上传到公网（用于 Image-to-Image API）
+   * 优先级：R2 > tmpfiles.org > NEXT_PUBLIC_BASE_URL
+   */
+  async getPublicUrl(localPath: string): Promise<string | null> {
+    // 如果文件已经是公网 URL，直接返回
+    if (localPath.startsWith('http')) {
+      return localPath;
+    }
+
+    // 检查文件是否存在
+    if (!fs.existsSync(localPath)) {
+      console.error('[FileStorage] File not found:', localPath);
+      return null;
+    }
+
+    // 尝试上传到 R2（优先）
+    if (this.r2Client && STORAGE_CONFIG.r2.publicUrl) {
+      try {
+        return await this.uploadToR2(localPath);
+      } catch (error) {
+        console.warn('[FileStorage] R2 upload failed, trying tmpfiles:', error);
+      }
+    }
+
+    // 尝试上传到 tmpfiles.org（备选）
+    const tmpfilesUrl = await this.uploadToTmpfiles(localPath);
+    if (tmpfilesUrl) {
+      return tmpfilesUrl;
+    }
+
+    // 最后尝试使用 NEXT_PUBLIC_BASE_URL
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+    if (baseUrl && baseUrl.startsWith('https://')) {
+      // 只有 HTTPS 的公网 URL 才有效
+      const publicDir = path.resolve(process.cwd(), 'public');
+      if (localPath.startsWith(publicDir)) {
+        const url = `${baseUrl}${localPath.replace(publicDir, '')}`;
+        console.log('[FileStorage] Using base URL:', url);
+        return url;
+      }
+    }
+
+    console.warn('[FileStorage] No public URL available for:', localPath);
+    return null;
   }
 
   /**

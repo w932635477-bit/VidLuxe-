@@ -12,6 +12,7 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.995.0",
     "@imgly/background-removal": "^1.7.0",
     "@remotion/lambda": "4.0.427",
     "@remotion/player": "^4.0.0",

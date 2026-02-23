@@ -1,74 +1,99 @@
 {
-  "task_1771810663777_b14fb9a8": {
-    "id": "task_1771810663777_b14fb9a8",
+  "task_1771830169247_a6b6f300": {
+    "id": "task_1771830169247_a6b6f300",
     "status": "completed",
     "progress": 100,
-    "createdAt": 1771810663777,
-    "updatedAt": 1771810700397,
+    "createdAt": 1771830169247,
+    "updatedAt": 1771830246111,
     "input": {
-      "contentType": "image",
-      "contentUrl": "/uploads/images/file_1771810614440_45049975eb7e.jpg",
+      "contentType": "video",
+      "contentUrl": "/uploads/videos/file_1771830150604_4b9d4e733dad.mp4",
       "styleSourceType": "preset",
-      "presetStyle": "magazine",
-      "anonymousId": "anon_1771810609071_ymmojb7b"
+      "presetStyle": "soft",
+      "anonymousId": "anon_1771648234106_t7bqbr32"
     },
     "currentStage": "完成",
     "result": {
-      "type": "image",
-      "enhancedUrl": "https://media.evolink.ai/aHR0cHM6Ly93ZWJzdGF0aWMuYWlwcm94eS52aXAvb3V0cHV0LzIwMjYwMjIzL2VjZDJmYmI0LTNkYzgtNGI1My1hNTBjLTBjYjg5OWQ0YjlmNS5qcGc=",
-      "originalUrl": "/uploads/images/file_1771810614440_45049975eb7e.jpg",
+      "type": "video",
+      "enhancedUrl": "/uploads/videos/video_1771830236619_68f7d3bd56ef.mp4",
+      "originalUrl": "/uploads/videos/file_1771830150604_4b9d4e733dad.mp4",
       "score": {
-        "overall": 64,
-        "grade": "C",
-        "dimensions": {
-          "color": 60,
-          "composition": 62,
-          "typography": 72,
-          "detail": 62
-        },
-        "feedback": [
-          "建议优化色彩搭配，提升整体协调感",
-          "建议调整构图，增强画面吸引力",
-          "建议增加细节层次，提升画面精致度"
-        ]
-      }
-    }
-  },
-  "task_1771817166147_384f81a9": {
-    "id": "task_1771817166147_384f81a9",
-    "status": "completed",
-    "progress": 100,
-    "createdAt": 1771817166147,
-    "updatedAt": 1771817201110,
-    "input": {
-      "contentType": "image",
-      "contentUrl": "/uploads/images/file_17707163757088_164f36141ddc.jpg",
-      "styleSourceType": "preset",
-      "presetStyle": "magazine",
-      "anonymousId": "test_user_123"
-    },
-    "currentStage": "完成",
-    "result": {
-      "type": "image",
-      "enhancedUrl": "https://media.evolink.ai/aHR0cHM6Ly93ZWJzdGF0aWMuYWlwcm94eS52aXAvb3V0cHV0LzIwMjYwMjIzLzM3NTYwNzM0LTE3NjItNDgxNy1iNTUwLTk5NGM4NjJhYzk3NC5qcGc=",
-      "originalUrl": "/uploads/images/file_17707163757088_164f36141ddc.jpg",
-      "score": {
-        "overall": 66,
+        "overall": 69,
         "grade": "B",
         "dimensions": {
           "visualAttraction": 60,
-          "contentMatch": 64,
-          "authenticity": 85,
-          "emotionalImpact": 50,
-          "actionGuidance": 70
+          "contentMatch": 81,
+          "authenticity": 84,
+          "emotionalImpact": 54,
+          "actionGuidance": 74
         },
         "feedback": [
-          "种草力不错，继续优化可以更好",
-          "建议提升视觉吸引力，让内容更抓眼球",
-          "建议优化内容定位，更精准触达目标用户",
-          "真实感强，用户信任度高",
-          "建议增强情感表达，让用户产生代入感"
-        ]
+          "👍 种草力不错，继续优化可以更好",
+          "建议优化穿搭的视觉呈现，突出搭配亮点",
+          "真实感强，用户信任度高"
+        ],
+        "improvementSuggestions": [
+          "💡 尝试改善色彩搭配，让第一眼更吸引人",
+          "📷 使用自然光或柔和的环形灯拍摄"
+        ],
+        "analysisMethod": "fallback"
+      }
+    }
+  },
+  "task_1771830461030_d5631a73": {
+    "id": "task_1771830461030_d5631a73",
+    "status": "failed",
+    "progress": 23.64,
+    "createdAt": 1771830461030,
+    "updatedAt": 1771830588082,
+    "input": {
+      "contentType": "video",
+      "contentUrl": "/uploads/videos/file_1771830431088_dcfa1ca37f92.mp4",
+      "styleSourceType": "preset",
+      "presetStyle": "magazine",
+      "anonymousId": "anon_1771648234106_t7bqbr32"
+    },
+    "currentStage": "AI 生成背景素材",
+    "error": "Task timeout - please try again"
+  },
+  "task_1771830682052_169af861": {
+    "id": "task_1771830682052_169af861",
+    "status": "completed",
+    "progress": 100,
+    "createdAt": 1771830682053,
+    "updatedAt": 1771830759995,
+    "input": {
+      "contentType": "video",
+      "contentUrl": "/uploads/videos/file_1771830431088_dcfa1ca37f92.mp4",
+      "styleSourceType": "preset",
+      "presetStyle": "magazine",
+      "anonymousId": "anon_1771648234106_t7bqbr32"
+    },
+    "currentStage": "完成",
+    "result": {
+      "type": "video",
+      "enhancedUrl": "/uploads/videos/video_1771830750630_efcb7ee293f2.mp4",
+      "originalUrl": "/uploads/videos/file_1771830431088_dcfa1ca37f92.mp4",
+      "score": {
+        "overall": 61,
+        "grade": "C",
+        "dimensions": {
+          "visualAttraction": 50,
+          "contentMatch": 68,
+          "authenticity": 80,
+          "emotionalImpact": 56,
+          "actionGuidance": 62
+        },
+        "feedback": [
+          "📈 还有提升空间，参考建议进行优化",
+          "建议优化穿搭的视觉呈现，突出搭配亮点",
+          "真实感强，用户信任度高"
+        ],
+        "improvementSuggestions": [
+          "💡 尝试改善色彩搭配，让第一眼更吸引人",
+          "📷 使用自然光或柔和的环形灯拍摄"
+        ],
+        "analysisMethod": "fallback"
       }
     }
   }

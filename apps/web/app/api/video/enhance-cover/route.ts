@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
+import { getFileStorage } from '@/lib/file-storage';
 
 // Nano Banana API 配置
 const NANO_BANANA_CONFIG = {
@@ -61,21 +62,6 @@ async function fetchWithTimeout(url: string, options: RequestInit, timeout: numb
 }
 
 /**
- * 将本地路径转换为完整 URL
- */
-function toFullUrl(localPath: string): string {
-  if (localPath.startsWith('http')) return localPath;
-
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-  if (baseUrl) {
-    return `${baseUrl}${localPath}`;
-  }
-
-  // 开发环境
-  return `http://localhost:3000${localPath}`;
-}
-
-/**
  * 检查 URL 是否可被公网访问
  */
 function isPublicUrl(url: string): boolean {
@@ -89,6 +75,23 @@ async function createNanoBananaTask(params: {
   prompt: string;
   imageUrls?: string[];
 }): Promise<{ taskId: string }> {
+  const requestBody = {
+    model: NANO_BANANA_CONFIG.model,
+    prompt: params.prompt,
+    image_urls: params.imageUrls,
+    size: '9:16',
+    quality: '2K',
+  };
+
+  // Debug: Log the exact request being sent
+  console.log('[EnhanceCover] API Request:', JSON.stringify({
+    model: requestBody.model,
+    prompt: requestBody.prompt.substring(0, 100) + '...',
+    image_urls: requestBody.image_urls,
+    size: requestBody.size,
+    quality: requestBody.quality,
+  }, null, 2));
+
   const response = await fetchWithTimeout(
     `${NANO_BANANA_CONFIG.baseUrl}/v1/images/generations`,
     {
@@ -97,13 +100,7 @@ async function createNanoBananaTask(params: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${NANO_BANANA_CONFIG.apiKey}`,
       },
-      body: JSON.stringify({
-        model: NANO_BANANA_CONFIG.model,
-        prompt: params.prompt,
-        image_urls: params.imageUrls,
-        size: '9:16',
-        quality: '2K',
-      }),
+      body: JSON.stringify(requestBody),
     },
     NANO_BANANA_CONFIG.timeout.create
   );
@@ -115,6 +112,7 @@ async function createNanoBananaTask(params: {
   }
 
   const result = await response.json();
+  console.log('[EnhanceCover] API Response:', JSON.stringify(result, null, 2));
   return { taskId: result.id };
 }
 
@@ -181,11 +179,21 @@ async function downloadEnhancedImage(url: string): Promise<string> {
   }
 
   const imageId = crypto.randomBytes(8).toString('hex');
-  const filename = `cover_${Date.now()}_${imageId}.png`;
-  const outputPath = path.join(outputDir, filename);
-
   const response = await fetch(url);
   const buffer = Buffer.from(await response.arrayBuffer());
+
+  // 根据文件魔数确定扩展名（Nano Banana API 返回 JPEG）
+  let extension = '.jpg';
+  if (buffer[0] === 0x89 && buffer[1] === 0x50) {
+    extension = '.png';
+  } else if (buffer[0] === 0xff && buffer[1] === 0xd8) {
+    extension = '.jpg';
+  } else if (buffer[0] === 0x52 && buffer[1] === 0x49) {
+    extension = '.webp';
+  }
+
+  const filename = `cover_${Date.now()}_${imageId}${extension}`;
+  const outputPath = path.join(outputDir, filename);
   fs.writeFileSync(outputPath, buffer);
 
   return `/uploads/covers/${filename}`;
@@ -205,24 +213,58 @@ export async function POST(request: NextRequest): Promise<NextResponse<EnhanceCo
 
     console.log('[EnhanceCover] Enhancing frame:', frameUrl, 'with style:', style);
 
+    // 获取关键帧的本地路径
+    const storage = getFileStorage();
+    let localPath: string;
+
+    if (frameUrl.startsWith('/uploads/')) {
+      localPath = storage.getLocalPath(frameUrl);
+      console.log('[EnhanceCover] Local path resolved:', localPath);
+
+      if (!fs.existsSync(localPath)) {
+        return NextResponse.json(
+          { success: false, error: `Frame file not found: ${localPath}` },
+          { status: 404 }
+        );
+      }
+    } else if (frameUrl.startsWith('http')) {
+      // 如果已经是公网 URL，直接使用
+      localPath = frameUrl;
+    } else {
+      return NextResponse.json(
+        { success: false, error: 'Invalid frameUrl' },
+        { status: 400 }
+      );
+    }
+
+    // 尝试获取公网 URL（上传到 R2）
+    let publicUrl: string | null = null;
+
+    if (!frameUrl.startsWith('http')) {
+      publicUrl = await storage.getPublicUrl(localPath);
+      if (publicUrl) {
+        console.log('[EnhanceCover] Got public URL:', publicUrl);
+      } else {
+        console.warn('[EnhanceCover] Failed to get public URL, will use text-to-image mode');
+      }
+    } else {
+      publicUrl = frameUrl;
+    }
+
     // 构建 prompt
     const stylePrompt = STYLE_PROMPTS[style] || STYLE_PROMPTS.magazine;
-    const prompt = `${stylePrompt}, maintain the original person/subject, enhance background and lighting, keep natural look`;
-
-    // 检查图片 URL 是否可被公网访问
-    const fullUrl = toFullUrl(frameUrl);
-    const useImageToImage = isPublicUrl(fullUrl);
+    const basePrompt = `${stylePrompt}, maintain the original person/subject, enhance background and lighting, keep natural look`;
 
     let imageUrls: string[] | undefined;
-    let finalPrompt = prompt;
+    let finalPrompt = basePrompt;
 
-    if (useImageToImage) {
-      imageUrls = [fullUrl];
-      console.log('[EnhanceCover] Using Image-to-Image mode');
+    if (publicUrl && isPublicUrl(publicUrl)) {
+      imageUrls = [publicUrl];
+      console.log('[EnhanceCover] Using Image-to-Image mode with public URL');
     } else {
-      // 不能使用 Image-to-Image，只能做 text-to-image
-      finalPrompt = `${prompt}, high quality photography, professional editing`;
-      console.log('[EnhanceCover] Using Text-to-Image mode (image not publicly accessible)');
+      // 无法使用 Image-to-Image，回退到 text-to-image
+      finalPrompt = `${basePrompt}, high quality photography, professional editing, portrait of a beautiful person`;
+      console.log('[EnhanceCover] Using Text-to-Image mode (no public URL available)');
     }
 
     // 创建增强任务

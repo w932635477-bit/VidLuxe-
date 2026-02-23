@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect } from 'react';
-import Image from 'next/image';
 
 interface ComparisonSliderProps {
   originalImage: string;  // 用户原图
@@ -10,7 +9,6 @@ interface ComparisonSliderProps {
   enhancedLabel?: string;
   className?: string;
   showLabels?: boolean;
-  sizes?: string;  // 响应式尺寸
 }
 
 export function BeforeAfterSlider({
@@ -20,7 +18,6 @@ export function BeforeAfterSlider({
   enhancedLabel = '升级版',
   className = '',
   showLabels = true,
-  sizes = '(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw',
 }: ComparisonSliderProps) {
   const [sliderPosition, setSliderPosition] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
@@ -92,14 +89,11 @@ export function BeforeAfterSlider({
     >
       {/* 原图（底层 - 全部可见） */}
       <div className="absolute inset-0">
-        <Image
+        <img
           src={originalImage}
           alt={originalLabel}
-          fill
-          sizes={sizes}
-          className="object-cover"
+          className="w-full h-full object-cover"
           draggable={false}
-          priority
         />
         {showLabels && (
           <div
@@ -132,14 +126,11 @@ export function BeforeAfterSlider({
         className="absolute inset-0 overflow-hidden"
         style={{ clipPath: `inset(0 ${100 - sliderPosition}% 0 0)` }}
       >
-        <Image
+        <img
           src={enhancedImage}
           alt={enhancedLabel}
-          fill
-          sizes={sizes}
-          className="object-cover"
+          className="w-full h-full object-cover"
           draggable={false}
-          priority
         />
         {showLabels && (
           <div
