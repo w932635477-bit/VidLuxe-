@@ -3,15 +3,15 @@
  *
  * 使用本地 FFmpeg 生成视频
  * MVP 阶段：创建简单的图片轮播/合成视频
+ *
+ * 安全说明：使用 spawn 替代 exec 防止命令注入
  */
 
-import { exec } from 'child_process';
+import { spawn } from 'child_process';
 import { promisify } from 'util';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
-
-const execAsync = promisify(exec);
 
 // 配置
 const VIDEO_CONFIG = {
@@ -24,6 +24,8 @@ const VIDEO_CONFIG = {
   height: 1920,
   // FFmpeg 路径
   ffmpegPath: process.env.FFMPEG_PATH || 'ffmpeg',
+  // FFprobe 路径
+  ffprobePath: process.env.FFPROBE_PATH || 'ffprobe',
 };
 
 // 视频生成参数
@@ -42,6 +44,82 @@ export interface VideoGenerationResult {
   width: number;
   height: number;
   fileSize: number;
+}
+
+/**
+ * 验证路径安全性
+ * 防止路径遍历和命令注入
+ */
+function validatePath(inputPath: string, basePath: string): string {
+  // 规范化路径
+  const normalizedPath = path.normalize(inputPath);
+  const resolvedPath = path.resolve(basePath, normalizedPath);
+
+  // 确保解析后的路径在基础路径内
+  if (!resolvedPath.startsWith(basePath)) {
+    throw new Error(`Path traversal detected: ${inputPath}`);
+  }
+
+  // 检查路径是否包含危险字符
+  if (/[;&|`$(){}[\]<>]/.test(inputPath)) {
+    throw new Error(`Invalid characters in path: ${inputPath}`);
+  }
+
+  return resolvedPath;
+}
+
+/**
+ * 验证文件名安全性
+ */
+function validateFilename(filename: string): string {
+  // 只允许安全字符
+  if (!/^[a-zA-Z0-9_\-./]+$/.test(filename)) {
+    throw new Error(`Invalid filename characters: ${filename}`);
+  }
+  return filename;
+}
+
+/**
+ * 安全执行 FFmpeg 命令
+ * 使用 spawn 替代 exec，参数作为数组传递
+ */
+async function execFFmpeg(args: string[], timeout: number = 60000): Promise<{ stdout: string; stderr: string }> {
+  return new Promise((resolve, reject) => {
+    const timeoutId = setTimeout(() => {
+      proc.kill('SIGKILL');
+      reject(new Error('FFmpeg timeout'));
+    }, timeout);
+
+    const proc = spawn(VIDEO_CONFIG.ffmpegPath, args, {
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+
+    let stdout = '';
+    let stderr = '';
+
+    proc.stdout?.on('data', (data) => {
+      stdout += data.toString();
+    });
+
+    proc.stderr?.on('data', (data) => {
+      stderr += data.toString();
+    });
+
+    proc.on('close', (code) => {
+      clearTimeout(timeoutId);
+      if (code === 0) {
+        resolve({ stdout, stderr });
+      } else {
+        const error = new Error(`FFmpeg exited with code ${code}: ${stderr.slice(-500)}`);
+        reject(error);
+      }
+    });
+
+    proc.on('error', (err) => {
+      clearTimeout(timeoutId);
+      reject(err);
+    });
+  });
 }
 
 /**
@@ -65,9 +143,14 @@ function generateVideoId(): string {
  * 下载远程图片到本地
  */
 async function downloadImage(url: string, outputPath: string): Promise<void> {
+  // 验证输出路径
+  const tempDir = path.dirname(outputPath);
+  validatePath(outputPath, tempDir);
+
   // 如果是本地路径，直接复制
   if (url.startsWith('/') || url.startsWith('./')) {
-    const localPath = path.resolve(process.cwd(), url.replace(/^\//, ''));
+    const cwd = process.cwd();
+    const localPath = validatePath(url.replace(/^\//, ''), cwd);
     if (fs.existsSync(localPath)) {
       fs.copyFileSync(localPath, outputPath);
       return;
@@ -76,17 +159,35 @@ async function downloadImage(url: string, outputPath: string): Promise<void> {
 
   // 如果是 URL，下载图片
   if (url.startsWith('http://') || url.startsWith('https://')) {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Failed to download image: ${response.status}`);
+    // 验证 URL 格式
+    try {
+      const parsedUrl = new URL(url);
+      if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+        throw new Error('Invalid URL protocol');
+      }
+    } catch {
+      throw new Error(`Invalid URL: ${url}`);
     }
-    const buffer = Buffer.from(await response.arrayBuffer());
-    fs.writeFileSync(outputPath, buffer);
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+    try {
+      const response = await fetch(url, { signal: controller.signal });
+      if (!response.ok) {
+        throw new Error(`Failed to download image: ${response.status}`);
+      }
+      const buffer = Buffer.from(await response.arrayBuffer());
+      fs.writeFileSync(outputPath, buffer);
+    } finally {
+      clearTimeout(timeoutId);
+    }
     return;
   }
 
   // 如果是 public 目录下的路径
-  const publicPath = path.resolve(process.cwd(), 'public', url.replace(/^\//, ''));
+  const publicDir = path.resolve(process.cwd(), 'public');
+  const publicPath = validatePath(url.replace(/^\//, ''), publicDir);
   if (fs.existsSync(publicPath)) {
     fs.copyFileSync(publicPath, outputPath);
     return;
@@ -106,6 +207,9 @@ export async function generateVideo(params: VideoGenerationParams): Promise<Vide
   const videoId = generateVideoId();
   const tempDir = path.resolve(process.cwd(), 'tmp', videoId);
   const outputDir = path.resolve(process.cwd(), VIDEO_CONFIG.outputDir);
+
+  // 验证视频 ID
+  validateFilename(videoId);
 
   // 创建临时目录
   if (!fs.existsSync(tempDir)) {
@@ -151,13 +255,14 @@ export async function generateVideo(params: VideoGenerationParams): Promise<Vide
     try {
       fs.rmSync(tempDir, { recursive: true, force: true });
     } catch (e) {
-      // 忽略清理错误
+      console.warn(`[VideoGenerator] Failed to cleanup temp dir ${tempDir}:`, e);
     }
   }
 }
 
 /**
  * 从单张图片生成视频
+ * 使用 spawn 安全执行 FFmpeg
  */
 async function generateSingleImageVideo(
   imagePath: string,
@@ -184,8 +289,8 @@ async function generateSingleImageVideo(
       break;
   }
 
-  const cmd = [
-    VIDEO_CONFIG.ffmpegPath,
+  // 使用 spawn 安全执行，参数作为数组传递
+  const args = [
     '-loop', '1',
     '-i', imagePath,
     '-vf', filter,
@@ -193,21 +298,24 @@ async function generateSingleImageVideo(
     '-t', String(duration),
     '-pix_fmt', 'yuv420p',
     '-r', String(VIDEO_CONFIG.fps),
-    '-y', // 覆盖输出文件
+    '-y',
     outputPath,
-  ].join(' ');
+  ];
 
-  console.log('[FFmpeg] Running command:', cmd);
+  if (process.env.NODE_ENV !== 'production') {
+    console.log('[FFmpeg] Running command for video generation');
+  }
 
-  const { stdout, stderr } = await execAsync(cmd, { maxBuffer: 50 * 1024 * 1024 });
+  const { stderr } = await execFFmpeg(args);
 
   if (stderr && !stderr.includes('frame=')) {
-    console.warn('[FFmpeg] stderr:', stderr);
+    console.warn('[FFmpeg] stderr:', stderr.slice(-200));
   }
 }
 
 /**
  * 合成背景 + 前景生成视频
+ * 使用 spawn 安全执行 FFmpeg
  */
 async function generateCompositeVideo(
   bgPath: string,
@@ -216,25 +324,18 @@ async function generateCompositeVideo(
   duration: number,
   transition?: string
 ): Promise<void> {
-  // 使用 FFmpeg overlay 滤镜合成
-  // 前景居中显示，背景可能有动画效果
-  const totalFrames = duration * VIDEO_CONFIG.fps;
-
   // 构建滤镜：背景 + 前景叠加
-  let filter = [
+  const filter = [
     // 缩放背景
     '[0:v]scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2[bg]',
     // 缩放前景（保持比例，最大 80% 高度）
     `[1:v]scale=1080:1536:force_original_aspect_ratio=decrease[fg]`,
     // 叠加前景到背景中心
-    '[bg][fg]overlay=(W-w)/2:(H-h)/2',
+    `[bg][fg]overlay=(W-w)/2:(H-h)/2,fade=t=in:st=0:d=0.5,fade=t=out:st=${duration - 0.5}:d=0.5`,
   ].join(';');
 
-  // 添加淡入淡出
-  filter += `,fade=t=in:st=0:d=0.5,fade=t=out:st=${duration - 0.5}:d=0.5`;
-
-  const cmd = [
-    VIDEO_CONFIG.ffmpegPath,
+  // 使用 spawn 安全执行，参数作为数组传递
+  const args = [
     '-loop', '1',
     '-i', bgPath,
     '-loop', '1',
@@ -246,14 +347,14 @@ async function generateCompositeVideo(
     '-r', String(VIDEO_CONFIG.fps),
     '-y',
     outputPath,
-  ].join(' ');
+  ];
 
   console.log('[FFmpeg] Running composite command');
 
-  const { stderr } = await execAsync(cmd, { maxBuffer: 50 * 1024 * 1024 });
+  const { stderr } = await execFFmpeg(args);
 
   if (stderr && !stderr.includes('frame=')) {
-    console.warn('[FFmpeg] stderr:', stderr);
+    console.warn('[FFmpeg] stderr:', stderr.slice(-200));
   }
 }
 
@@ -262,7 +363,7 @@ async function generateCompositeVideo(
  */
 export async function checkFFmpegAvailable(): Promise<boolean> {
   try {
-    await execAsync(`${VIDEO_CONFIG.ffmpegPath} -version`);
+    await execFFmpeg(['-version'], 5000);
     return true;
   } catch {
     return false;
@@ -271,19 +372,25 @@ export async function checkFFmpegAvailable(): Promise<boolean> {
 
 /**
  * 获取视频时长
+ * 使用 spawn 安全执行
  */
 export async function getVideoDuration(videoPath: string): Promise<number> {
-  const cmd = `${VIDEO_CONFIG.ffmpegPath} -i "${videoPath}" 2>&1 | grep Duration`;
-  const { stdout } = await execAsync(cmd);
+  // 验证路径
+  const cwd = process.cwd();
+  const validatedPath = validatePath(videoPath, cwd);
 
-  const match = stdout.match(/Duration: (\d{2}):(\d{2}):(\d{2})\.(\d{2})/);
-  if (match) {
-    const hours = parseInt(match[1], 10);
-    const minutes = parseInt(match[2], 10);
-    const seconds = parseInt(match[3], 10);
-    const centiseconds = parseInt(match[4], 10);
-    return hours * 3600 + minutes * 60 + seconds + centiseconds / 100;
+  const args = [
+    '-v', 'error',
+    '-show_entries', 'format=duration',
+    '-of', 'default=noprint_wrappers=1:nokey=1',
+    validatedPath,
+  ];
+
+  try {
+    const { stdout } = await execFFmpeg(args, 10000);
+    const duration = parseFloat(stdout.trim());
+    return isNaN(duration) ? 0 : duration;
+  } catch {
+    return 0;
   }
-
-  return 0;
 }

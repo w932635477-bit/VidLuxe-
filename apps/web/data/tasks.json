@@ -1,1 +1,75 @@
-{}
+{
+  "task_1771810663777_b14fb9a8": {
+    "id": "task_1771810663777_b14fb9a8",
+    "status": "completed",
+    "progress": 100,
+    "createdAt": 1771810663777,
+    "updatedAt": 1771810700397,
+    "input": {
+      "contentType": "image",
+      "contentUrl": "/uploads/images/file_1771810614440_45049975eb7e.jpg",
+      "styleSourceType": "preset",
+      "presetStyle": "magazine",
+      "anonymousId": "anon_1771810609071_ymmojb7b"
+    },
+    "currentStage": "完成",
+    "result": {
+      "type": "image",
+      "enhancedUrl": "https://media.evolink.ai/aHR0cHM6Ly93ZWJzdGF0aWMuYWlwcm94eS52aXAvb3V0cHV0LzIwMjYwMjIzL2VjZDJmYmI0LTNkYzgtNGI1My1hNTBjLTBjYjg5OWQ0YjlmNS5qcGc=",
+      "originalUrl": "/uploads/images/file_1771810614440_45049975eb7e.jpg",
+      "score": {
+        "overall": 64,
+        "grade": "C",
+        "dimensions": {
+          "color": 60,
+          "composition": 62,
+          "typography": 72,
+          "detail": 62
+        },
+        "feedback": [
+          "建议优化色彩搭配，提升整体协调感",
+          "建议调整构图，增强画面吸引力",
+          "建议增加细节层次，提升画面精致度"
+        ]
+      }
+    }
+  },
+  "task_1771817166147_384f81a9": {
+    "id": "task_1771817166147_384f81a9",
+    "status": "completed",
+    "progress": 100,
+    "createdAt": 1771817166147,
+    "updatedAt": 1771817201110,
+    "input": {
+      "contentType": "image",
+      "contentUrl": "/uploads/images/file_17707163757088_164f36141ddc.jpg",
+      "styleSourceType": "preset",
+      "presetStyle": "magazine",
+      "anonymousId": "test_user_123"
+    },
+    "currentStage": "完成",
+    "result": {
+      "type": "image",
+      "enhancedUrl": "https://media.evolink.ai/aHR0cHM6Ly93ZWJzdGF0aWMuYWlwcm94eS52aXAvb3V0cHV0LzIwMjYwMjIzLzM3NTYwNzM0LTE3NjItNDgxNy1iNTUwLTk5NGM4NjJhYzk3NC5qcGc=",
+      "originalUrl": "/uploads/images/file_17707163757088_164f36141ddc.jpg",
+      "score": {
+        "overall": 66,
+        "grade": "B",
+        "dimensions": {
+          "visualAttraction": 60,
+          "contentMatch": 64,
+          "authenticity": 85,
+          "emotionalImpact": 50,
+          "actionGuidance": 70
+        },
+        "feedback": [
+          "种草力不错，继续优化可以更好",
+          "建议提升视觉吸引力，让内容更抓眼球",
+          "建议优化内容定位，更精准触达目标用户",
+          "真实感强，用户信任度高",
+          "建议增强情感表达，让用户产生代入感"
+        ]
+      }
+    }
+  }
+}

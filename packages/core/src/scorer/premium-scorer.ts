@@ -9,7 +9,6 @@ import type {
   PremiumGrade,
   DimensionScore,
   ColorAnalysis,
-  GRADE_THRESHOLDS,
 } from '@vidluxe/types';
 import { GRADE_THRESHOLDS } from '@vidluxe/types';
 

@@ -48,8 +48,8 @@ export function GallerySection({ cases }: GallerySectionProps) {
                       <div className="glass-card-inner p-0 overflow-hidden rounded-3xl">
                         <div className="aspect-9-16">
                           <BeforeAfterSlider
-                            beforeImage={caseItem.beforeUrl}
-                            afterImage={caseItem.afterUrl}
+                            originalImage={caseItem.originalUrl}
+                            enhancedImage={caseItem.enhancedUrl}
                           />
                         </div>
                       </div>

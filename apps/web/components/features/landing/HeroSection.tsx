@@ -37,8 +37,8 @@ export function HeroSection({ cases }: HeroSectionProps) {
           <div className="relative max-w-sm mx-auto mb-8 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
             <div className="aspect-9-16 rounded-2xl overflow-hidden shadow-2xl">
               <BeforeAfterSlider
-                beforeImage={primaryCase.beforeUrl}
-                afterImage={primaryCase.afterUrl}
+                originalImage={primaryCase.originalUrl}
+                enhancedImage={primaryCase.enhancedUrl}
               />
             </div>
 

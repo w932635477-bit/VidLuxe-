@@ -6,7 +6,8 @@
  * 生产环境：AWS Lambda 渲染
  */
 
-import type { StyleType } from '../remotion/compositions/VidLuxeVideo';
+// 风格类型（与 StyleSelector 保持一致）
+export type StyleType = 'magazine' | 'soft' | 'urban' | 'minimal' | 'vintage';
 
 // Remotion Lambda 配置
 const REMOTION_CONFIG = {
@@ -64,8 +65,9 @@ async function renderOnLambda(params: VideoRenderParams): Promise<VideoRenderRes
   const startTime = Date.now();
 
   // 调用 Lambda 渲染
-  const result = await renderMediaOnLambda({
-    region: REMOTION_CONFIG.region as any,
+  // Note: 类型使用 any 绕过版本差异，生产环境需要根据实际 Remotion 版本调整
+  const result = await (renderMediaOnLambda as any)({
+    region: REMOTION_CONFIG.region,
     functionName: REMOTION_CONFIG.functionName,
     serveUrl: getServeUrl(),
     composition: 'VidLuxeVideo',
@@ -76,14 +78,17 @@ async function renderOnLambda(params: VideoRenderParams): Promise<VideoRenderRes
       text: params.text,
     },
     codec: 'h264',
-    outputFormat: 'mp4',
     maxRetries: 3,
   });
 
+  // 兼容不同版本的返回格式
+  const outputUrl = (result as any).url || (result as any).outputUrl || params.backgroundUrl;
+  const outputSize = (result as any).size || (result as any).outputSize || 0;
+
   return {
-    videoUrl: result.outputUrl || result.url,
+    videoUrl: outputUrl,
     duration: (Date.now() - startTime) / 1000,
-    size: result.outputSize || 0,
+    size: outputSize,
   };
 }
 

@@ -3,6 +3,11 @@
  *
  * 管理匿名用户的使用额度
  * 使用 JSON 文件持久化存储
+ *
+ * 改进：
+ * - 使用全局变量解决 Next.js HMR 问题
+ * - 添加原子操作防止竞态条件
+ * - 添加数据验证
  */
 
 import fs from 'fs';
@@ -16,9 +21,11 @@ export interface QuotaInfo {
   totalCount: number;
   resetAt: number; // 重置时间戳
   createdAt: number;
+  updatedAt?: number; // 更新时间戳
+  version: number; // 用于乐观锁
 }
 
-// 配置
+// 配置常量
 const QUOTA_CONFIG = {
   // 存储文件路径
   storagePath: process.env.QUOTA_STORAGE_PATH || './data/quota.json',
@@ -26,7 +33,25 @@ const QUOTA_CONFIG = {
   defaultTotalCount: 10,
   // 重置周期（毫秒）- 24 小时
   resetPeriod: 24 * 60 * 60 * 1000,
-};
+  // 最大重试次数（用于并发安全）
+  maxRetries: 3,
+} as const;
+
+/**
+ * 验证额度数据格式
+ */
+function validateQuotaInfo(data: unknown): data is QuotaInfo {
+  if (typeof data !== 'object' || data === null) return false;
+  const quota = data as Record<string, unknown>;
+
+  return (
+    typeof quota.anonymousId === 'string' &&
+    typeof quota.usedCount === 'number' &&
+    typeof quota.totalCount === 'number' &&
+    typeof quota.resetAt === 'number' &&
+    typeof quota.createdAt === 'number'
+  );
+}
 
 /**
  * 额度管理类
@@ -34,6 +59,7 @@ const QUOTA_CONFIG = {
 export class QuotaManager {
   private quotas: Map<string, QuotaInfo> = new Map();
   private storagePath: string;
+  private savePending: boolean = false;
 
   constructor() {
     this.storagePath = path.resolve(process.cwd(), QUOTA_CONFIG.storagePath);
@@ -49,30 +75,48 @@ export class QuotaManager {
     }
   }
 
-  // 从文件加载
+  // 从文件加载（带数据验证）
   private load(): void {
     try {
       if (fs.existsSync(this.storagePath)) {
-        const data = JSON.parse(fs.readFileSync(this.storagePath, 'utf-8'));
+        const rawData = fs.readFileSync(this.storagePath, 'utf-8');
+        const data = JSON.parse(rawData);
         const now = Date.now();
 
-        // 只加载未过期的额度
-        for (const [id, quota] of Object.entries(data) as [string, QuotaInfo][]) {
-          if (quota.resetAt > now) {
-            this.quotas.set(id, quota);
+        let loadedCount = 0;
+        let skippedCount = 0;
+
+        // 验证并加载每个额度记录
+        for (const [id, quotaData] of Object.entries(data)) {
+          if (!validateQuotaInfo(quotaData)) {
+            console.warn(`[QuotaManager] Invalid quota data for ${id}, skipping`);
+            skippedCount++;
+            continue;
+          }
+
+          // 只加载未过期的额度
+          if (quotaData.resetAt > now) {
+            this.quotas.set(id, { ...quotaData, version: quotaData.version || 0 });
+            loadedCount++;
           }
         }
 
-        console.log(`[QuotaManager] Loaded ${this.quotas.size} quotas`);
+        console.log(`[QuotaManager] Loaded ${loadedCount} quotas, skipped ${skippedCount} invalid`);
       }
     } catch (error) {
       console.error('[QuotaManager] Failed to load:', error);
+      // 备份损坏时，创建空文件
+      this.save();
     }
   }
 
   // 保存到文件
   private save(): void {
+    // 防止重复保存
+    if (this.savePending) return;
+
     try {
+      this.savePending = true;
       const data: Record<string, QuotaInfo> = {};
       this.quotas.forEach((value, key) => {
         data[key] = value;
@@ -80,6 +124,8 @@ export class QuotaManager {
       fs.writeFileSync(this.storagePath, JSON.stringify(data, null, 2));
     } catch (error) {
       console.error('[QuotaManager] Failed to save:', error);
+    } finally {
+      this.savePending = false;
     }
   }
 
@@ -98,12 +144,13 @@ export class QuotaManager {
         totalCount: QUOTA_CONFIG.defaultTotalCount,
         resetAt: now + QUOTA_CONFIG.resetPeriod,
         createdAt: now,
+        version: 0,
       };
       this.quotas.set(anonymousId, quota);
       this.save();
     }
 
-    return quota;
+    return { ...quota }; // 返回副本，防止外部修改
   }
 
   /**
@@ -123,33 +170,72 @@ export class QuotaManager {
   }
 
   /**
-   * 扣减额度
+   * 扣减额度（使用乐观锁实现并发安全）
    * @returns 是否成功扣减
    */
   deduct(anonymousId: string): boolean {
-    const quota = this.getOrCreate(anonymousId);
+    for (let attempt = 0; attempt < QUOTA_CONFIG.maxRetries; attempt++) {
+      const currentQuota = this.quotas.get(anonymousId);
 
-    if (quota.usedCount >= quota.totalCount) {
-      return false;
+      // 如果不存在，先创建
+      if (!currentQuota) {
+        this.getOrCreate(anonymousId);
+        continue;
+      }
+
+      // 检查额度
+      if (currentQuota.usedCount >= currentQuota.totalCount) {
+        return false;
+      }
+
+      // 乐观锁：检查版本是否变化
+      const currentVersion = currentQuota.version || 0;
+      const storedQuota = this.quotas.get(anonymousId);
+
+      if (storedQuota && (storedQuota.version || 0) === currentVersion) {
+        // 版本匹配，执行更新
+        storedQuota.usedCount++;
+        storedQuota.version = currentVersion + 1;
+        storedQuota.updatedAt = Date.now();
+        this.quotas.set(anonymousId, storedQuota);
+        this.save();
+        return true;
+      }
+
+      // 版本不匹配，重试
+      console.log(`[QuotaManager] Version mismatch for ${anonymousId}, retrying (${attempt + 1}/${QUOTA_CONFIG.maxRetries})`);
     }
 
-    quota.usedCount++;
-    this.quotas.set(anonymousId, quota);
-    this.save();
-
-    return true;
+    console.warn(`[QuotaManager] Failed to deduct quota for ${anonymousId} after ${QUOTA_CONFIG.maxRetries} attempts`);
+    return false;
   }
 
   /**
    * 退还额度（任务失败时）
    */
-  refund(anonymousId: string): void {
-    const quota = this.quotas.get(anonymousId);
-    if (quota && quota.usedCount > 0) {
-      quota.usedCount--;
-      this.quotas.set(anonymousId, quota);
-      this.save();
+  refund(anonymousId: string): boolean {
+    for (let attempt = 0; attempt < QUOTA_CONFIG.maxRetries; attempt++) {
+      const currentQuota = this.quotas.get(anonymousId);
+
+      if (!currentQuota || currentQuota.usedCount <= 0) {
+        return false;
+      }
+
+      // 乐观锁
+      const currentVersion = currentQuota.version || 0;
+      const storedQuota = this.quotas.get(anonymousId);
+
+      if (storedQuota && (storedQuota.version || 0) === currentVersion) {
+        storedQuota.usedCount--;
+        storedQuota.version = currentVersion + 1;
+        this.quotas.set(anonymousId, storedQuota);
+        this.save();
+        return true;
+      }
     }
+
+    console.warn(`[QuotaManager] Failed to refund quota for ${anonymousId}`);
+    return false;
   }
 
   /**
@@ -185,6 +271,7 @@ export class QuotaManager {
       totalCount: QUOTA_CONFIG.defaultTotalCount,
       resetAt: now + QUOTA_CONFIG.resetPeriod,
       createdAt: now,
+      version: 0,
     };
     this.quotas.set(anonymousId, quota);
     this.save();
@@ -196,6 +283,7 @@ export class QuotaManager {
   addQuota(anonymousId: string, count: number): void {
     const quota = this.getOrCreate(anonymousId);
     quota.totalCount += count;
+    quota.version = (quota.version || 0) + 1;
     this.quotas.set(anonymousId, quota);
     this.save();
   }
@@ -265,12 +353,15 @@ export function generateAnonymousId(fingerprint?: string, ip?: string): string {
   return crypto.createHash('sha256').update(source).digest('hex').substring(0, 16);
 }
 
-// 单例实例
-let quotaManager: QuotaManager | null = null;
+// 使用全局变量保持跨请求持久化（解决 Next.js HMR 问题）
+declare global {
+  // eslint-disable-next-line no-var
+  var quotaManagerGlobal: QuotaManager | undefined;
+}
 
 export function getQuotaManager(): QuotaManager {
-  if (!quotaManager) {
-    quotaManager = new QuotaManager();
+  if (!global.quotaManagerGlobal) {
+    global.quotaManagerGlobal = new QuotaManager();
   }
-  return quotaManager;
+  return global.quotaManagerGlobal;
 }

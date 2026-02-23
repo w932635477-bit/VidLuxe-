@@ -4,6 +4,11 @@
  * 编排完整的升级流程：
  * - 图片：直接调用 Nano Banana Image-to-Image
  * - 视频：4阶段流程（风格学习 → 素材生成 → 人物抠像 → 视频合成）
+ *
+ * 改进：
+ * - 添加请求超时控制
+ * - 改进错误处理
+ * - 优化 API 调用
  */
 
 import type { TaskResult } from './task-queue';
@@ -15,40 +20,58 @@ import type { PresetStyle } from './style-prompts';
 // Nano Banana API 配置
 const NANO_BANANA_CONFIG = {
   baseUrl: 'https://api.evolink.ai',
-  apiKey: process.env.NEXT_PUBLIC_NANO_BANANA_API_KEY,
+  apiKey: process.env.NANO_BANANA_API_KEY, // 服务端专用
   model: 'nano-banana-2-lite',
+  // 超时配置
+  timeout: {
+    create: 30000, // 创建任务超时 30s
+    poll: 10000,   // 轮询单次超时 10s
+    total: 120000, // 总超时 120s
+  },
+  // 轮询配置
+  maxPollAttempts: 60,
+  pollInterval: 2000,
 };
 
 /**
+ * 带超时的 fetch
+ */
+async function fetchWithTimeout(
+  url: string,
+  options: RequestInit,
+  timeout: number
+): Promise<Response> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+    });
+    return response;
+  } finally {
+    clearTimeout(timeoutId);
+  }
+}
+
+/**
  * 将本地路径转换为完整 URL
- * Nano Banana API 需要完整的 http/https URL
- *
- * 注意：本地开发时，Nano Banana API 无法访问 localhost URL
- * 解决方案：
- * 1. 使用 ngrok 或 cloudflare tunnel 暴露本地服务
- * 2. 配置 NEXT_PUBLIC_BASE_URL 环境变量
- * 3. 使用公网可访问的图片 URL
  */
 function toFullUrl(path: string): string {
-  // 如果已经是完整 URL，直接返回
   if (path.startsWith('http://') || path.startsWith('https://')) {
     return path;
   }
 
-  // 获取配置的基础 URL
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
   if (!baseUrl) {
-    console.warn('[Workflow] No NEXT_PUBLIC_BASE_URL configured. Local images may not be accessible by Nano Banana API.');
-    console.warn('[Workflow] For local development, use ngrok or cloudflare tunnel to expose localhost.');
-    // 返回本地 URL（API 调用可能会失败）
+    console.warn('[Workflow] No NEXT_PUBLIC_BASE_URL configured.');
     const normalizedPath = path.startsWith('/') ? path : `/${path}`;
     return `http://localhost:3000${normalizedPath}`;
   }
 
-  // 确保路径以 / 开头
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
-
   return `${baseUrl}${normalizedPath}`;
 }
 
@@ -63,7 +86,7 @@ function isPublicUrl(url: string): boolean {
 export type ProgressCallback = (progress: number, stage: string) => void;
 
 /**
- * 调用 Nano Banana API 创建任务
+ * 调用 Nano Banana API 创建任务（带超时控制）
  */
 async function createNanoBananaTask(params: {
   prompt: string;
@@ -71,24 +94,42 @@ async function createNanoBananaTask(params: {
   size?: string;
   quality?: string;
 }): Promise<{ taskId: string }> {
-  const response = await fetch(`${NANO_BANANA_CONFIG.baseUrl}/v1/images/generations`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${NANO_BANANA_CONFIG.apiKey}`,
-    },
-    body: JSON.stringify({
-      model: NANO_BANANA_CONFIG.model,
-      prompt: params.prompt,
-      image_urls: params.imageUrls,
-      size: params.size || '9:16',
-      quality: params.quality || '2K',
-    }),
-  });
+  let response: Response;
+  try {
+    response = await fetchWithTimeout(
+      `${NANO_BANANA_CONFIG.baseUrl}/v1/images/generations`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${NANO_BANANA_CONFIG.apiKey}`,
+        },
+        body: JSON.stringify({
+          model: NANO_BANANA_CONFIG.model,
+          prompt: params.prompt,
+          image_urls: params.imageUrls,
+          size: params.size || '9:16',
+          quality: params.quality || '2K',
+        }),
+      },
+      NANO_BANANA_CONFIG.timeout.create
+    );
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('API request timeout');
+    }
+    throw error;
+  }
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error?.message || 'Failed to create Nano Banana task');
+    // 记录详细错误到日志，返回通用错误
+    try {
+      const errorData = await response.json();
+      console.error('[Workflow] Nano Banana API error:', errorData);
+    } catch {
+      console.error('[Workflow] Nano Banana API error: HTTP', response.status);
+    }
+    throw new Error('Failed to create image generation task');
   }
 
   const result = await response.json();
@@ -96,21 +137,32 @@ async function createNanoBananaTask(params: {
 }
 
 /**
- * 查询 Nano Banana 任务状态
+ * 查询 Nano Banana 任务状态（带超时控制）
  */
 async function getNanoBananaTaskStatus(taskId: string): Promise<{
   status: 'pending' | 'processing' | 'completed' | 'failed';
   progress: number;
   results?: string[];
 }> {
-  const response = await fetch(
-    `${NANO_BANANA_CONFIG.baseUrl}/v1/tasks/${taskId}`,
-    {
-      headers: {
-        'Authorization': `Bearer ${NANO_BANANA_CONFIG.apiKey}`,
+  let response: Response;
+  try {
+    response = await fetchWithTimeout(
+      `${NANO_BANANA_CONFIG.baseUrl}/v1/tasks/${taskId}`,
+      {
+        headers: {
+          'Authorization': `Bearer ${NANO_BANANA_CONFIG.apiKey}`,
+        },
       },
+      NANO_BANANA_CONFIG.timeout.poll
+    );
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      // 超时不算失败，返回 processing 状态继续轮询
+      console.warn('[Workflow] Status poll timeout for task', taskId);
+      return { status: 'processing', progress: 0 };
     }
-  );
+    throw error;
+  }
 
   if (!response.ok) {
     throw new Error('Failed to get task status');
@@ -120,16 +172,21 @@ async function getNanoBananaTaskStatus(taskId: string): Promise<{
 }
 
 /**
- * 等待 Nano Banana 任务完成
+ * 等待 Nano Banana 任务完成（带总超时控制）
  */
 async function waitForNanoBananaTask(
   taskId: string,
   onProgress?: (progress: number) => void
 ): Promise<string[]> {
-  const maxAttempts = 60;
-  const pollInterval = 2000;
+  const startTime = Date.now();
+  const { maxPollAttempts, pollInterval, timeout } = NANO_BANANA_CONFIG;
 
-  for (let i = 0; i < maxAttempts; i++) {
+  for (let i = 0; i < maxPollAttempts; i++) {
+    // 检查总超时
+    if (Date.now() - startTime > timeout.total) {
+      throw new Error('Task timeout - please try again');
+    }
+
     const status = await getNanoBananaTaskStatus(taskId);
 
     if (onProgress) {
@@ -141,13 +198,13 @@ async function waitForNanoBananaTask(
     }
 
     if (status.status === 'failed') {
-      throw new Error('Nano Banana task failed');
+      throw new Error('Image generation failed');
     }
 
     await new Promise((resolve) => setTimeout(resolve, pollInterval));
   }
 
-  throw new Error('Nano Banana task timeout');
+  throw new Error('Task timeout - please try again');
 }
 
 /**
@@ -196,10 +253,8 @@ export async function processImageEnhancement(params: {
     taskParams.imageUrls = [fullImageUrl];
     onProgress?.(20, '提交升级任务 (Image-to-Image)');
   } else {
-    // 本地 URL 无法被 API 访问，使用纯文本生成
     console.warn('[Workflow] Image URL is not publicly accessible, using text-to-image mode');
     onProgress?.(20, '提交升级任务 (Text-to-Image)');
-    // 增强 prompt 以获得更好的效果
     taskParams.prompt = `${prompt}, high quality photography, professional editing, magazine style`;
   }
 
@@ -207,13 +262,12 @@ export async function processImageEnhancement(params: {
 
   onProgress?.(25, 'AI 正在升级图片');
   const results = await waitForNanoBananaTask(taskId, (progress) => {
-    // 映射 Nano Banana 进度到 25-80
     const mappedProgress = 25 + (progress / 100) * 55;
     onProgress?.(mappedProgress, 'AI 正在升级图片');
   });
 
   if (!results || results.length === 0) {
-    throw new Error('No results from Nano Banana');
+    throw new Error('No results from image generation');
   }
 
   const enhancedUrl = results[0];
@@ -283,7 +337,6 @@ export async function processVideoEnhancement(params: {
   onProgress?.(40, '背景素材生成完成');
 
   // Stage 3: 视频合成 (40-90%)
-  // 使用 FFmpeg 本地生成视频
   onProgress?.(45, '分析视频内容');
   await new Promise((resolve) => setTimeout(resolve, 500));
 
@@ -295,9 +348,9 @@ export async function processVideoEnhancement(params: {
   // 使用 FFmpeg 生成视频
   const videoResult = await generateVideo({
     backgroundUrl,
-    duration: 5, // 5秒视频
+    duration: 5,
     style: presetStyle,
-    transition: 'fade', // 淡入淡出效果
+    transition: 'fade',
   });
 
   console.log('[Workflow] Video generated:', videoResult.videoUrl);
@@ -305,9 +358,7 @@ export async function processVideoEnhancement(params: {
 
   // Stage 4: 评分 (90-100%)
   onProgress?.(90, '计算高级感评分');
-  console.log('[Workflow] Calculating score for:', backgroundUrl);
   const score = await calculateScore(backgroundUrl);
-  console.log('[Workflow] Score calculated:', score);
   onProgress?.(100, '完成');
 
   return {

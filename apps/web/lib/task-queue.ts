@@ -3,6 +3,11 @@
  *
  * MVP 阶段：内存存储 + 文件备份（服务重启可恢复）
  * 生产阶段：可切换到 Redis
+ *
+ * 改进：
+ * - 使用全局变量解决 Next.js HMR 问题
+ * - 添加数据验证
+ * - 改进错误处理
  */
 
 import fs from 'fs';
@@ -21,10 +26,11 @@ export interface TaskResult {
     overall: number;
     grade: string;
     dimensions: {
-      color: number;
-      composition: number;
-      typography: number;
-      detail: number;
+      visualAttraction: number;    // 视觉吸引力
+      contentMatch: number;        // 内容匹配度
+      authenticity: number;        // 真实可信度
+      emotionalImpact: number;     // 情绪感染力
+      actionGuidance: number;      // 行动引导力
     };
   };
 }
@@ -50,7 +56,7 @@ export interface Task {
   };
 }
 
-// 配置
+// 配置常量
 const TASK_CONFIG = {
   // 备份文件路径
   backupPath: process.env.TASK_BACKUP_PATH || './data/tasks.json',
@@ -62,7 +68,26 @@ const TASK_CONFIG = {
   cleanupInterval: 60 * 1000, // 1 分钟
   // 任务保留时间（毫秒）
   taskRetention: 2 * 60 * 60 * 1000, // 2 小时
-};
+  // 最大并发任务数
+  maxConcurrent: 5,
+} as const;
+
+/**
+ * 验证任务数据格式
+ */
+function validateTask(data: unknown): data is Task {
+  if (typeof data !== 'object' || data === null) return false;
+  const task = data as Record<string, unknown>;
+
+  return (
+    typeof task.id === 'string' &&
+    ['pending', 'processing', 'completed', 'failed'].includes(task.status as string) &&
+    typeof task.progress === 'number' &&
+    typeof task.createdAt === 'number' &&
+    typeof task.updatedAt === 'number' &&
+    typeof task.input === 'object'
+  );
+}
 
 /**
  * 任务队列类
@@ -72,6 +97,8 @@ export class TaskQueue {
   private backupPath: string;
   private backupTimer?: NodeJS.Timeout;
   private cleanupTimer?: NodeJS.Timeout;
+  private processingCount: number = 0;
+  private isShuttingDown: boolean = false;
 
   constructor() {
     this.backupPath = path.resolve(process.cwd(), TASK_CONFIG.backupPath);
@@ -79,6 +106,16 @@ export class TaskQueue {
     this.loadFromBackup();
     this.startBackupTimer();
     this.startCleanupTimer();
+
+    // 注册进程退出处理
+    process.on('beforeExit', () => this.handleShutdown());
+  }
+
+  // 处理关闭
+  private handleShutdown(): void {
+    if (this.isShuttingDown) return;
+    this.isShuttingDown = true;
+    this.stop();
   }
 
   // 确保备份目录存在
@@ -89,24 +126,43 @@ export class TaskQueue {
     }
   }
 
-  // 从备份加载
+  // 从备份加载（带数据验证）
   private loadFromBackup(): void {
     try {
       if (fs.existsSync(this.backupPath)) {
-        const data = JSON.parse(fs.readFileSync(this.backupPath, 'utf-8'));
+        const rawData = fs.readFileSync(this.backupPath, 'utf-8');
+        const data = JSON.parse(rawData);
         const now = Date.now();
 
-        // 只加载未过期的任务
-        for (const task of Object.values(data) as Task[]) {
-          if (now - task.createdAt < TASK_CONFIG.taskRetention) {
-            this.tasks.set(task.id, task);
+        let loadedCount = 0;
+        let skippedCount = 0;
+
+        // 验证并加载每个任务
+        for (const [id, taskData] of Object.entries(data)) {
+          if (!validateTask(taskData)) {
+            console.warn(`[TaskQueue] Invalid task data for ${id}, skipping`);
+            skippedCount++;
+            continue;
+          }
+
+          // 只加载未过期的任务
+          if (now - taskData.createdAt < TASK_CONFIG.taskRetention) {
+            this.tasks.set(id, taskData);
+            loadedCount++;
+
+            // 统计正在处理的任务
+            if (taskData.status === 'processing') {
+              this.processingCount++;
+            }
           }
         }
 
-        console.log(`[TaskQueue] Loaded ${this.tasks.size} tasks from backup`);
+        console.log(`[TaskQueue] Loaded ${loadedCount} tasks from backup, skipped ${skippedCount} invalid`);
       }
     } catch (error) {
       console.error('[TaskQueue] Failed to load backup:', error);
+      // 备份损坏时，创建空文件
+      this.saveToBackup();
     }
   }
 
@@ -118,7 +174,6 @@ export class TaskQueue {
         data[key] = value;
       });
       fs.writeFileSync(this.backupPath, JSON.stringify(data, null, 2));
-      console.log(`[TaskQueue] Saved ${Object.keys(data).length} tasks to backup`);
     } catch (error) {
       console.error('[TaskQueue] Failed to save backup:', error);
     }
@@ -126,16 +181,35 @@ export class TaskQueue {
 
   // 启动备份定时器
   private startBackupTimer(): void {
+    // 只在非 serverless 环境启动定时器
+    if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
+      return;
+    }
+
     this.backupTimer = setInterval(() => {
-      this.saveToBackup();
+      if (!this.isShuttingDown) {
+        this.saveToBackup();
+      }
     }, TASK_CONFIG.backupInterval);
+
+    // 允许进程退出
+    this.backupTimer.unref();
   }
 
   // 启动清理定时器
   private startCleanupTimer(): void {
+    // 只在非 serverless 环境启动定时器
+    if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME) {
+      return;
+    }
+
     this.cleanupTimer = setInterval(() => {
-      this.cleanup();
+      if (!this.isShuttingDown) {
+        this.cleanup();
+      }
     }, TASK_CONFIG.cleanupInterval);
+
+    this.cleanupTimer.unref();
   }
 
   // 清理过期任务
@@ -161,6 +235,7 @@ export class TaskQueue {
         task.status = 'failed';
         task.error = 'Task timeout';
         task.updatedAt = now;
+        this.processingCount = Math.max(0, this.processingCount - 1);
         cleaned++;
       }
     });
@@ -171,6 +246,13 @@ export class TaskQueue {
       console.log(`[TaskQueue] Cleaned ${cleaned} tasks`);
       this.saveToBackup();
     }
+  }
+
+  /**
+   * 检查是否可以开始处理新任务
+   */
+  canStartProcessing(): boolean {
+    return this.processingCount < TASK_CONFIG.maxConcurrent;
   }
 
   /**
@@ -208,6 +290,15 @@ export class TaskQueue {
     const task = this.tasks.get(taskId);
     if (!task) return undefined;
 
+    // 更新处理计数
+    if (updates.status) {
+      if (task.status === 'processing' && updates.status !== 'processing') {
+        this.processingCount = Math.max(0, this.processingCount - 1);
+      } else if (task.status !== 'processing' && updates.status === 'processing') {
+        this.processingCount++;
+      }
+    }
+
     Object.assign(task, updates, { updatedAt: Date.now() });
     this.tasks.set(taskId, task);
 
@@ -223,6 +314,10 @@ export class TaskQueue {
    * 开始处理任务
    */
   startProcessing(taskId: string): Task | undefined {
+    if (!this.canStartProcessing()) {
+      console.warn(`[TaskQueue] Max concurrent tasks reached, cannot start ${taskId}`);
+      return undefined;
+    }
     return this.update(taskId, {
       status: 'processing',
       progress: 0,
@@ -249,9 +344,7 @@ export class TaskQueue {
       progress: 100,
       result,
     });
-    // 确保立即保存
     this.saveToBackup();
-    console.log(`[TaskQueue] Task ${taskId} saved to backup`);
     return task;
   }
 
@@ -264,9 +357,7 @@ export class TaskQueue {
       status: 'failed',
       error,
     });
-    // 确保立即保存
     this.saveToBackup();
-    console.log(`[TaskQueue] Task ${taskId} saved to backup`);
     return task;
   }
 
@@ -274,6 +365,11 @@ export class TaskQueue {
    * 删除任务
    */
   delete(taskId: string): boolean {
+    const task = this.tasks.get(taskId);
+    if (task?.status === 'processing') {
+      this.processingCount = Math.max(0, this.processingCount - 1);
+    }
+
     const deleted = this.tasks.delete(taskId);
     if (deleted) {
       this.saveToBackup();
@@ -290,6 +386,7 @@ export class TaskQueue {
     processing: number;
     completed: number;
     failed: number;
+    processingCount: number;
   } {
     let pending = 0;
     let processing = 0;
@@ -313,7 +410,14 @@ export class TaskQueue {
       }
     });
 
-    return { total: this.tasks.size, pending, processing, completed, failed };
+    return {
+      total: this.tasks.size,
+      pending,
+      processing,
+      completed,
+      failed,
+      processingCount: this.processingCount,
+    };
   }
 
   /**
@@ -322,20 +426,25 @@ export class TaskQueue {
   stop(): void {
     if (this.backupTimer) {
       clearInterval(this.backupTimer);
+      this.backupTimer = undefined;
     }
     if (this.cleanupTimer) {
       clearInterval(this.cleanupTimer);
+      this.cleanupTimer = undefined;
     }
     this.saveToBackup();
   }
 }
 
-// 单例实例
-let taskQueue: TaskQueue | null = null;
+// 使用全局变量保持跨请求持久化（解决 Next.js HMR 问题）
+declare global {
+  // eslint-disable-next-line no-var
+  var taskQueueGlobal: TaskQueue | undefined;
+}
 
 export function getTaskQueue(): TaskQueue {
-  if (!taskQueue) {
-    taskQueue = new TaskQueue();
+  if (!global.taskQueueGlobal) {
+    global.taskQueueGlobal = new TaskQueue();
   }
-  return taskQueue;
+  return global.taskQueueGlobal;
 }

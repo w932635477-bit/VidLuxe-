@@ -1,72 +1,28 @@
 {
+  "anon_1771810609071_ymmojb7b": {
+    "anonymousId": "anon_1771810609071_ymmojb7b",
+    "usedCount": 1,
+    "totalCount": 10,
+    "resetAt": 1771897063777,
+    "createdAt": 1771810663777,
+    "version": 1,
+    "updatedAt": 1771810663777
+  },
   "3e48ef9d22e096da": {
     "anonymousId": "3e48ef9d22e096da",
     "usedCount": 0,
     "totalCount": 10,
-    "resetAt": 1771728004293,
-    "createdAt": 1771641604293
+    "resetAt": 1771899641214,
+    "createdAt": 1771813241214,
+    "version": 0
   },
-  "test-user-001": {
-    "anonymousId": "test-user-001",
-    "usedCount": 0,
-    "totalCount": 10,
-    "resetAt": 1771728069107,
-    "createdAt": 1771641669107
-  },
-  "test-user-002": {
-    "anonymousId": "test-user-002",
+  "test_user_123": {
+    "anonymousId": "test_user_123",
     "usedCount": 1,
     "totalCount": 10,
-    "resetAt": 1771728345951,
-    "createdAt": 1771641945951
-  },
-  "test-user-003": {
-    "anonymousId": "test-user-003",
-    "usedCount": 1,
-    "totalCount": 10,
-    "resetAt": 1771728505808,
-    "createdAt": 1771642105808
-  },
-  "test-user-004": {
-    "anonymousId": "test-user-004",
-    "usedCount": 1,
-    "totalCount": 10,
-    "resetAt": 1771729108581,
-    "createdAt": 1771642708581
-  },
-  "test-video-001": {
-    "anonymousId": "test-video-001",
-    "usedCount": 1,
-    "totalCount": 10,
-    "resetAt": 1771733710803,
-    "createdAt": 1771647310803
-  },
-  "test-video-002": {
-    "anonymousId": "test-video-002",
-    "usedCount": 1,
-    "totalCount": 10,
-    "resetAt": 1771734234188,
-    "createdAt": 1771647834188
-  },
-  "test-video-003": {
-    "anonymousId": "test-video-003",
-    "usedCount": 1,
-    "totalCount": 10,
-    "resetAt": 1771734468405,
-    "createdAt": 1771648068405
-  },
-  "test-reference-001": {
-    "anonymousId": "test-reference-001",
-    "usedCount": 1,
-    "totalCount": 10,
-    "resetAt": 1771734909492,
-    "createdAt": 1771648509492
-  },
-  "test-ref-002": {
-    "anonymousId": "test-ref-002",
-    "usedCount": 1,
-    "totalCount": 10,
-    "resetAt": 1771735550542,
-    "createdAt": 1771649150542
+    "resetAt": 1771903566146,
+    "createdAt": 1771817166146,
+    "version": 1,
+    "updatedAt": 1771817166147
   }
 }
