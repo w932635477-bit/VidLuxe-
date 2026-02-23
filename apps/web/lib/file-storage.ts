@@ -438,6 +438,15 @@ export class FileStorage {
   }
 
   /**
+   * 根据相对 URL 获取本地文件路径
+   */
+  getLocalPath(url: string): string {
+    // 移除开头的 /
+    const relativePath = url.startsWith('/') ? url.slice(1) : url;
+    return path.resolve(this.basePath, '..', relativePath);
+  }
+
+  /**
    * 清理过期文件（可选）
    */
   async cleanupOldFiles(maxAgeMs: number = 24 * 60 * 60 * 1000): Promise<number> {
