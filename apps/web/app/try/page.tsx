@@ -1351,29 +1351,62 @@ export default function TryPage() {
             <SeedingScoreCard score={resultData.score} />
           )}
 
-          {/* 主按钮 */}
-          <a
-            href={resultData.enhancedUrl}
-            download
-            style={{
-              width: '100%',
-              padding: '18px',
-              borderRadius: '14px',
-              border: 'none',
-              background: '#D4AF37',
-              color: '#000000',
-              fontSize: '17px',
-              fontWeight: 600,
-              cursor: 'pointer',
-              marginBottom: '12px',
-              textAlign: 'center',
-              textDecoration: 'none',
-              display: 'block',
-              marginTop: '20px',
-            }}
-          >
-            {contentType === 'video' ? '下载高清视频' : '下载高清图'}
-          </a>
+          {/* 下载按钮 */}
+          <div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {/* 封面图下载 */}
+            {resultData.enhancedCoverUrl && (
+              <a
+                href={resultData.enhancedCoverUrl}
+                download
+                style={{
+                  width: '100%',
+                  padding: '14px',
+                  borderRadius: '12px',
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
+                  background: 'transparent',
+                  color: 'rgba(255, 255, 255, 0.9)',
+                  fontSize: '15px',
+                  fontWeight: 500,
+                  textAlign: 'center',
+                  textDecoration: 'none',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  cursor: 'pointer',
+                }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+                  <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/>
+                  <path d="M21 15L16 10L5 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                下载 AI 封面图
+              </a>
+            )}
+
+            {/* 视频下载 */}
+            <a
+              href={resultData.enhancedUrl}
+              download
+              style={{
+                width: '100%',
+                padding: '18px',
+                borderRadius: '14px',
+                border: 'none',
+                background: '#D4AF37',
+                color: '#000000',
+                fontSize: '17px',
+                fontWeight: 600,
+                textAlign: 'center',
+                textDecoration: 'none',
+                display: 'block',
+                cursor: 'pointer',
+              }}
+            >
+              {contentType === 'video' ? '下载带封面的视频' : '下载高清图'}
+            </a>
+          </div>
 
           {/* 次要操作 */}
           <div style={{ display: 'flex', gap: '12px' }}>
