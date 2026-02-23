@@ -26,6 +26,8 @@ const EXTRACTOR_CONFIG = {
   topFrames: 10,
   // FFmpeg 路径
   ffmpegPath: process.env.FFMPEG_PATH || 'ffmpeg',
+  // FFprobe 路径
+  ffprobePath: process.env.FFPROBE_PATH || 'ffprobe',
   // 超时（毫秒）
   timeout: 60000,
 };
@@ -95,6 +97,47 @@ async function execFFmpeg(args: string[], timeout: number): Promise<{ stdout: st
 }
 
 /**
+ * 执行 FFprobe 命令
+ */
+async function execFFprobe(args: string[], timeout: number): Promise<{ stdout: string; stderr: string }> {
+  return new Promise((resolve, reject) => {
+    const timeoutId = setTimeout(() => {
+      proc.kill('SIGKILL');
+      reject(new Error('FFprobe timeout'));
+    }, timeout);
+
+    const proc = spawn(EXTRACTOR_CONFIG.ffprobePath, args, {
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+
+    let stdout = '';
+    let stderr = '';
+
+    proc.stdout?.on('data', (data) => {
+      stdout += data.toString();
+    });
+
+    proc.stderr?.on('data', (data) => {
+      stderr += data.toString();
+    });
+
+    proc.on('close', (code) => {
+      clearTimeout(timeoutId);
+      if (code === 0) {
+        resolve({ stdout, stderr });
+      } else {
+        reject(new Error(`FFprobe exited with code ${code}: ${stderr}`));
+      }
+    });
+
+    proc.on('error', (err) => {
+      clearTimeout(timeoutId);
+      reject(err);
+    });
+  });
+}
+
+/**
  * 获取视频时长
  */
 async function getVideoDuration(videoPath: string): Promise<number> {
@@ -106,9 +149,28 @@ async function getVideoDuration(videoPath: string): Promise<number> {
   ];
 
   try {
-    const { stdout } = await execFFmpeg(args, 10000);
-    return parseFloat(stdout.trim()) || 0;
-  } catch {
+    const { stdout } = await execFFprobe(args, 10000);
+    const duration = parseFloat(stdout.trim());
+    console.log(`[KeyframeExtractor] Video duration: ${duration}s`);
+    return duration || 0;
+  } catch (error) {
+    console.error('[KeyframeExtractor] Failed to get video duration:', error);
+    // 回退方案：尝试使用 ffmpeg 获取时长
+    try {
+      const fallbackArgs = ['-i', videoPath, '-hide_banner'];
+      const { stderr } = await execFFmpeg(fallbackArgs, 10000);
+      // 从 stderr 中解析 Duration: 00:00:XX.XX
+      const match = stderr.match(/Duration: (\d{2}):(\d{2}):(\d{2})\.(\d{2})/);
+      if (match) {
+        const hours = parseInt(match[1]);
+        const minutes = parseInt(match[2]);
+        const seconds = parseInt(match[3]);
+        const centiseconds = parseInt(match[4]);
+        return hours * 3600 + minutes * 60 + seconds + centiseconds / 100;
+      }
+    } catch {
+      // 忽略
+    }
     return 0;
   }
 }

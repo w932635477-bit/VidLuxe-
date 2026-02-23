@@ -47,6 +47,18 @@ export async function POST(request: NextRequest): Promise<NextResponse<AnalyzeRe
     if (videoUrl.startsWith('/uploads/')) {
       // 本地上传的文件
       localPath = storage.getLocalPath(videoUrl);
+      console.log('[VideoAnalyze] Local path resolved:', localPath);
+
+      // 检查文件是否存在
+      const fs = await import('fs');
+      if (!fs.existsSync(localPath)) {
+        console.error('[VideoAnalyze] File not found:', localPath);
+        return NextResponse.json(
+          { success: false, error: `Video file not found: ${localPath}` },
+          { status: 404 }
+        );
+      }
+      console.log('[VideoAnalyze] File exists, size:', fs.statSync(localPath).size);
     } else if (videoUrl.startsWith('http')) {
       // 远程 URL - 需要先下载
       // TODO: 实现远程视频下载

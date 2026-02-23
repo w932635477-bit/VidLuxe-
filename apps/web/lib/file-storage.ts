@@ -443,7 +443,10 @@ export class FileStorage {
   getLocalPath(url: string): string {
     // 移除开头的 /
     const relativePath = url.startsWith('/') ? url.slice(1) : url;
-    return path.resolve(this.basePath, '..', relativePath);
+
+    // 直接从项目根目录的 public 文件夹解析
+    const publicDir = path.resolve(process.cwd(), 'public');
+    return path.join(publicDir, relativePath);
   }
 
   /**
