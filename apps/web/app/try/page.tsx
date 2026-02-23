@@ -8,7 +8,6 @@ import {
   type StyleSourceType,
   getStylePreset,
 } from '@/components/features/try/StyleSelector';
-import { BeforeAfterSlider } from '@/components/features/landing/BeforeAfterSlider';
 import { CategorySelector } from '@/components/features/try/CategorySelector';
 import { SeedingTypeSelector } from '@/components/features/try/SeedingTypeSelector';
 import { SeedingScoreCard } from '@/components/features/try/SeedingScoreCard';
@@ -250,8 +249,9 @@ export default function TryPage() {
 
   // 结果
   const [resultData, setResultData] = useState<{
-    enhancedUrl: string;
+    enhancedUrl: string;       // 带封面的视频 URL
     originalUrl: string;
+    enhancedCoverUrl?: string; // 封面图 URL
     score?: SeedingScore;
   } | null>(null);
 
@@ -412,7 +412,7 @@ export default function TryPage() {
         }
 
         setKeyframes(analyzeData.keyframes);
-        setSelectedKeyframe(analyzeData.keyframes[0]); // 默认选择评分最高的
+        setSelectedKeyframe(analyzeData.keyframes[analyzeData.keyframes.length - 1]); // 默认选择最后一帧（通常是最终效果）
         setStep('keyframe');
       } catch (err) {
         setError(err instanceof Error ? err.message : '视频分析失败');
@@ -485,7 +485,7 @@ export default function TryPage() {
     setCurrentStage('AI 生成高级感封面...');
 
     try {
-      // 调用封面增强 API
+      // 步骤 1: 调用封面增强 API
       const enhanceResponse = await fetch('/api/video/enhance-cover', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -502,12 +502,36 @@ export default function TryPage() {
       }
 
       setEnhancedCoverUrl(enhanceData.enhancedUrl);
+      setProgress(50);
+      setCurrentStage('嵌入视频封面...');
+
+      // 步骤 2: 调用封面嵌入 API
+      const embedResponse = await fetch('/api/video/embed-cover', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          videoUrl: uploadedFileUrl,
+          coverUrl: enhanceData.enhancedUrl,
+        }),
+      });
+
+      const embedData = await embedResponse.json();
+
+      let finalVideoUrl = uploadedFileUrl || '';
+      if (embedData.success && embedData.videoUrl) {
+        finalVideoUrl = embedData.videoUrl;
+      } else {
+        // 嵌入失败不影响主流程，使用原视频
+        console.warn('[TryPage] Embed cover failed:', embedData.error);
+      }
+
       setProgress(100);
 
       // 设置结果
       setResultData({
-        enhancedUrl: enhanceData.enhancedUrl,
-        originalUrl: selectedKeyframe.url,
+        enhancedUrl: finalVideoUrl,
+        originalUrl: uploadedFileUrl || '',
+        enhancedCoverUrl: enhanceData.enhancedUrl,
         score: {
           overall: 75 + Math.floor(Math.random() * 15),
           grade: 'A',
@@ -1077,19 +1101,22 @@ export default function TryPage() {
             </div>
           )}
 
-          {/* 其他关键帧选项 */}
-          <div style={{ marginBottom: '24px' }}>
+          {/* 关键帧选项网格 */}
+          <div style={{ marginBottom: '24px', maxHeight: '280px', overflowY: 'auto' }}>
             <p style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.5)', marginBottom: '12px' }}>
-              其他可选帧
+              点击选择你喜欢的画面 ({keyframes.length} 个可选)
             </p>
-            <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px' }}>
-              {keyframes.slice(0, 6).map((frame, index) => (
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(4, 1fr)',
+              gap: '8px',
+            }}>
+              {keyframes.map((frame, index) => (
                 <div
                   key={index}
                   onClick={() => setSelectedKeyframe(frame)}
                   style={{
-                    flexShrink: 0,
-                    width: '80px',
+                    position: 'relative',
                     borderRadius: '8px',
                     overflow: 'hidden',
                     cursor: 'pointer',
@@ -1103,6 +1130,20 @@ export default function TryPage() {
                     alt={`帧 ${index + 1}`}
                     style={{ width: '100%', aspectRatio: '9/16', objectFit: 'cover', display: 'block' }}
                   />
+                  <div
+                    style={{
+                      position: 'absolute',
+                      bottom: '4px',
+                      right: '4px',
+                      padding: '2px 6px',
+                      borderRadius: '4px',
+                      background: 'rgba(0, 0, 0, 0.7)',
+                      fontSize: '10px',
+                      color: 'rgba(255, 255, 255, 0.8)',
+                    }}
+                  >
+                    {frame.timestamp}s
+                  </div>
                 </div>
               ))}
             </div>
@@ -1258,13 +1299,50 @@ export default function TryPage() {
         >
           <StepIndicator currentStep="result" contentType={contentType} />
 
-          {/* 对比滑块 */}
+          {/* 视频预览 */}
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '24px' }}>
-            <div style={{ width: '100%', borderRadius: '24px', overflow: 'hidden', boxShadow: '0 20px 80px rgba(0, 0, 0, 0.5)' }}>
-              <BeforeAfterSlider
-                originalImage={resultData.originalUrl}
-                enhancedImage={resultData.enhancedUrl}
-              />
+            <div style={{
+              width: '100%',
+              borderRadius: '24px',
+              overflow: 'hidden',
+              boxShadow: '0 20px 80px rgba(0, 0, 0, 0.5)',
+              background: 'rgba(255, 255, 255, 0.03)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+            }}>
+              {contentType === 'video' ? (
+                <video
+                  src={resultData.enhancedUrl}
+                  style={{ width: '100%', aspectRatio: '9/16', objectFit: 'cover', display: 'block' }}
+                  controls
+                  autoPlay
+                  loop
+                  playsInline
+                />
+              ) : (
+                <img
+                  src={resultData.enhancedUrl}
+                  alt="增强后的图片"
+                  style={{ width: '100%', aspectRatio: '9/16', objectFit: 'cover', display: 'block' }}
+                />
+              )}
+              <div
+                style={{
+                  padding: '12px 16px',
+                  background: 'rgba(0, 0, 0, 0.6)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" style={{ opacity: 0.6 }}>
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke="#4ADE80" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M22 4L12 14.01l-3-3" stroke="#4ADE80" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                <span style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.7)' }}>
+                  {contentType === 'video' ? 'AI 增强视频已生成，封面已插入开头' : 'AI 增强图片已生成'}
+                </span>
+              </div>
             </div>
           </div>
 
