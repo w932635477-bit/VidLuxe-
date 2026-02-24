@@ -10,59 +10,96 @@ const PLANS = [
     name: '免费版',
     nameEn: 'Free',
     price: 0,
-    period: '永久免费',
+    period: '每月重置',
     description: '体验 AI 升级的魔力',
     features: [
-      '每月 10 次升级额度',
+      '每月 3 次免费额度',
       '4 种高级感风格',
+      '邀请好友获得额外额度',
       '标准画质导出',
-      '小红书尺寸适配',
     ],
     cta: '开始体验',
     ctaLink: '/try',
     popular: false,
   },
   {
-    id: 'pro-monthly',
-    name: 'Pro 月卡',
-    nameEn: 'Pro',
-    price: 39,
-    period: '/月',
-    description: '专业创作者的首选',
+    id: 'small',
+    name: '小包',
+    nameEn: 'Starter',
+    price: 29,
+    period: '一次性购买',
+    description: '轻度用户首选',
     features: [
-      '每月 100 次升级额度',
+      '20 个额度',
+      '额度永不过期',
       '4 种高级感风格',
       '高清画质导出',
-      '所有尺寸适配',
-      '优先处理队列',
-      '专属客服支持',
+      '多风格批量生成',
     ],
-    cta: '升级 Pro',
-    ctaLink: '/checkout?plan=pro-monthly',
+    cta: '立即购买',
+    ctaLink: 'mailto:upgrade@vidluxe.com?subject=购买小包',
+    popular: false,
+  },
+  {
+    id: 'medium',
+    name: '中包',
+    nameEn: 'Pro',
+    price: 79,
+    period: '一次性购买',
+    description: '专业创作者推荐',
+    features: [
+      '60 个额度',
+      '额度永不过期',
+      '4 种高级感风格',
+      '高清画质导出',
+      '多风格批量生成',
+      '优先处理队列',
+    ],
+    cta: '立即购买',
+    ctaLink: 'mailto:upgrade@vidluxe.com?subject=购买中包',
     popular: true,
   },
   {
-    id: 'pro-annual',
-    name: 'Pro 年卡',
-    nameEn: 'Pro Annual',
-    price: 299,
-    period: '/年',
-    originalPrice: 468,
-    description: '无限创作，无限可能',
+    id: 'large',
+    name: '大包',
+    nameEn: 'Business',
+    price: 199,
+    period: '一次性购买',
+    description: '高频创作者必备',
     features: [
-      '无限次升级额度',
+      '150 个额度',
+      '额度永不过期',
       '4 种高级感风格',
-      '4K 超清画质导出',
-      '所有尺寸适配',
+      '高清画质导出',
+      '多风格批量生成',
       '优先处理队列',
       '专属客服支持',
-      '新功能优先体验',
+    ],
+    cta: '立即购买',
+    ctaLink: 'mailto:upgrade@vidluxe.com?subject=购买大包',
+    popular: false,
+  },
+  {
+    id: 'xlarge',
+    name: '超大包',
+    nameEn: 'Enterprise',
+    price: 499,
+    period: '一次性购买',
+    description: '无限创作可能',
+    features: [
+      '400 个额度',
+      '额度永不过期',
+      '4 种高级感风格',
+      '4K 超清画质导出',
+      '多风格批量生成',
+      '最高优先级处理',
+      '专属客服支持',
       'API 接入权限',
     ],
-    cta: '立即订阅',
-    ctaLink: '/checkout?plan=pro-annual',
+    cta: '立即购买',
+    ctaLink: 'mailto:upgrade@vidluxe.com?subject=购买超大包',
     popular: false,
-    badge: '省 ¥170',
+    badge: '最划算',
   },
 ];
 
@@ -156,18 +193,6 @@ function PricingCard({ plan }: PricingCardProps) {
         {plan.price > 0 && (
           <span style={{ fontSize: '16px', color: 'rgba(255, 255, 255, 0.4)' }}>
             {plan.period}
-          </span>
-        )}
-        {plan.originalPrice && (
-          <span
-            style={{
-              fontSize: '14px',
-              color: 'rgba(255, 255, 255, 0.3)',
-              textDecoration: 'line-through',
-              marginLeft: '8px',
-            }}
-          >
-            ¥{plan.originalPrice}/年
           </span>
         )}
       </div>
@@ -270,7 +295,7 @@ export function PricingSection({ showTitle = true, compact = false }: PricingSec
             color: 'rgba(255, 255, 255, 0.35)',
           }}
         >
-          所有方案均支持 7 天无理由退款 · 随时可取消订阅
+          所有付费方案额度永不过期 · 支持 7 天无理由退款
         </p>
       </div>
     </section>
@@ -282,15 +307,15 @@ export function PricingFAQ() {
   const faqs = [
     {
       q: '免费版有什么限制？',
-      a: '免费版每月可升级 10 张图片，支持全部 4 种高级感风格，标准画质导出。足够体验产品核心功能。',
+      a: '免费版每月可使用 3 次免费额度，支持全部 4 种高级感风格，标准画质导出。邀请好友可获得额外额度。',
     },
     {
-      q: 'Pro 年卡的「无限次」是什么意思？',
-      a: 'Pro 年卡用户在订阅期内可以无限次使用升级功能，没有月度限制，适合高频创作者。',
+      q: '额度会过期吗？',
+      a: '付费购买的额度永不过期，可以随时使用。免费额度每月重置。',
     },
     {
       q: '如何退款？',
-      a: '订阅后 7 天内，如对产品不满意，可联系客服全额退款，无需任何理由。',
+      a: '购买后 7 天内，如对产品不满意，可联系客服全额退款，无需任何理由。',
     },
     {
       q: '支持哪些支付方式？',
