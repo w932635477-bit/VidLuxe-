@@ -4,7 +4,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import { processInviteReward } from '../credits';
+import { processInviteReward, INVITE_CONFIG } from '../credits';
 
 const DATA_DIR = process.env.INVITE_DATA_DIR || './data/invite';
 const FILE_PATH = path.join(DATA_DIR, 'invites.json');
@@ -52,8 +52,19 @@ export function generateInviteCode(anonymousId: string): string {
     return storage.users[anonymousId];
   }
 
-  // 生成6位邀请码
-  const code = Math.random().toString(36).substring(2, 8).toUpperCase();
+  // 生成6位邀请码（带碰撞检测）
+  let code: string;
+  let attempts = 0;
+  const maxAttempts = 10;
+  do {
+    code = Math.random().toString(36).substring(2, 8).toUpperCase();
+    attempts++;
+  } while (storage.codes[code] && attempts < maxAttempts);
+
+  // 如果碰撞检测失败，抛出错误
+  if (storage.codes[code]) {
+    throw new Error('无法生成唯一邀请码，请重试');
+  }
 
   storage.codes[code] = {
     code,
@@ -122,13 +133,8 @@ export function useInviteCode(
     return { success: false, error: '已经使用过该邀请码' };
   }
 
-  // 检查邀请人本月邀请数量
-  const thisMonth = record.invitees.filter(id => {
-    // 简化：不检查时间，只限制总数
-    return true;
-  }).length;
-
-  if (thisMonth >= 20) {
+  // 检查邀请人邀请数量
+  if (record.invitees.length >= 20) {
     return { success: false, error: '邀请人的邀请名额已用完' };
   }
 
@@ -140,7 +146,7 @@ export function useInviteCode(
 
   // 更新记录
   record.invitees.push(inviteeId);
-  record.totalEarned += 5;
+  record.totalEarned += INVITE_CONFIG.referrerBonus;
   saveStorage(storage);
 
   return { success: true };
