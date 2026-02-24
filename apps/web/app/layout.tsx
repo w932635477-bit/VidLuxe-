@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Playfair_Display, Plus_Jakarta_Sans } from 'next/font/google';
+import { AuthProvider } from '@/components/auth/AuthProvider';
 import './globals.css';
 
 // Playfair Display - 优雅衬线体，用于标题，传递奢华感
@@ -81,7 +82,9 @@ export default function RootLayout({
       className={`${playfairDisplay.variable} ${plusJakartaSans.variable}`}
     >
       <body className="font-sans antialiased">
-        {children}
+        <AuthProvider>
+          {children}
+        </AuthProvider>
       </body>
     </html>
   );
