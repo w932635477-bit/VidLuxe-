@@ -16,6 +16,7 @@ import {
   getStylePreset,
 } from '@/components/features/try';
 import type { StyleType, StyleSourceType } from '@/components/features/try';
+import { StyleMultiSelector, type MultiStyleType } from '@/components/features/try/StyleMultiSelector';
 
 // 类型
 import type { CategoryType, SeedingType, SeedingScore } from '@/lib/types/seeding';
@@ -32,8 +33,13 @@ import type {
   ColorGradeResponse,
 } from '@/lib/types/try-page';
 
-// 生成匿名 ID
+// 生成匿名 ID（仅在客户端执行）
 function generateAnonymousId(): string {
+  // SSR 安全检查
+  if (typeof window === 'undefined') {
+    return `anon_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
+  }
+
   const stored = localStorage.getItem('vidluxe_anonymous_id');
   if (stored) return stored;
 
@@ -71,9 +77,6 @@ export default function TryPage() {
     enhancedCoverUrl?: string; // 封面图 URL
     score?: SeedingScore;
   } | null>(null);
-
-  // 额度
-  const [quotaRemaining, setQuotaRemaining] = useState(10);
 
   // 模拟进度动画
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -144,15 +147,137 @@ export default function TryPage() {
 
   // 调色相关
   const [colorGradeExplanation, setColorGradeExplanation] = useState<string>('');
+  const [loadingStepIndex, setLoadingStepIndex] = useState(0);
   const [gradedVideoUrl, setGradedVideoUrl] = useState<string | null>(null);
 
   // 匿名 ID
   const [anonymousId, setAnonymousId] = useState<string>('');
 
+  // 额度系统
+  const [credits, setCredits] = useState<{ total: number; paid: number; free: number }>({
+    total: 0,
+    paid: 0,
+    free: 0,
+  });
+
+  // 多风格选择
+  const [selectedStyles, setSelectedStyles] = useState<MultiStyleType[]>([]);
+
+  // 邀请码系统
+  const [inviteCode, setInviteCode] = useState<string | null>(null);
+  const [inviteCodeInput, setInviteCodeInput] = useState('');
+  const [inviteApplied, setInviteApplied] = useState(false);
+  const [inviteError, setInviteError] = useState<string | null>(null);
+
   // 初始化
   useEffect(() => {
-    setAnonymousId(generateAnonymousId());
+    const id = generateAnonymousId();
+    setAnonymousId(id);
   }, []);
+
+  // 获取额度
+  const fetchCredits = useCallback(async () => {
+    if (!anonymousId) return;
+    try {
+      const response = await fetch(`/api/credits?anonymousId=${anonymousId}`);
+      const data = await response.json();
+      if (data.success) {
+        setCredits({
+          total: data.data.total,
+          paid: data.data.paid,
+          free: data.data.free,
+        });
+      }
+    } catch (error) {
+      console.error('Failed to fetch credits:', error);
+    }
+  }, [anonymousId]);
+
+  // 初始化后获取额度
+  useEffect(() => {
+    if (anonymousId) {
+      fetchCredits();
+    }
+  }, [anonymousId, fetchCredits]);
+
+  // 使用邀请码
+  const handleApplyInviteCode = async () => {
+    if (!inviteCodeInput || !anonymousId || inviteApplied) return;
+
+    setInviteError(null);
+    try {
+      const response = await fetch(`/api/invite/${inviteCodeInput}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ anonymousId }),
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        setInviteApplied(true);
+        fetchCredits();
+        setInviteCodeInput('');
+      } else {
+        setInviteError(data.error || '邀请码无效');
+      }
+    } catch (error) {
+      console.error('Failed to apply invite code:', error);
+      setInviteError('邀请码应用失败');
+    }
+  };
+
+  // 消耗额度
+  const consumeCredits = async (amount: number, description: string): Promise<boolean> => {
+    if (!anonymousId) return false;
+
+    try {
+      const response = await fetch('/api/credits/spend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          anonymousId,
+          amount,
+          description,
+        }),
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        // 更新本地额度状态
+        await fetchCredits();
+        return true;
+      } else {
+        setError(data.error || '额度不足');
+        return false;
+      }
+    } catch (error) {
+      console.error('Failed to consume credits:', error);
+      setError('额度消耗失败');
+      return false;
+    }
+  };
+
+  // 调色加载动画步骤循环
+  useEffect(() => {
+    if (step === 'colorGrade' && isLoading) {
+      const interval = setInterval(() => {
+        setLoadingStepIndex((prev) => (prev + 1) % 4);
+      }, 800);
+      return () => clearInterval(interval);
+    }
+  }, [step, isLoading]);
+
+  // 清理 Object URL 防止内存泄漏
+  useEffect(() => {
+    return () => {
+      if (previewUrl && previewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(previewUrl);
+      }
+      if (referenceFileUrl && referenceFileUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(referenceFileUrl);
+      }
+    };
+  }, [previewUrl, referenceFileUrl]);
 
   // 处理文件上传
   const handleFileChange = useCallback(async (file: File) => {
@@ -304,10 +429,28 @@ export default function TryPage() {
     }
 
     // 图片处理：直接开始
+    // 确定需要消耗的额度数量
+    const creditsToSpend = selectedStyles.length > 0 ? selectedStyles.length : 1;
+
+    // 检查额度是否足够
+    if (credits.total < creditsToSpend) {
+      setError(`额度不足，需要 ${creditsToSpend} 个额度，当前只有 ${credits.total} 个`);
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
-    setStep('processing');
     setProgress(0);
+    setCurrentStage('消耗额度...');
+
+    // 先消耗额度
+    const creditConsumed = await consumeCredits(creditsToSpend, `生成${creditsToSpend > 1 ? creditsToSpend + '种风格' : ''}图片`);
+    if (!creditConsumed) {
+      setIsLoading(false);
+      return;
+    }
+
+    setStep('processing');
     setCurrentStage('准备中...');
 
     try {
@@ -337,11 +480,6 @@ export default function TryPage() {
         throw new Error(enhanceData.error || '创建任务失败');
       }
 
-      // 更新额度
-      if (enhanceData.quota) {
-        setQuotaRemaining(enhanceData.quota.remaining);
-      }
-
       // 轮询任务状态
       await pollTaskStatus(enhanceData.taskId);
     } catch (err) {
@@ -359,10 +497,25 @@ export default function TryPage() {
       return;
     }
 
+    // 检查额度是否足够（视频消耗1个额度）
+    if (credits.total < 1) {
+      setError('额度不足，请先获取额度');
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
-    setStep('processing');
     setProgress(0);
+    setCurrentStage('消耗额度...');
+
+    // 先消耗额度
+    const creditConsumed = await consumeCredits(1, '生成视频封面');
+    if (!creditConsumed) {
+      setIsLoading(false);
+      return;
+    }
+
+    setStep('processing');
     setCurrentStage('AI 生成高级感封面...');
 
     // 启动模拟进度动画（第一阶段到 45%）
@@ -568,6 +721,36 @@ export default function TryPage() {
     setGradedVideoUrl(null);
   };
 
+  // 分享结果
+  const handleShare = async () => {
+    const shareUrl = resultData?.enhancedUrl || window.location.href;
+    const shareText = '我用 VidLuxe 生成了这张高级感图片，效果太棒了！';
+
+    // 优先使用 Web Share API
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'VidLuxe - AI 高级感升级',
+          text: shareText,
+          url: window.location.origin + '/try',
+        });
+      } catch (err) {
+        // 用户取消分享，不做处理
+        if ((err as Error).name !== 'AbortError') {
+          console.warn('分享失败:', err);
+        }
+      }
+    } else {
+      // 降级方案：复制链接到剪贴板
+      try {
+        await navigator.clipboard.writeText(window.location.origin + '/try');
+        alert('链接已复制到剪贴板！');
+      } catch {
+        alert('请手动复制链接分享');
+      }
+    }
+  };
+
   // 获取风格描述
   const getStyleDescription = () => {
     if (styleSourceType === 'reference' && referenceFile) {
@@ -747,6 +930,102 @@ export default function TryPage() {
             </p>
           </div>
 
+          {/* 额度显示 */}
+          <div
+            style={{
+              marginTop: '16px',
+              padding: '16px 20px',
+              borderRadius: '12px',
+              background: 'rgba(255, 255, 255, 0.03)',
+              border: '1px solid rgba(255, 255, 255, 0.06)',
+              maxWidth: '480px',
+              width: '100%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
+            <div>
+              <p style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.5)', marginBottom: '4px' }}>
+                我的额度
+              </p>
+              <p style={{ fontSize: '21px', fontWeight: 600 }}>
+                <span style={{ color: '#D4AF37' }}>{credits.total}</span>
+                <span style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.4)', marginLeft: '4px' }}>次</span>
+              </p>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <p style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.4)' }}>
+                付费 {credits.paid} · 免费 {credits.free}
+              </p>
+            </div>
+          </div>
+
+          {/* 邀请码输入 */}
+          {!inviteApplied && credits.total < 5 && (
+            <div
+              style={{
+                marginTop: '16px',
+                padding: '16px 20px',
+                borderRadius: '12px',
+                background: 'rgba(52, 199, 89, 0.06)',
+                border: '1px solid rgba(52, 199, 89, 0.12)',
+                maxWidth: '480px',
+                width: '100%',
+              }}
+            >
+              <p style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.6)', marginBottom: '12px' }}>
+                🎁 <span style={{ color: '#34C759' }}>输入邀请码，双方各得 5 个额度</span>
+              </p>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input
+                  type="text"
+                  value={inviteCodeInput}
+                  onChange={(e) => setInviteCodeInput(e.target.value.toUpperCase())}
+                  placeholder="输入6位邀请码"
+                  maxLength={6}
+                  style={{
+                    flex: 1,
+                    padding: '12px 16px',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    color: 'white',
+                    fontSize: '14px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                  }}
+                />
+                <button
+                  onClick={handleApplyInviteCode}
+                  disabled={!inviteCodeInput || inviteCodeInput.length !== 6}
+                  style={{
+                    padding: '12px 20px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: inviteCodeInput?.length === 6 ? '#34C759' : 'rgba(255, 255, 255, 0.1)',
+                    color: inviteCodeInput?.length === 6 ? '#000' : 'rgba(255, 255, 255, 0.3)',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    cursor: inviteCodeInput?.length === 6 ? 'pointer' : 'not-allowed',
+                  }}
+                >
+                  兑换
+                </button>
+              </div>
+              {inviteError && (
+                <p style={{ fontSize: '12px', color: '#FF3B30', marginTop: '8px' }}>
+                  {inviteError}
+                </p>
+              )}
+              {inviteApplied && (
+                <p style={{ fontSize: '12px', color: '#34C759', marginTop: '8px' }}>
+                  邀请码已成功使用，您获得了 5 个额度！
+                </p>
+              )}
+            </div>
+          )}
+
           <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
         </div>
       )}
@@ -924,20 +1203,47 @@ export default function TryPage() {
             </div>
           </div>
 
-          {/* 风格选择器 */}
+          {/* 风格选择器 - 图片支持多风格批量生成 */}
           <div style={{ flex: 1 }}>
-            <StyleSourceSelector
-              sourceType={styleSourceType}
-              onSourceTypeChange={setStyleSourceType}
-              referenceFile={referenceFile}
-              onReferenceFileChange={setReferenceFile}
-              selectedPreset={selectedPreset}
-              onPresetChange={setSelectedPreset}
-            />
+            {contentType === 'image' ? (
+              <>
+                {/* 多风格批量选择 */}
+                <StyleMultiSelector
+                  selectedStyles={selectedStyles}
+                  onChange={setSelectedStyles}
+                  disabled={isLoading}
+                />
+
+                {/* 或者使用传统单风格选择 */}
+                <div style={{ marginTop: '20px', marginBottom: '16px' }}>
+                  <p style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.4)', textAlign: 'center' }}>
+                    — 或者使用传统风格选择 —
+                  </p>
+                </div>
+                <StyleSourceSelector
+                  sourceType={styleSourceType}
+                  onSourceTypeChange={setStyleSourceType}
+                  referenceFile={referenceFile}
+                  onReferenceFileChange={setReferenceFile}
+                  selectedPreset={selectedPreset}
+                  onPresetChange={setSelectedPreset}
+                />
+              </>
+            ) : (
+              <StyleSourceSelector
+                sourceType={styleSourceType}
+                onSourceTypeChange={setStyleSourceType}
+                referenceFile={referenceFile}
+                onReferenceFileChange={setReferenceFile}
+                selectedPreset={selectedPreset}
+                onPresetChange={setSelectedPreset}
+              />
+            )}
           </div>
 
           {/* 操作按钮 */}
           <div style={{ marginTop: '24px' }}>
+            {/* 选择摘要 */}
             <div
               style={{
                 padding: '12px 16px',
@@ -947,12 +1253,50 @@ export default function TryPage() {
                 marginBottom: '12px',
               }}
             >
-              <p style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.5)', marginBottom: '4px' }}>
-                已选风格
-              </p>
-              <p style={{ fontSize: '15px', fontWeight: 500, color: '#D4AF37' }}>
-                {getStyleDescription()}
-              </p>
+              {contentType === 'image' && selectedStyles.length > 0 ? (
+                <>
+                  <p style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.5)', marginBottom: '4px' }}>
+                    批量生成
+                  </p>
+                  <p style={{ fontSize: '15px', fontWeight: 500, color: '#D4AF37' }}>
+                    {selectedStyles.length} 种风格，消耗 {selectedStyles.length} 个额度
+                  </p>
+                </>
+              ) : (
+                <>
+                  <p style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.5)', marginBottom: '4px' }}>
+                    已选风格
+                  </p>
+                  <p style={{ fontSize: '15px', fontWeight: 500, color: '#D4AF37' }}>
+                    {getStyleDescription()}
+                  </p>
+                </>
+              )}
+            </div>
+
+            {/* 额度信息 */}
+            <div
+              style={{
+                padding: '10px 16px',
+                borderRadius: '8px',
+                background: credits.total > 0 ? 'rgba(52, 199, 89, 0.08)' : 'rgba(255, 59, 48, 0.08)',
+                border: `1px solid ${credits.total > 0 ? 'rgba(52, 199, 89, 0.15)' : 'rgba(255, 59, 48, 0.15)'}`,
+                marginBottom: '12px',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <span style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.6)' }}>
+                当前额度
+              </span>
+              <span style={{
+                fontSize: '15px',
+                fontWeight: 600,
+                color: credits.total > 0 ? '#34C759' : '#FF3B30'
+              }}>
+                {credits.total} 次
+              </span>
             </div>
 
             <div style={{ display: 'flex', gap: '12px' }}>
@@ -973,26 +1317,22 @@ export default function TryPage() {
               </button>
               <button
                 onClick={handleStartProcessing}
-                disabled={isLoading}
+                disabled={isLoading || credits.total < 1}
                 style={{
                   flex: 2,
                   padding: '16px',
                   borderRadius: '12px',
                   border: 'none',
-                  background: isLoading ? '#8E8E93' : '#D4AF37',
+                  background: isLoading || credits.total < 1 ? '#8E8E93' : '#D4AF37',
                   color: '#000000',
                   fontSize: '17px',
                   fontWeight: 600,
-                  cursor: isLoading ? 'wait' : 'pointer',
+                  cursor: isLoading || credits.total < 1 ? 'not-allowed' : 'pointer',
                 }}
               >
-                {isLoading ? '处理中...' : '开始升级'}
+                {isLoading ? '处理中...' : credits.total < 1 ? '额度不足' : '开始升级'}
               </button>
             </div>
-
-            <p style={{ textAlign: 'center', marginTop: '16px', fontSize: '13px', color: 'rgba(255, 255, 255, 0.35)' }}>
-              剩余 {quotaRemaining} 次免费额度
-            </p>
           </div>
         </div>
       )}
@@ -1071,15 +1411,17 @@ export default function TryPage() {
           <div style={{ display: 'flex', gap: '12px', marginTop: 'auto' }}>
             <button
               onClick={() => setStep('keyframe')}
+              disabled={isLoading}
               style={{
                 flex: 1,
                 padding: '16px',
                 borderRadius: '12px',
                 border: '1px solid rgba(255, 255, 255, 0.15)',
                 background: 'transparent',
-                color: 'rgba(255, 255, 255, 0.7)',
+                color: isLoading ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.7)',
                 fontSize: '17px',
-                cursor: 'pointer',
+                cursor: isLoading ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s ease',
               }}
             >
               跳过调色
@@ -1099,9 +1441,184 @@ export default function TryPage() {
                 cursor: isLoading ? 'wait' : 'pointer',
               }}
             >
-              {isLoading ? '处理中...' : '应用智能调色'}
+              {isLoading ? (
+                <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                  <span style={{
+                    width: '16px',
+                    height: '16px',
+                    border: '2px solid transparent',
+                    borderTopColor: '#000',
+                    borderRadius: '50%',
+                    animation: 'spin 0.8s linear infinite',
+                  }} />
+                  处理中...
+                </span>
+              ) : '应用智能调色'}
             </button>
           </div>
+        </div>
+      )}
+
+      {/* ===== 调色处理加载动画覆盖层 ===== */}
+      {step === 'colorGrade' && isLoading && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0, 0, 0, 0.92)',
+            backdropFilter: 'blur(20px)',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 100,
+            padding: '24px',
+          }}
+        >
+          {/* 动态进度环 */}
+          <div style={{ width: '120px', height: '120px', marginBottom: '40px', position: 'relative' }}>
+            {/* 外圈旋转 */}
+            <svg viewBox="0 0 100 100" style={{ transform: 'rotate(-90deg)', position: 'absolute', inset: 0 }}>
+              <circle cx="50" cy="50" r="45" fill="none" stroke="rgba(212, 175, 55, 0.15)" strokeWidth="2" />
+              <circle
+                cx="50"
+                cy="50"
+                r="45"
+                fill="none"
+                stroke="#D4AF37"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeDasharray="70 283"
+                style={{ animation: 'rotate 2s linear infinite' }}
+              />
+            </svg>
+            {/* 内圈脉冲 */}
+            <div
+              style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: '80px',
+                height: '80px',
+                borderRadius: '50%',
+                background: 'radial-gradient(circle, rgba(212, 175, 55, 0.2) 0%, transparent 70%)',
+                animation: 'pulse-glow 2s ease-in-out infinite',
+              }}
+            />
+            {/* 中心图标 */}
+            <div
+              style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                fontSize: '32px',
+              }}
+            >
+              🎨
+            </div>
+          </div>
+
+          {/* 标题 */}
+          <h2 style={{ fontSize: '24px', fontWeight: 600, marginBottom: '12px', letterSpacing: '-0.02em' }}>
+            智能调色中
+          </h2>
+
+          {/* 动态提示文字 */}
+          <p
+            style={{
+              fontSize: '15px',
+              color: 'rgba(255, 255, 255, 0.6)',
+              marginBottom: '40px',
+              textAlign: 'center',
+              maxWidth: '280px',
+              animation: 'fade-text 3s ease-in-out infinite',
+            }}
+          >
+            {currentStage || '正在分析视频色彩特征...'}
+          </p>
+
+          {/* 处理步骤指示器 */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', width: '100%', maxWidth: '300px' }}>
+            {[
+              { label: '分析色彩分布', icon: '🔍' },
+              { label: '匹配风格预设', icon: '🎯' },
+              { label: '应用智能调色', icon: '✨' },
+              { label: '渲染处理中', icon: '🎬' },
+            ].map((item, index) => (
+              <div
+                key={item.label}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  padding: '12px 16px',
+                  borderRadius: '12px',
+                  background: index === loadingStepIndex ? 'rgba(212, 175, 55, 0.08)' : 'rgba(255, 255, 255, 0.03)',
+                  border: index === loadingStepIndex ? '1px solid rgba(212, 175, 55, 0.2)' : '1px solid rgba(255, 255, 255, 0.06)',
+                  transition: 'all 0.3s ease',
+                }}
+              >
+                <span style={{ fontSize: '18px' }}>{item.icon}</span>
+                <span style={{ fontSize: '14px', color: index === loadingStepIndex ? 'rgba(255, 255, 255, 0.9)' : 'rgba(255, 255, 255, 0.7)', transition: 'color 0.3s ease' }}>{item.label}</span>
+                {index === loadingStepIndex && (
+                  <span
+                    style={{
+                      marginLeft: 'auto',
+                      width: '6px',
+                      height: '6px',
+                      borderRadius: '50%',
+                      background: '#D4AF37',
+                      animation: 'pulse 1s ease-in-out infinite',
+                    }}
+                  />
+                )}
+              </div>
+            ))}
+          </div>
+
+          {/* 底部提示 */}
+          <p style={{
+            position: 'absolute',
+            bottom: '40px',
+            fontSize: '13px',
+            color: 'rgba(255, 255, 255, 0.35)',
+            textAlign: 'center',
+          }}>
+            调色通常需要 10-30 秒，请耐心等待
+          </p>
+
+          {/* 动画样式 */}
+          <style>{`
+            @keyframes spin {
+              from { transform: rotate(0deg); }
+              to { transform: rotate(360deg); }
+            }
+            @keyframes rotate {
+              from { stroke-dashoffset: 0; }
+              to { stroke-dashoffset: 283; }
+            }
+            @keyframes pulse-glow {
+              0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
+              50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.3; }
+            }
+            @keyframes pulse {
+              0%, 100% { opacity: 1; transform: scale(1); }
+              50% { opacity: 0.5; transform: scale(0.8); }
+            }
+            @keyframes fade-text {
+              0%, 100% { opacity: 0.6; }
+              50% { opacity: 1; }
+            }
+            @keyframes highlight-step {
+              0% { background: rgba(212, 175, 55, 0.1); }
+              100% { background: rgba(255, 255, 255, 0.03); }
+            }
+          `}</style>
         </div>
       )}
 
@@ -1488,6 +2005,7 @@ export default function TryPage() {
               再试一个
             </button>
             <button
+              onClick={handleShare}
               style={{
                 flex: 1,
                 padding: '14px',
