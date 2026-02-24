@@ -7,7 +7,8 @@ import {
   getUserCredits,
   saveUserCredits,
   createUserCredits,
-  addTransaction
+  addTransaction,
+  recordSpendTransaction
 } from './storage';
 import type {
   UserCredits,
@@ -55,6 +56,15 @@ export function getAvailableCredits(anonymousId: string): {
   freeRemaining: number;
 } {
   const credits = getOrCreateUserCredits(anonymousId);
+  const now = Date.now();
+
+  // 计算过期的邀请额度
+  const expiredInviteAmount = credits.inviteCredits
+    .filter(c => c.expiresAt && c.expiresAt < now)
+    .reduce((sum, c) => sum + c.amount, 0);
+
+  // 有效余额 = 总余额 - 过期的邀请额度
+  const validBalance = Math.max(0, credits.balance - expiredInviteAmount);
 
   const freeRemaining = Math.max(
     0,
@@ -62,8 +72,8 @@ export function getAvailableCredits(anonymousId: string): {
   );
 
   return {
-    total: credits.balance + freeRemaining,
-    paid: credits.balance,
+    total: validBalance + freeRemaining,
+    paid: validBalance,
     free: freeRemaining,
     freeRemaining,
   };
@@ -82,12 +92,22 @@ export function spendCredits(request: SpendCreditsRequest): SpendCreditsResult {
     };
   }
 
+  const now = Date.now();
+
+  // 计算过期的邀请额度
+  const expiredInviteAmount = credits.inviteCredits
+    .filter(c => c.expiresAt && c.expiresAt < now)
+    .reduce((sum, c) => sum + c.amount, 0);
+
+  // 有效余额 = 总余额 - 过期的邀请额度
+  const validBalance = Math.max(0, credits.balance - expiredInviteAmount);
+
   // 先消耗付费额度，再消耗免费额度
   let remaining = request.amount;
 
-  // 消耗付费额度
-  if (credits.balance > 0 && remaining > 0) {
-    const spendFromPaid = Math.min(credits.balance, remaining);
+  // 消耗有效付费额度（包括有效邀请额度）
+  if (validBalance > 0 && remaining > 0) {
+    const spendFromPaid = Math.min(validBalance, remaining);
     credits.balance -= spendFromPaid;
     remaining -= spendFromPaid;
   }
@@ -106,14 +126,16 @@ export function spendCredits(request: SpendCreditsRequest): SpendCreditsResult {
     createdAt: Date.now(),
   };
 
-  credits.totalSpent += request.amount;
-  credits.updatedAt = Date.now();
+  // 保存余额变更并记录交易
   saveUserCredits(credits);
+  recordSpendTransaction(request.anonymousId, transaction);
+
+  // 重新计算可用额度返回
+  const newAvailable = getAvailableCredits(request.anonymousId);
 
   return {
     success: true,
-    newBalance: credits.balance +
-      Math.max(0, credits.freeCredits.monthlyLimit - credits.freeCredits.usedThisMonth),
+    newBalance: newAvailable.total,
     transactionId: transaction.id,
   };
 }
@@ -174,6 +196,21 @@ export function processInviteReward(
   }
 
   const now = Date.now();
+
+  // 检查本月邀请次数限制
+  const monthStart = new Date();
+  monthStart.setDate(1);
+  monthStart.setHours(0, 0, 0, 0);
+  const monthStartTime = monthStart.getTime();
+
+  const invitesThisMonth = referrerCredits.inviteCredits.filter(
+    c => c.type === 'invite_earned' && c.createdAt >= monthStartTime
+  ).length;
+
+  if (invitesThisMonth >= INVITE_CONFIG.maxInvitesPerMonth) {
+    return { success: false, error: '本月邀请次数已达上限' };
+  }
+
   const expiresAt = now + INVITE_CONFIG.inviteCreditExpiresInDays * 24 * 60 * 60 * 1000;
 
   // 给邀请人加额度

@@ -20,6 +20,7 @@ export interface UserCredits {
   totalSpent: number;    // 累计消耗
   packages: CreditTransaction[];
   inviteCredits: CreditTransaction[];
+  transactions: CreditTransaction[]; // 所有交易记录（包括消费）
   freeCredits: FreeCreditInfo;
   createdAt: number;
   updatedAt: number;

@@ -6,6 +6,7 @@
 import fs from 'fs';
 import path from 'path';
 import type { UserCredits, CreditTransaction } from './types';
+import { FREE_CREDIT_CONFIG } from './types';
 
 const DATA_DIR = process.env.CREDITS_DATA_DIR || './data/credits';
 const FILE_PATH = path.join(DATA_DIR, 'credits.json');
@@ -65,8 +66,9 @@ export function createUserCredits(anonymousId: string): UserCredits {
     totalSpent: 0,
     packages: [],
     inviteCredits: [],
+    transactions: [],
     freeCredits: {
-      monthlyLimit: 3,
+      monthlyLimit: FREE_CREDIT_CONFIG.monthlyLimit,
       usedThisMonth: 0,
       resetAt: nextMonth.getTime(),
     },
@@ -101,6 +103,29 @@ export function addTransaction(
   } else if (transaction.type === 'invite_earned' || transaction.type === 'invite_bonus') {
     credits.inviteCredits.push(transaction);
   }
+
+  // 添加到通用交易记录
+  credits.transactions.push(transaction);
+
+  credits.updatedAt = Date.now();
+  saveUserCredits(credits);
+  return credits;
+}
+
+// 记录消费交易（不修改余额，仅记录）
+export function recordSpendTransaction(
+  anonymousId: string,
+  transaction: CreditTransaction
+): UserCredits {
+  let credits = getUserCredits(anonymousId);
+  if (!credits) {
+    credits = createUserCredits(anonymousId);
+  }
+
+  // 更新累计消费
+  credits.totalSpent += Math.abs(transaction.amount);
+  // 添加到交易记录
+  credits.transactions.push(transaction);
 
   credits.updatedAt = Date.now();
   saveUserCredits(credits);
