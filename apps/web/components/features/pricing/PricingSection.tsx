@@ -1,7 +1,9 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { useAuth } from '@/components/auth/AuthProvider';
 
 // 定价数据
 const PLANS = [
@@ -19,7 +21,6 @@ const PLANS = [
       '标准画质导出',
     ],
     cta: '开始体验',
-    ctaLink: '/try',
     popular: false,
   },
   {
@@ -37,7 +38,6 @@ const PLANS = [
       '多风格批量生成',
     ],
     cta: '立即购买',
-    ctaLink: 'mailto:upgrade@vidluxe.com?subject=购买小包',
     popular: false,
   },
   {
@@ -56,7 +56,6 @@ const PLANS = [
       '优先处理队列',
     ],
     cta: '立即购买',
-    ctaLink: 'mailto:upgrade@vidluxe.com?subject=购买中包',
     popular: true,
   },
   {
@@ -76,7 +75,6 @@ const PLANS = [
       '专属客服支持',
     ],
     cta: '立即购买',
-    ctaLink: 'mailto:upgrade@vidluxe.com?subject=购买大包',
     popular: false,
   },
   {
@@ -97,7 +95,6 @@ const PLANS = [
       'API 接入权限',
     ],
     cta: '立即购买',
-    ctaLink: 'mailto:upgrade@vidluxe.com?subject=购买超大包',
     popular: false,
     badge: '最划算',
   },
@@ -105,9 +102,24 @@ const PLANS = [
 
 interface PricingCardProps {
   plan: typeof PLANS[0];
+  onPurchase: (packageId: string) => void;
+  loading: boolean;
+  purchasingId: string | null;
 }
 
-function PricingCard({ plan }: PricingCardProps) {
+function PricingCard({ plan, onPurchase, loading, purchasingId }: PricingCardProps) {
+  const { user } = useAuth();
+  const isPurchasing = purchasingId === plan.id;
+
+  const handleClick = () => {
+    if (plan.price === 0) {
+      // 免费方案直接跳转到体验页
+      window.location.href = '/try';
+    } else {
+      onPurchase(plan.id);
+    }
+  };
+
   return (
     <div
       style={{
@@ -198,7 +210,7 @@ function PricingCard({ plan }: PricingCardProps) {
       </div>
 
       {/* 功能列表 */}
-      <ul style={{ flex: 1, marginBottom: '24px' }}>
+      <ul style={{ flex: 1, marginBottom: '24px', listStyle: 'none', padding: 0, margin: 0 }}>
         {plan.features.map((feature, index) => (
           <li
             key={index}
@@ -226,8 +238,9 @@ function PricingCard({ plan }: PricingCardProps) {
       </ul>
 
       {/* CTA 按钮 */}
-      <Link
-        href={plan.ctaLink}
+      <button
+        onClick={handleClick}
+        disabled={loading && isPurchasing}
         style={{
           display: 'block',
           textAlign: 'center',
@@ -237,12 +250,15 @@ function PricingCard({ plan }: PricingCardProps) {
           color: plan.popular ? '#000' : 'rgba(255, 255, 255, 0.9)',
           fontSize: '15px',
           fontWeight: 500,
-          textDecoration: 'none',
+          border: 'none',
+          cursor: loading && isPurchasing ? 'wait' : 'pointer',
+          opacity: loading && isPurchasing ? 0.7 : 1,
+          width: '100%',
           transition: 'all 0.2s ease',
         }}
       >
-        {plan.cta}
-      </Link>
+        {loading && isPurchasing ? '处理中...' : plan.cta}
+      </button>
     </div>
   );
 }
@@ -253,6 +269,59 @@ interface PricingSectionProps {
 }
 
 export function PricingSection({ showTitle = true, compact = false }: PricingSectionProps) {
+  const router = useRouter();
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const [purchasingId, setPurchasingId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const handlePurchase = async (packageId: string) => {
+    // 检查登录状态
+    if (!user) {
+      router.push('/auth?redirect=/pricing');
+      return;
+    }
+
+    setLoading(true);
+    setPurchasingId(packageId);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/payment/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ packageId }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (data.code === 'PAYMENT_NOT_CONFIGURED') {
+          // 支付未配置，显示联系方式
+          setError('支付功能暂未开放，请联系客服：upgrade@vidluxe.com');
+        } else {
+          setError(data.error || '购买失败，请重试');
+        }
+        return;
+      }
+
+      // 支付创建成功，跳转到支付页面或显示支付信息
+      if (data.mwebUrl) {
+        // H5 支付：跳转到微信支付页面
+        window.location.href = data.mwebUrl;
+      } else {
+        // 其他支付方式：显示成功信息
+        router.push('/dashboard?payment=success');
+      }
+    } catch (err) {
+      console.error('Purchase error:', err);
+      setError('网络错误，请重试');
+    } finally {
+      setLoading(false);
+      setPurchasingId(null);
+    }
+  };
+
   return (
     <section
       style={{
@@ -273,6 +342,22 @@ export function PricingSection({ showTitle = true, compact = false }: PricingSec
           </div>
         )}
 
+        {/* 错误提示 */}
+        {error && (
+          <div style={{
+            textAlign: 'center',
+            padding: '16px 24px',
+            marginBottom: '32px',
+            borderRadius: '12px',
+            background: 'rgba(239, 68, 68, 0.1)',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            color: '#ef4444',
+            fontSize: '14px',
+          }}>
+            {error}
+          </div>
+        )}
+
         {/* 定价卡片 */}
         <div
           style={{
@@ -282,7 +367,13 @@ export function PricingSection({ showTitle = true, compact = false }: PricingSec
           }}
         >
           {PLANS.map((plan) => (
-            <PricingCard key={plan.id} plan={plan} />
+            <PricingCard
+              key={plan.id}
+              plan={plan}
+              onPurchase={handlePurchase}
+              loading={loading}
+              purchasingId={purchasingId}
+            />
           ))}
         </div>
 
