@@ -102,18 +102,16 @@ const PLANS = [
 
 interface PricingCardProps {
   plan: typeof PLANS[0];
-  onPurchase: (packageId: string) => void;
+  onPurchase: (packageId: string, simulate?: boolean) => void;
   loading: boolean;
   purchasingId: string | null;
 }
 
 function PricingCard({ plan, onPurchase, loading, purchasingId }: PricingCardProps) {
-  const { user } = useAuth();
   const isPurchasing = purchasingId === plan.id;
 
   const handleClick = () => {
     if (plan.price === 0) {
-      // 免费方案直接跳转到体验页
       window.location.href = '/try';
     } else {
       onPurchase(plan.id);
@@ -136,7 +134,6 @@ function PricingCard({ plan, onPurchase, loading, purchasingId }: PricingCardPro
         flexDirection: 'column',
       }}
     >
-      {/* 推荐标签 */}
       {plan.popular && (
         <div
           style={{
@@ -157,7 +154,6 @@ function PricingCard({ plan, onPurchase, loading, purchasingId }: PricingCardPro
         </div>
       )}
 
-      {/* 省钱标签 */}
       {plan.badge && (
         <div
           style={{
@@ -176,7 +172,6 @@ function PricingCard({ plan, onPurchase, loading, purchasingId }: PricingCardPro
         </div>
       )}
 
-      {/* 方案名称 */}
       <div style={{ marginBottom: '8px' }}>
         <span style={{ fontSize: '17px', fontWeight: 600 }}>{plan.name}</span>
         <span
@@ -192,12 +187,10 @@ function PricingCard({ plan, onPurchase, loading, purchasingId }: PricingCardPro
         </span>
       </div>
 
-      {/* 描述 */}
       <p style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.5)', marginBottom: '20px' }}>
         {plan.description}
       </p>
 
-      {/* 价格 */}
       <div style={{ marginBottom: '24px' }}>
         <span style={{ fontSize: '48px', fontWeight: 700, letterSpacing: '-0.03em' }}>
           {plan.price === 0 ? '免费' : `¥${plan.price}`}
@@ -209,7 +202,6 @@ function PricingCard({ plan, onPurchase, loading, purchasingId }: PricingCardPro
         )}
       </div>
 
-      {/* 功能列表 */}
       <ul style={{ flex: 1, marginBottom: '24px', listStyle: 'none', padding: 0, margin: 0 }}>
         {plan.features.map((feature, index) => (
           <li
@@ -237,7 +229,6 @@ function PricingCard({ plan, onPurchase, loading, purchasingId }: PricingCardPro
         ))}
       </ul>
 
-      {/* CTA 按钮 */}
       <button
         onClick={handleClick}
         disabled={loading && isPurchasing}
@@ -273,10 +264,11 @@ export function PricingSection({ showTitle = true, compact = false }: PricingSec
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [purchasingId, setPurchasingId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [showContactModal, setShowContactModal] = useState(false);
+  const [selectedPackage, setSelectedPackage] = useState<typeof PLANS[0] | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
 
-  const handlePurchase = async (packageId: string) => {
-    // 检查登录状态
+  const handlePurchase = async (packageId: string, simulate = false) => {
     if (!user) {
       router.push('/auth?redirect=/pricing');
       return;
@@ -284,42 +276,57 @@ export function PricingSection({ showTitle = true, compact = false }: PricingSec
 
     setLoading(true);
     setPurchasingId(packageId);
-    setError(null);
 
     try {
       const response = await fetch('/api/payment/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ packageId }),
+        body: JSON.stringify({ packageId, simulate }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
         if (data.code === 'PAYMENT_NOT_CONFIGURED') {
-          // 支付未配置，显示联系方式
-          setError('支付功能暂未开放，请联系客服：upgrade@vidluxe.com');
+          // 显示联系方式
+          setSelectedPackage(PLANS.find(p => p.id === packageId) || null);
+          setShowContactModal(true);
         } else {
-          setError(data.error || '购买失败，请重试');
+          alert(data.error || '购买失败，请重试');
         }
         return;
       }
 
-      // 支付创建成功，跳转到支付页面或显示支付信息
+      // 模拟支付成功
+      if (data.simulated) {
+        setShowSuccess(true);
+        setTimeout(() => {
+          setShowSuccess(false);
+          router.push('/dashboard');
+        }, 2000);
+        return;
+      }
+
+      // 真实支付
       if (data.mwebUrl) {
-        // H5 支付：跳转到微信支付页面
         window.location.href = data.mwebUrl;
       } else {
-        // 其他支付方式：显示成功信息
         router.push('/dashboard?payment=success');
       }
     } catch (err) {
       console.error('Purchase error:', err);
-      setError('网络错误，请重试');
+      alert('网络错误，请重试');
     } finally {
       setLoading(false);
       setPurchasingId(null);
     }
+  };
+
+  // 模拟支付（仅测试用）
+  const handleSimulatePurchase = async () => {
+    if (!selectedPackage) return;
+    setShowContactModal(false);
+    await handlePurchase(selectedPackage.id, true);
   };
 
   return (
@@ -330,7 +337,6 @@ export function PricingSection({ showTitle = true, compact = false }: PricingSec
       }}
     >
       <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-        {/* 标题 */}
         {showTitle && (
           <div style={{ textAlign: 'center', marginBottom: '48px' }}>
             <h2 style={{ fontSize: '48px', fontWeight: 600, marginBottom: '12px', letterSpacing: '-0.02em' }}>
@@ -342,19 +348,129 @@ export function PricingSection({ showTitle = true, compact = false }: PricingSec
           </div>
         )}
 
-        {/* 错误提示 */}
-        {error && (
+        {/* 成功提示 */}
+        {showSuccess && (
           <div style={{
+            position: 'fixed',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            padding: '32px 48px',
+            borderRadius: '20px',
+            background: 'rgba(74, 222, 128, 0.15)',
+            border: '1px solid rgba(74, 222, 128, 0.3)',
+            zIndex: 1000,
             textAlign: 'center',
-            padding: '16px 24px',
-            marginBottom: '32px',
-            borderRadius: '12px',
-            background: 'rgba(239, 68, 68, 0.1)',
-            border: '1px solid rgba(239, 68, 68, 0.3)',
-            color: '#ef4444',
-            fontSize: '14px',
           }}>
-            {error}
+            <div style={{ fontSize: '48px', marginBottom: '16px' }}>✓</div>
+            <div style={{ fontSize: '20px', fontWeight: 600, color: '#4ade80' }}>
+              模拟支付成功！
+            </div>
+            <div style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.6)', marginTop: '8px' }}>
+              额度已发放到您的账户
+            </div>
+          </div>
+        )}
+
+        {/* 联系客服弹窗 */}
+        {showContactModal && selectedPackage && (
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0, 0, 0, 0.8)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000,
+              padding: '24px',
+            }}
+            onClick={() => setShowContactModal(false)}
+          >
+            <div
+              style={{
+                background: '#111',
+                borderRadius: '20px',
+                padding: '32px',
+                maxWidth: '400px',
+                width: '100%',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '16px' }}>
+                购买 {selectedPackage.name} (¥{selectedPackage.price})
+              </h3>
+
+              <p style={{ color: 'rgba(255, 255, 255, 0.6)', marginBottom: '24px', fontSize: '14px', lineHeight: 1.6 }}>
+                在线支付暂未开放，您可以通过以下方式完成购买：
+              </p>
+
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.03)',
+                borderRadius: '12px',
+                padding: '16px',
+                marginBottom: '16px',
+              }}>
+                <div style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.5)', marginBottom: '4px' }}>
+                  邮箱
+                </div>
+                <div style={{ fontSize: '16px', color: '#D4AF37' }}>
+                  upgrade@vidluxe.com
+                </div>
+              </div>
+
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.03)',
+                borderRadius: '12px',
+                padding: '16px',
+                marginBottom: '24px',
+              }}>
+                <div style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.5)', marginBottom: '4px' }}>
+                  微信
+                </div>
+                <div style={{ fontSize: '16px', color: '#D4AF37' }}>
+                  vidluxe_support
+                </div>
+              </div>
+
+              {/* 测试用：模拟支付按钮 */}
+              <button
+                onClick={handleSimulatePurchase}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  borderRadius: '12px',
+                  border: '1px dashed rgba(212, 175, 55, 0.5)',
+                  background: 'rgba(212, 175, 55, 0.1)',
+                  color: '#D4AF37',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  marginBottom: '12px',
+                }}
+              >
+                🧪 模拟支付（仅测试用）
+              </button>
+
+              <button
+                onClick={() => setShowContactModal(false)}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                }}
+              >
+                关闭
+              </button>
+            </div>
           </div>
         )}
 
@@ -377,7 +493,6 @@ export function PricingSection({ showTitle = true, compact = false }: PricingSec
           ))}
         </div>
 
-        {/* 底部说明 */}
         <p
           style={{
             textAlign: 'center',
