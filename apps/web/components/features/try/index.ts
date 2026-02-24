@@ -12,3 +12,5 @@ export { SeedingTypeSelector } from './SeedingTypeSelector';
 export { SeedingScoreCard } from './SeedingScoreCard';
 export { StyleSourceSelector, getStylePreset } from './StyleSelector';
 export type { StyleType, StyleSourceType } from './StyleSelector';
+export { StyleMultiSelector, STYLE_OPTIONS } from './StyleMultiSelector';
+export type { StyleMultiSelectorProps, MultiStyleType } from './StyleMultiSelector';
