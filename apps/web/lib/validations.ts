@@ -7,7 +7,7 @@
 import { z } from 'zod';
 
 // 预设风格
-export const presetStyleSchema = z.enum(['magazine', 'soft', 'urban', 'minimal', 'vintage']);
+export const presetStyleSchema = z.enum(['magazine', 'soft', 'urban', 'minimal', 'vintage', 'warmLuxury', 'coolPro', 'morandi']);
 
 // 内容类型
 export const contentTypeSchema = z.enum(['image', 'video']);

@@ -17,6 +17,7 @@ import { getStyleProfile } from './style-profile';
 import { calculateScore } from './scorer';
 import { buildEnhancePrompt } from './style-prompts';
 import type { PresetStyle } from './style-prompts';
+import { getFileStorage } from './file-storage';
 
 // Nano Banana API 配置
 const NANO_BANANA_CONFIG = {
@@ -233,9 +234,31 @@ export async function processImageEnhancement(params: {
   onProgress?.(15, '构建升级 Prompt');
   const prompt = styleProfile.prompt;
 
-  // 检查图片 URL 是否可被公网访问
-  const fullImageUrl = toFullUrl(imageUrl);
-  const useImageToImage = isPublicUrl(fullImageUrl);
+  // 获取公网 URL（上传到图床）
+  let publicUrl: string | null = null;
+
+  if (imageUrl.startsWith('http')) {
+    // 已经是公网 URL
+    publicUrl = imageUrl;
+  } else {
+    // 本地文件，需要上传到图床
+    onProgress?.(16, '上传图片到图床');
+    const storage = getFileStorage();
+    const localPath = imageUrl.startsWith('/')
+      ? `${process.cwd()}/public${imageUrl}`
+      : imageUrl;
+
+    console.log('[Workflow] Converting URL to local path:', imageUrl, '->', localPath);
+    console.log('[Workflow] File exists:', require('fs').existsSync(localPath));
+
+    publicUrl = await storage.getPublicUrl(localPath);
+
+    if (publicUrl) {
+      console.log('[Workflow] Got public URL:', publicUrl);
+    } else {
+      console.error('[Workflow] Failed to get public URL for image:', localPath);
+    }
+  }
 
   // 构建 API 请求参数
   const taskParams: {
@@ -249,14 +272,15 @@ export async function processImageEnhancement(params: {
     quality: '2K',
   };
 
-  // 只有当 URL 可公网访问时才使用 Image-to-Image
-  if (useImageToImage) {
-    taskParams.imageUrls = [fullImageUrl];
+  // 只有当有公网 URL 时才使用 Image-to-Image
+  if (publicUrl && isPublicUrl(publicUrl)) {
+    taskParams.imageUrls = [publicUrl];
     onProgress?.(20, '提交升级任务 (Image-to-Image)');
+    console.log('[Workflow] Using Image-to-Image mode with public URL');
   } else {
-    console.warn('[Workflow] Image URL is not publicly accessible, using text-to-image mode');
-    onProgress?.(20, '提交升级任务 (Text-to-Image)');
-    taskParams.prompt = `${prompt}, high quality photography, professional editing, magazine style`;
+    // 无法获取公网 URL，这是一个错误情况
+    console.error('[Workflow] No public URL available, cannot perform Image-to-Image');
+    throw new Error('无法上传图片到图床，请检查网络连接或稍后重试');
   }
 
   const { taskId } = await createNanoBananaTask(taskParams);

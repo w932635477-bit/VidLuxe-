@@ -1,12 +1,12 @@
 /**
  * 风格 Prompt 模板
  *
- * 定义 5 种预设风格的 Prompt 模板
+ * 定义 4 种预设风格的 Prompt 模板
  * 用于 Nano Banana API 调用
  */
 
 // 预设风格类型
-export type PresetStyle = 'magazine' | 'soft' | 'urban' | 'minimal' | 'vintage';
+export type PresetStyle = 'minimal' | 'warmLuxury' | 'coolPro' | 'morandi' | 'magazine' | 'soft' | 'urban' | 'vintage';
 
 // 风格配置
 export interface StyleConfig {
@@ -20,8 +20,87 @@ export interface StyleConfig {
   suitableFor: string[];
 }
 
-// 5 种预设风格配置
+// 4 种主要预设风格配置（前端批量生成使用）
 export const STYLE_PRESETS: Record<PresetStyle, StyleConfig> = {
+  minimal: {
+    id: 'minimal',
+    name: '极简风格',
+    nameEn: 'Minimal',
+    description: 'Apple 风格，克制、干净',
+    prompt: `
+      Apple product photography style, pure minimal background,
+      dramatic lighting, high contrast, clean composition,
+      generous negative space, elegant and refined,
+      charcoal to soft gray gradient, professional studio quality
+    `.trim().replace(/\s+/g, ' '),
+    negativePrompt: `
+      cluttered, busy, colorful, textured, patterned,
+      ornate, decorative, complex
+    `.trim().replace(/\s+/g, ' '),
+    colors: ['#8E8E93', '#636366', '#AEAEB2'],
+    suitableFor: ['产品展示', '静物', '护肤品', '数码产品'],
+  },
+
+  warmLuxury: {
+    id: 'warmLuxury',
+    name: '暖调奢华',
+    nameEn: 'Warm Luxury',
+    description: 'Chanel 风格，温暖高级',
+    prompt: `
+      Vogue magazine editorial style, luxury fashion aesthetic,
+      warm golden lighting, sophisticated and elegant,
+      professional model photography, high-end beauty editorial,
+      warm beige and champagne tones, cinematic background,
+      soft studio lighting, premium quality, editorial composition
+    `.trim().replace(/\s+/g, ' '),
+    negativePrompt: `
+      amateur, low quality, blurry, distorted, ugly,
+      bad anatomy, bad proportions, watermark, signature
+    `.trim().replace(/\s+/g, ' '),
+    colors: ['#D4AF37', '#8B6914', '#2C1810'],
+    suitableFor: ['穿搭', '美妆', '奢侈品', '时尚博主'],
+  },
+
+  coolPro: {
+    id: 'coolPro',
+    name: '冷调专业',
+    nameEn: 'Cool Pro',
+    description: '科技感，专业可信赖',
+    prompt: `
+      Apple keynote style, clean professional background,
+      cool blue-gray tones, corporate executive aesthetic,
+      modern minimalist, trustworthy and authoritative,
+      soft diffused lighting, sharp details, premium corporate style
+    `.trim().replace(/\s+/g, ' '),
+    negativePrompt: `
+      casual, messy, warm tones, rustic, vintage,
+      playful, informal, cluttered
+    `.trim().replace(/\s+/g, ' '),
+    colors: ['#5E7A99', '#3D5A80', '#6B8AAD'],
+    suitableFor: ['职场', '知识分享', '科技', '财经'],
+  },
+
+  morandi: {
+    id: 'morandi',
+    name: '莫兰迪',
+    nameEn: 'Morandi',
+    description: 'Kinfolk 风格，低饱和度',
+    prompt: `
+      Japanese lifestyle magazine style, soft natural lighting,
+      muted pastel colors, Kinfolk aesthetic, dreamy atmosphere,
+      gentle and warm, artistic and refined, low saturation,
+      earthy tones, natural and authentic, editorial quality,
+      Morandi color palette, greyish soft tones
+    `.trim().replace(/\s+/g, ' '),
+    negativePrompt: `
+      harsh lighting, high contrast, neon colors,
+      artificial, flashy, bold, aggressive, saturated
+    `.trim().replace(/\s+/g, ' '),
+    colors: ['#B8A99A', '#9A8A7A', '#D4C5B9'],
+    suitableFor: ['生活方式', '探店', '美食', '家居'],
+  },
+
+  // 兼容旧风格（保留用于向后兼容）
   magazine: {
     id: 'magazine',
     name: '杂志大片',
@@ -78,25 +157,6 @@ export const STYLE_PRESETS: Record<PresetStyle, StyleConfig> = {
     `.trim().replace(/\s+/g, ' '),
     colors: ['#5E7A99', '#3D5A80', '#6B8AAD'],
     suitableFor: ['职场', '知识分享', '科技', '财经'],
-  },
-
-  minimal: {
-    id: 'minimal',
-    name: '高级极简',
-    nameEn: 'Minimal',
-    description: '极简干净，Apple 风格',
-    prompt: `
-      Apple product photography style, pure minimal background,
-      dramatic lighting, high contrast, clean composition,
-      generous negative space, elegant and refined,
-      charcoal to soft gray gradient, professional studio quality
-    `.trim().replace(/\s+/g, ' '),
-    negativePrompt: `
-      cluttered, busy, colorful, textured, patterned,
-      ornate, decorative, complex
-    `.trim().replace(/\s+/g, ' '),
-    colors: ['#8E8E93', '#636366', '#AEAEB2'],
-    suitableFor: ['产品展示', '静物', '护肤品', '数码产品'],
   },
 
   vintage: {

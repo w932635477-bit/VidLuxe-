@@ -303,42 +303,66 @@ export class FileStorage {
    * litterbox 支持 1-72 小时临时存储，可被 AI API 访问
    */
   private async uploadToTmpfiles(localPath: string): Promise<string | null> {
-    try {
-      const fileBuffer = fs.readFileSync(localPath);
-      const filename = path.basename(localPath);
+    const maxRetries = 3;
+    const timeout = 30000; // 30 秒超时
 
-      // 使用 litterbox.catbox.moe API（临时存储）
-      // 文档: https://litterbox.catbox.moe/
-      // 注意：catbox.moe 的永久链接不被某些 AI API 支持，改用 litterbox
-      const blob = new Blob([fileBuffer], { type: 'image/jpeg' });
-      const formData = new FormData();
-      formData.append('reqtype', 'fileupload');
-      formData.append('time', '1h'); // 1 小时后过期，足够处理
-      formData.append('fileToUpload', blob, filename);
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`[FileStorage] Uploading to litterbox (attempt ${attempt}/${maxRetries})...`);
+        const fileBuffer = fs.readFileSync(localPath);
+        const filename = path.basename(localPath);
 
-      const response = await fetch('https://litterbox.catbox.moe/resources/internals/api.php', {
-        method: 'POST',
-        body: formData,
-      });
+        // 使用 litterbox.catbox.moe API（临时存储）
+        const blob = new Blob([fileBuffer], { type: 'image/jpeg' });
+        const formData = new FormData();
+        formData.append('reqtype', 'fileupload');
+        formData.append('time', '1h'); // 1 小时后过期，足够处理
+        formData.append('fileToUpload', blob, filename);
 
-      if (!response.ok) {
-        console.warn('[FileStorage] litterbox upload failed:', response.status);
+        // 添加超时控制
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+        const response = await fetch('https://litterbox.catbox.moe/resources/internals/api.php', {
+          method: 'POST',
+          body: formData,
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          console.warn(`[FileStorage] litterbox upload failed (attempt ${attempt}):`, response.status);
+          if (attempt < maxRetries) {
+            await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // 指数退避
+            continue;
+          }
+          return null;
+        }
+
+        // litterbox 直接返回图片 URL
+        const url = (await response.text()).trim();
+        if (url && url.startsWith('https://')) {
+          console.log('[FileStorage] Uploaded to litterbox:', url);
+          return url;
+        }
+
+        console.warn(`[FileStorage] Invalid response from litterbox (attempt ${attempt}):`, url);
+        if (attempt < maxRetries) {
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+          continue;
+        }
+        return null;
+      } catch (error) {
+        console.warn(`[FileStorage] Temp file upload error (attempt ${attempt}):`, error instanceof Error ? error.message : error);
+        if (attempt < maxRetries) {
+          await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
+          continue;
+        }
         return null;
       }
-
-      // litterbox 直接返回图片 URL
-      const url = (await response.text()).trim();
-      if (url && url.startsWith('https://')) {
-        console.log('[FileStorage] Uploaded to litterbox:', url);
-        return url;
-      }
-
-      console.warn('[FileStorage] Invalid response from litterbox:', url);
-      return null;
-    } catch (error) {
-      console.warn('[FileStorage] Temp file upload error:', error);
-      return null;
     }
+    return null;
   }
 
   /**

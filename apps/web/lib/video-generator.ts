@@ -33,7 +33,7 @@ export interface VideoGenerationParams {
   backgroundUrl: string; // 背景图 URL 或本地路径
   foregroundUrl?: string; // 前景图（人物）URL 或本地路径
   duration?: number; // 视频时长（秒）
-  style?: 'magazine' | 'soft' | 'urban' | 'minimal' | 'vintage';
+  style?: 'minimal' | 'warmLuxury' | 'coolPro' | 'morandi' | 'magazine' | 'soft' | 'urban' | 'vintage';
   transition?: 'fade' | 'zoom' | 'slide'; // 转场效果
 }
 

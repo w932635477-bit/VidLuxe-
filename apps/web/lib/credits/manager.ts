@@ -140,6 +140,40 @@ export function spendCredits(request: SpendCreditsRequest): SpendCreditsResult {
   };
 }
 
+// 退回额度（任务失败时调用）
+export function refundCredits(
+  anonymousId: string,
+  amount: number,
+  reason: string
+): { success: boolean; newBalance: number; transactionId?: string } {
+  const credits = getOrCreateUserCredits(anonymousId);
+
+  // 直接增加余额（退回到付费额度）
+  credits.balance += amount;
+  credits.totalEarned += amount;
+  credits.updatedAt = Date.now();
+
+  // 记录退回交易
+  const transaction: CreditTransaction = {
+    id: generateId(),
+    amount: amount,
+    type: 'refund',
+    description: `退回额度: ${reason}`,
+    createdAt: Date.now(),
+  };
+
+  saveUserCredits(credits);
+  recordSpendTransaction(anonymousId, transaction);
+
+  const newAvailable = getAvailableCredits(anonymousId);
+
+  return {
+    success: true,
+    newBalance: newAvailable.total,
+    transactionId: transaction.id,
+  };
+}
+
 // 购买套餐
 export function purchasePackage(
   anonymousId: string,

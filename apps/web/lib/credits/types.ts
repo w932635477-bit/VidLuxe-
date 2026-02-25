@@ -30,7 +30,7 @@ export interface UserCredits {
 export interface CreditTransaction {
   id: string;
   amount: number;        // 正数=获得，负数=消耗
-  type: 'purchase' | 'invite_earned' | 'invite_bonus' | 'free' | 'spend';
+  type: 'purchase' | 'invite_earned' | 'invite_bonus' | 'free' | 'spend' | 'refund';
   description: string;
   packageId?: string;
   inviteCode?: string;

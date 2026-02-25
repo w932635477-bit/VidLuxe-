@@ -20,11 +20,13 @@
     "@supabase/supabase-js": "^2.97.0",
     "@vidluxe/core": "workspace:*",
     "@vidluxe/types": "workspace:*",
+    "immer": "^11.1.4",
     "next": "^14.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "remotion": "4.0.427",
-    "zod": "^4.3.6"
+    "zod": "^4.3.6",
+    "zustand": "^5.0.11"
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.7",
