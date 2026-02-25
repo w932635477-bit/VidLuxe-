@@ -664,19 +664,35 @@ export default function TryPage() {
             const enhanceData = await enhanceResponse.json();
 
             if (enhanceData.success && enhanceData.taskId) {
-              // 简化：等待2秒后直接获取结果
-              await new Promise(resolve => setTimeout(resolve, 2000));
+              // 轮询等待任务完成
+              const maxAttempts = 60;
+              let taskCompleted = false;
 
-              const statusResponse = await fetch(`/api/enhance/${enhanceData.taskId}`);
-              const statusData = await statusResponse.json();
+              for (let i = 0; i < maxAttempts; i++) {
+                await new Promise(resolve => setTimeout(resolve, 2000));
 
-              if (statusData.status === 'completed' && statusData.result) {
-                results.push({
-                  originalUrl: file.uploadedUrl!,
-                  enhancedUrl: statusData.result.enhancedUrl,
-                  style: style,
-                  score: statusData.result.score,
-                });
+                const statusResponse = await fetch(`/api/enhance/${enhanceData.taskId}`);
+                const statusData = await statusResponse.json();
+
+                if (statusData.status === 'completed' && statusData.result) {
+                  results.push({
+                    originalUrl: file.uploadedUrl!,
+                    enhancedUrl: statusData.result.enhancedUrl,
+                    style: style,
+                    score: statusData.result.score,
+                  });
+                  taskCompleted = true;
+                  break;
+                }
+
+                if (statusData.status === 'failed') {
+                  console.error(`Task ${enhanceData.taskId} failed:`, statusData.error);
+                  break;
+                }
+              }
+
+              if (!taskCompleted) {
+                console.warn(`Task ${enhanceData.taskId} did not complete in time`);
               }
             }
 
@@ -2222,8 +2238,62 @@ export default function TryPage() {
           </h2>
           <BatchResultGrid
             results={batchResults}
-            onDownloadAll={() => {
-              // 简化：提示用户逐个下载
+            onDownloadAll={async () => {
+              // 简化：逐个下载
+              for (const result of batchResults) {
+                const a = document.createElement('a');
+                a.href = result.enhancedUrl;
+                a.download = `enhanced_${result.style}.jpg`;
+                a.click();
+                await new Promise(r => setTimeout(r, 500));
+              }
+            }}
+          />
+          <div style={{ marginTop: '24px', textAlign: 'center' }}>
+            <button
+              onClick={handleReset}
+              style={{
+                padding: '14px 32px',
+                borderRadius: '12px',
+                border: '1px solid rgba(255,255,255,0.15)',
+                background: 'transparent',
+                color: 'rgba(255,255,255,0.7)',
+                fontSize: '15px',
+                cursor: 'pointer',
+              }}
+            >
+              重新开始
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 批量结果为空的情况 */}
+      {step === 'result' && uploadMode === 'batch' && batchResults.length === 0 && (
+        <div style={{ padding: '80px 24px', maxWidth: '480px', margin: '0 auto', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '32px', fontWeight: 600, marginBottom: '24px' }}>
+            生成完成
+          </h2>
+          <p style={{ color: 'rgba(255,255,255,0.6)', marginBottom: '32px' }}>
+            所有任务已完成，但没有生成成功的结果。请重试。
+          </p>
+          <button
+            onClick={() => { setStep('style'); setBatchResults([]); }}
+            style={{
+              padding: '14px 32px',
+              borderRadius: '12px',
+              border: 'none',
+              background: 'linear-gradient(135deg, #CA8A04, #EAB308)',
+              color: 'white',
+              fontSize: '15px',
+              fontWeight: 500,
+              cursor: 'pointer',
+            }}
+          >
+            重试
+          </button>
+        </div>
+      )}
               alert('请逐个点击图片下载');
             }}
           />
