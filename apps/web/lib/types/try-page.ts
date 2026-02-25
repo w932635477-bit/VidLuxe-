@@ -136,3 +136,24 @@ export interface TryPageState {
   enhancedCoverUrl: string | null;
   anonymousId: string;
 }
+
+// 批量上传文件项
+export interface BatchFileItem {
+  id: string;
+  file: File;
+  previewUrl: string;
+  uploadedUrl: string | null;
+  status: 'pending' | 'uploading' | 'success' | 'error';
+  error?: string;
+}
+
+// 上传模式
+export type UploadMode = 'single' | 'batch';
+
+// 批量结果项
+export interface BatchResultItem {
+  originalUrl: string;
+  enhancedUrl: string;
+  style: string;
+  score?: SeedingScore;
+}
