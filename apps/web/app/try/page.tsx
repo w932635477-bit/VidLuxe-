@@ -2294,27 +2294,6 @@ export default function TryPage() {
           </button>
         </div>
       )}
-              alert('请逐个点击图片下载');
-            }}
-          />
-          <div style={{ marginTop: '24px', textAlign: 'center' }}>
-            <button
-              onClick={handleReset}
-              style={{
-                padding: '14px 32px',
-                borderRadius: '12px',
-                border: '1px solid rgba(255, 255, 255, 0.15)',
-                background: 'transparent',
-                color: 'rgba(255, 255, 255, 0.7)',
-                fontSize: '15px',
-                cursor: 'pointer',
-              }}
-            >
-              再试一批
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* 批量确认弹窗 */}
       <BatchConfirmModal
