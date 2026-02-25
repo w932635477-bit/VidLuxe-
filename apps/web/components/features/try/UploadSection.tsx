@@ -10,9 +10,17 @@ interface UploadSectionProps {
   isLoading: boolean;
   onFileChange: (file: File) => void;
   onDrop: (e: React.DragEvent) => void;
+  onMultipleFiles?: (files: File[]) => void;
+  allowMultiple?: boolean;
 }
 
-export function UploadSection({ isLoading, onFileChange, onDrop }: UploadSectionProps) {
+export function UploadSection({
+  isLoading,
+  onFileChange,
+  onDrop,
+  onMultipleFiles,
+  allowMultiple = false,
+}: UploadSectionProps) {
   return (
     <div
       style={{
@@ -34,7 +42,7 @@ export function UploadSection({ isLoading, onFileChange, onDrop }: UploadSection
             marginBottom: '16px',
           }}
         >
-          上传内容
+          让普通素材变爆款
         </h1>
         <p
           style={{
@@ -43,7 +51,7 @@ export function UploadSection({ isLoading, onFileChange, onDrop }: UploadSection
             maxWidth: '400px',
           }}
         >
-          让 AI 为你的内容注入种草力
+          光线差、背景乱？一键提升高级感
         </p>
       </div>
 
@@ -72,8 +80,18 @@ export function UploadSection({ isLoading, onFileChange, onDrop }: UploadSection
           id="file-input"
           type="file"
           accept="image/*,video/*"
+          multiple={allowMultiple}
           style={{ display: 'none' }}
-          onChange={(e) => e.target.files?.[0] && onFileChange(e.target.files[0])}
+          onChange={(e) => {
+            const files = e.target.files;
+            if (!files || files.length === 0) return;
+
+            if (allowMultiple && files.length > 1 && onMultipleFiles) {
+              onMultipleFiles(Array.from(files));
+            } else {
+              onFileChange(files[0]);
+            }
+          }}
           disabled={isLoading}
         />
 
@@ -117,7 +135,7 @@ export function UploadSection({ isLoading, onFileChange, onDrop }: UploadSection
               </svg>
             </div>
             <p style={{ fontSize: '21px', fontWeight: 500, marginBottom: '8px' }}>
-              点击或拖拽上传
+              拖入你的原片或视频{allowMultiple ? '（可多选）' : ''}
             </p>
             <p style={{ fontSize: '15px', color: 'rgba(255, 255, 255, 0.4)', marginBottom: '16px' }}>
               图片或视频
@@ -144,7 +162,10 @@ export function UploadSection({ isLoading, onFileChange, onDrop }: UploadSection
         }}
       >
         <p style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.6)' }}>
-          💡 <span style={{ color: 'rgba(255, 255, 255, 0.8)' }}>小贴士</span>：人像、产品、美食、穿搭效果最佳
+          💡 {allowMultiple
+            ? '建议上传：穿搭 / 美妆 / 探店 / 生活方式，最多9张图片'
+            : '建议上传：穿搭 / 美妆 / 探店 / 生活方式，原图效果更佳'
+          }
         </p>
       </div>
 
