@@ -14,6 +14,9 @@ import {
   SeedingTypeSelector,
   SeedingScoreCard,
   getStylePreset,
+  BatchPreviewGrid,
+  BatchConfirmModal,
+  BatchResultGrid,
 } from '@/components/features/try';
 import type { StyleType, StyleSourceType } from '@/components/features/try';
 import { StyleMultiSelector, type MultiStyleType } from '@/components/features/try/StyleMultiSelector';
@@ -31,6 +34,9 @@ import type {
   EnhanceResponse,
   TaskStatusResponse,
   ColorGradeResponse,
+  BatchFileItem,
+  BatchResultItem,
+  UploadMode,
 } from '@/lib/types/try-page';
 
 // 生成匿名 ID（仅在客户端执行）
@@ -162,6 +168,12 @@ export default function TryPage() {
 
   // 多风格选择
   const [selectedStyles, setSelectedStyles] = useState<MultiStyleType[]>([]);
+
+  // 批量上传相关
+  const [batchFiles, setBatchFiles] = useState<BatchFileItem[]>([]);
+  const [uploadMode, setUploadMode] = useState<UploadMode>('single');
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [batchResults, setBatchResults] = useState<BatchResultItem[]>([]);
 
   // 邀请码系统
   const [inviteCode, setInviteCode] = useState<string | null>(null);
@@ -385,8 +397,116 @@ export default function TryPage() {
     [handleFileChange]
   );
 
+  // 批量文件上传
+  const handleBatchFilesChange = useCallback(async (files: File[]) => {
+    if (files.length === 0) return;
+
+    // 过滤只保留图片，最多9张
+    const imageFiles = files
+      .filter(f => f.type.startsWith('image/'))
+      .slice(0, 9);
+
+    if (imageFiles.length === 0) {
+      setError('请上传图片文件');
+      return;
+    }
+
+    setUploadMode('batch');
+    setIsLoading(true);
+    setError(null);
+
+    // 创建批量项目
+    const newItems: BatchFileItem[] = imageFiles.map(file => ({
+      id: `${Date.now()}_${Math.random().toString(36).substring(2, 9)}`,
+      file,
+      previewUrl: URL.createObjectURL(file),
+      uploadedUrl: null,
+      status: 'pending' as const,
+    }));
+
+    setBatchFiles(newItems);
+
+    // 并发上传所有文件
+    const uploadPromises = newItems.map(async (item) => {
+      try {
+        const formData = new FormData();
+        formData.append('file', item.file);
+
+        const response = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        const data = await response.json();
+
+        if (data.success && data.file) {
+          setBatchFiles(prev =>
+            prev.map(f =>
+              f.id === item.id
+                ? { ...f, uploadedUrl: data.file.url, status: 'success' as const }
+                : f
+            )
+          );
+        } else {
+          throw new Error(data.error || '上传失败');
+        }
+      } catch (error) {
+        setBatchFiles(prev =>
+          prev.map(f =>
+            f.id === item.id
+              ? { ...f, status: 'error' as const, error: error instanceof Error ? error.message : '上传失败' }
+              : f
+          )
+        );
+      }
+    });
+
+    await Promise.all(uploadPromises);
+    setIsLoading(false);
+
+    // 上传完成后进入风格选择步骤
+    setStep('style');
+  }, []);
+
+  // 移除单个批量文件
+  const removeBatchFile = useCallback((id: string) => {
+    setBatchFiles(prev => {
+      const item = prev.find(f => f.id === id);
+      if (item?.previewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(item.previewUrl);
+      }
+      const newFiles = prev.filter(f => f.id !== id);
+      if (newFiles.length === 0) {
+        setUploadMode('single');
+        setStep('upload');
+      }
+      return newFiles;
+    });
+  }, []);
+
   // 开始处理
   const handleStartProcessing = async () => {
+    // 批量图片处理
+    if (uploadMode === 'batch' && batchFiles.length > 0) {
+      const successFiles = batchFiles.filter(f => f.status === 'success' && f.uploadedUrl);
+      if (successFiles.length === 0) {
+        setError('没有可用的图片');
+        return;
+      }
+
+      const imageCount = successFiles.length;
+      const styleCount = selectedStyles.length > 0 ? selectedStyles.length : 1;
+      const totalCost = imageCount * styleCount;
+
+      if (credits.total < totalCost) {
+        setError(`额度不足，需要 ${totalCost} 个额度，当前只有 ${credits.total} 个`);
+        return;
+      }
+
+      setShowConfirmModal(true);
+      return;
+    }
+
     if (!uploadedFileUrl) {
       setError('请先上传文件');
       return;
@@ -487,6 +607,87 @@ export default function TryPage() {
       setStep('style');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // 确认批量生成
+  const handleConfirmBatchGeneration = async () => {
+    setShowConfirmModal(false);
+
+    const successFiles = batchFiles.filter(f => f.status === 'success' && f.uploadedUrl);
+    if (successFiles.length === 0) {
+      setError('没有可用的图片');
+      return;
+    }
+
+    const imageCount = successFiles.length;
+    const styleCount = selectedStyles.length > 0 ? selectedStyles.length : 1;
+    const totalCost = imageCount * styleCount;
+
+    const creditConsumed = await consumeCredits(totalCost, `批量生成 ${imageCount}张图片 x ${styleCount}种风格`);
+    if (!creditConsumed) return;
+
+    setStep('processing');
+    setProgress(0);
+    setCurrentStage('准备批量生成...');
+
+    const results: BatchResultItem[] = [];
+    const stylesToUse = selectedStyles.length > 0 ? selectedStyles : ['magazine'];
+
+    try {
+      let completed = 0;
+      const total = imageCount * styleCount;
+
+      for (const file of successFiles) {
+        for (const style of stylesToUse) {
+          try {
+            setCurrentStage(`处理中... (${completed + 1}/${total})`);
+
+            const enhanceResponse = await fetch('/api/enhance', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                content: { type: 'image', url: file.uploadedUrl },
+                styleSource: { type: 'preset', presetStyle: style },
+                category: selectedCategory,
+                seedingType: selectedSeedingType,
+                anonymousId,
+              }),
+            });
+
+            const enhanceData = await enhanceResponse.json();
+
+            if (enhanceData.success && enhanceData.taskId) {
+              // 简化：等待2秒后直接获取结果
+              await new Promise(resolve => setTimeout(resolve, 2000));
+
+              const statusResponse = await fetch(`/api/enhance/${enhanceData.taskId}`);
+              const statusData = await statusResponse.json();
+
+              if (statusData.status === 'completed' && statusData.result) {
+                results.push({
+                  originalUrl: file.uploadedUrl!,
+                  enhancedUrl: statusData.result.enhancedUrl,
+                  style: style,
+                  score: statusData.result.score,
+                });
+              }
+            }
+
+            completed++;
+            setProgress(Math.round((completed / total) * 100));
+          } catch (err) {
+            console.error(`Failed to process:`, err);
+            completed++;
+          }
+        }
+      }
+
+      setBatchResults(results);
+      setStep('result');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '批量处理失败');
+      setStep('style');
     }
   };
 
@@ -719,6 +920,12 @@ export default function TryPage() {
     setEnhancedCoverUrl(null);
     setColorGradeExplanation('');
     setGradedVideoUrl(null);
+    // 重置批量相关状态
+    setBatchFiles([]);
+    setUploadMode('single');
+    setShowConfirmModal(false);
+    setBatchResults([]);
+    setSelectedStyles([]);
   };
 
   // 分享结果
@@ -798,148 +1005,36 @@ export default function TryPage() {
 
       {/* ===== 步骤 1: 上传 ===== */}
       {step === 'upload' && (
-        <div
-          style={{
-            minHeight: '100vh',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '80px 24px',
-          }}
-        >
-          <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-            <h1
-              style={{
-                fontSize: '48px',
-                fontWeight: 600,
-                letterSpacing: '-0.03em',
-                marginBottom: '16px',
-              }}
-            >
-              上传内容
-            </h1>
-            <p
-              style={{
-                fontSize: '21px',
-                color: 'rgba(255, 255, 255, 0.5)',
-                maxWidth: '400px',
-              }}
-            >
-              让 AI 为你的内容注入种草力
-            </p>
-          </div>
-
-          {/* 上传区 */}
-          <div
+        <>
+          <UploadSection
+            isLoading={isLoading}
+            onFileChange={handleFileChange}
             onDrop={handleDrop}
-            onDragOver={(e) => e.preventDefault()}
-            onClick={() => !isLoading && document.getElementById('file-input')?.click()}
-            style={{
-              width: '100%',
-              maxWidth: '480px',
-              aspectRatio: '4/3',
-              borderRadius: '24px',
-              border: '2px dashed rgba(255, 255, 255, 0.15)',
-              background: 'rgba(255, 255, 255, 0.02)',
-              cursor: isLoading ? 'wait' : 'pointer',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              transition: 'all 0.3s ease',
-              opacity: isLoading ? 0.6 : 1,
-            }}
-          >
-            <input
-              id="file-input"
-              type="file"
-              accept="image/*,video/*"
-              style={{ display: 'none' }}
-              onChange={(e) => e.target.files?.[0] && handleFileChange(e.target.files[0])}
-              disabled={isLoading}
-            />
+            onMultipleFiles={handleBatchFilesChange}
+            allowMultiple={true}
+          />
 
-            {isLoading ? (
-              <div style={{ textAlign: 'center' }}>
-                <div
-                  style={{
-                    width: '40px',
-                    height: '40px',
-                    border: '3px solid rgba(255,255,255,0.1)',
-                    borderTopColor: '#D4AF37',
-                    borderRadius: '50%',
-                    animation: 'spin 1s linear infinite',
-                    margin: '0 auto 16px',
-                  }}
-                />
-                <p style={{ color: 'rgba(255,255,255,0.6)' }}>上传中...</p>
-              </div>
-            ) : (
-              <>
-                <div
-                  style={{
-                    width: '80px',
-                    height: '80px',
-                    marginBottom: '24px',
-                    borderRadius: '50%',
-                    background: 'rgba(255, 255, 255, 0.05)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" style={{ opacity: 0.4 }}>
-                    <path
-                      d="M12 16V4M12 4L8 8M12 4L16 8M4 16V18C4 19.1 4.9 20 6 20H18C19.1 20 20 19.1 20 18V16"
-                      stroke="white"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </div>
-                <p style={{ fontSize: '21px', fontWeight: 500, marginBottom: '8px' }}>
-                  点击或拖拽上传
-                </p>
-                <p style={{ fontSize: '15px', color: 'rgba(255, 255, 255, 0.4)', marginBottom: '16px' }}>
-                  图片或视频
-                </p>
-                <div style={{ display: 'flex', gap: '16px', fontSize: '13px', color: 'rgba(255, 255, 255, 0.35)' }}>
-                  <span>JPG / PNG 最大 10MB</span>
-                  <span>·</span>
-                  <span>MP4 / MOV 最大 500MB</span>
-                </div>
-              </>
-            )}
-          </div>
-
-          <div
-            style={{
-              marginTop: '32px',
-              padding: '16px 20px',
-              borderRadius: '12px',
-              background: 'rgba(212, 175, 55, 0.06)',
-              border: '1px solid rgba(212, 175, 55, 0.12)',
-              maxWidth: '480px',
-              width: '100%',
-            }}
-          >
-            <p style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.6)' }}>
-              💡 <span style={{ color: 'rgba(255, 255, 255, 0.8)' }}>小贴士</span>：人像、产品、美食、穿搭效果最佳
-            </p>
-          </div>
+          {/* 批量预览 */}
+          {batchFiles.length > 0 && (
+            <div style={{ maxWidth: '480px', margin: '-40px auto 0', padding: '0 24px 40px' }}>
+              <BatchPreviewGrid
+                items={batchFiles}
+                onRemove={removeBatchFile}
+                disabled={isLoading}
+              />
+            </div>
+          )}
 
           {/* 额度显示 */}
           <div
             style={{
-              marginTop: '16px',
               padding: '16px 20px',
               borderRadius: '12px',
               background: 'rgba(255, 255, 255, 0.03)',
               border: '1px solid rgba(255, 255, 255, 0.06)',
               maxWidth: '480px',
-              width: '100%',
+              width: 'calc(100% - 48px)',
+              margin: '0 auto',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
@@ -971,7 +1066,8 @@ export default function TryPage() {
                 background: 'rgba(52, 199, 89, 0.06)',
                 border: '1px solid rgba(52, 199, 89, 0.12)',
                 maxWidth: '480px',
-                width: '100%',
+                width: 'calc(100% - 48px)',
+                margin: '16px auto 0',
               }}
             >
               <p style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.6)', marginBottom: '12px' }}>
@@ -1027,7 +1123,7 @@ export default function TryPage() {
           )}
 
           <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-        </div>
+        </>
       )}
 
       {/* ===== 步骤 2: AI 识别 ===== */}
@@ -2022,6 +2118,49 @@ export default function TryPage() {
           </div>
         </div>
       )}
+
+      {/* ===== 步骤 6: 批量结果 ===== */}
+      {step === 'result' && uploadMode === 'batch' && batchResults.length > 0 && (
+        <div style={{ padding: '80px 24px', maxWidth: '800px', margin: '0 auto' }}>
+          <h2 style={{ fontSize: '32px', fontWeight: 600, marginBottom: '32px', textAlign: 'center' }}>
+            生成完成
+          </h2>
+          <BatchResultGrid
+            results={batchResults}
+            onDownloadAll={() => {
+              // 简化：提示用户逐个下载
+              alert('请逐个点击图片下载');
+            }}
+          />
+          <div style={{ marginTop: '24px', textAlign: 'center' }}>
+            <button
+              onClick={handleReset}
+              style={{
+                padding: '14px 32px',
+                borderRadius: '12px',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                background: 'transparent',
+                color: 'rgba(255, 255, 255, 0.7)',
+                fontSize: '15px',
+                cursor: 'pointer',
+              }}
+            >
+              再试一批
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 批量确认弹窗 */}
+      <BatchConfirmModal
+        isOpen={showConfirmModal}
+        imageCount={batchFiles.filter(f => f.status === 'success').length}
+        styleCount={selectedStyles.length > 0 ? selectedStyles.length : 1}
+        totalCost={batchFiles.filter(f => f.status === 'success').length * (selectedStyles.length > 0 ? selectedStyles.length : 1)}
+        currentCredits={credits.total}
+        onConfirm={handleConfirmBatchGeneration}
+        onCancel={() => setShowConfirmModal(false)}
+      />
     </main>
   );
 }
