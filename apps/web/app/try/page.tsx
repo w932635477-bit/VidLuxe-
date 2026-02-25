@@ -1393,7 +1393,7 @@ export default function TryPage() {
       )}
 
       {/* ===== 步骤 3: 选择风格 ===== */}
-      {step === 'style' && previewUrl && (
+      {step === 'style' && (previewUrl || (uploadMode === 'batch' && batchFiles.length > 0)) && (
         <div
           style={{
             minHeight: '100vh',
@@ -1406,48 +1406,61 @@ export default function TryPage() {
         >
           <StepIndicator currentStep="style" contentType={contentType} />
 
-          {/* 预览图 */}
-          <div style={{ marginBottom: '24px' }}>
-            <div
-              style={{
-                position: 'relative',
-                borderRadius: '16px',
-                overflow: 'hidden',
-                background: 'rgba(255, 255, 255, 0.03)',
-                border: '1px solid rgba(255, 255, 255, 0.08)',
-              }}
-            >
-              {contentType === 'video' ? (
-                <video
-                  src={previewUrl}
-                  style={{ width: '100%', aspectRatio: '9/16', objectFit: 'cover', display: 'block' }}
-                  muted autoPlay loop playsInline
-                />
-              ) : (
-                <img
-                  src={previewUrl}
-                  alt="预览"
-                  style={{ width: '100%', aspectRatio: '9/16', objectFit: 'cover', display: 'block' }}
-                />
-              )}
+          {/* 预览图 - 单图模式 */}
+          {previewUrl && (
+            <div style={{ marginBottom: '24px' }}>
               <div
                 style={{
-                  position: 'absolute',
-                  top: '12px',
-                  left: '12px',
-                  padding: '6px 12px',
-                  borderRadius: '8px',
-                  background: 'rgba(0, 0, 0, 0.6)',
-                  backdropFilter: 'blur(8px)',
-                  fontSize: '12px',
-                  fontWeight: 500,
-                  color: 'rgba(255, 255, 255, 0.9)',
+                  position: 'relative',
+                  borderRadius: '16px',
+                  overflow: 'hidden',
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
                 }}
               >
-                {contentType === 'video' ? '🎬 视频' : '📷 图片'}
+                {contentType === 'video' ? (
+                  <video
+                    src={previewUrl}
+                    style={{ width: '100%', aspectRatio: '9/16', objectFit: 'cover', display: 'block' }}
+                    muted autoPlay loop playsInline
+                  />
+                ) : (
+                  <img
+                    src={previewUrl}
+                    alt="预览"
+                    style={{ width: '100%', aspectRatio: '9/16', objectFit: 'cover', display: 'block' }}
+                  />
+                )}
+                <div
+                  style={{
+                    position: 'absolute',
+                    top: '12px',
+                    left: '12px',
+                    padding: '6px 12px',
+                    borderRadius: '8px',
+                    background: 'rgba(0, 0, 0, 0.6)',
+                    backdropFilter: 'blur(8px)',
+                    fontSize: '12px',
+                    fontWeight: 500,
+                    color: 'rgba(255, 255, 255, 0.9)',
+                  }}
+                >
+                  {contentType === 'video' ? '🎬 视频' : '📷 图片'}
+                </div>
               </div>
             </div>
-          </div>
+          )}
+
+          {/* 预览图 - 批量模式 */}
+          {uploadMode === 'batch' && batchFiles.length > 0 && (
+            <div style={{ marginBottom: '24px' }}>
+              <BatchPreviewGrid
+                items={batchFiles}
+                onRemove={removeBatchFile}
+                disabled={isLoading}
+              />
+            </div>
+          )}
 
           {/* 风格选择器 - 图片支持多风格批量生成 */}
           <div style={{ flex: 1 }}>
