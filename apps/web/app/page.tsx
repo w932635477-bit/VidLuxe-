@@ -357,7 +357,6 @@ export default function HomePage() {
                 <BeforeAfterSlider
                   originalImage={caseItem.originalUrl}
                   enhancedImage={caseItem.enhancedUrl}
-                  sizes="(max-width: 768px) 100vw, 50vw"
                 />
                 {/* 底部标签 */}
                 <div

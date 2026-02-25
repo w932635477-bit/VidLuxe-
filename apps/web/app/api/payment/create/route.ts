@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
         simulated: true,
         message: '模拟支付成功，额度已发放',
         package: pkg,
-        newCredits: result.credits?.credits_balance,
+        newCredits: result.credits?.balance,
       });
     }
 
