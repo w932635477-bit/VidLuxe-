@@ -17,3 +17,4 @@ export type { StyleMultiSelectorProps, MultiStyleType } from './StyleMultiSelect
 export { BatchPreviewGrid } from './BatchPreviewGrid';
 export { BatchConfirmModal } from './BatchConfirmModal';
 export { BatchResultGrid } from './BatchResultGrid';
+export { KeyframeMultiSelector } from './KeyframeMultiSelector';
