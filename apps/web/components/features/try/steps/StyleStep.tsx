@@ -15,7 +15,20 @@ import {
   BatchPreviewGrid,
   StepIndicator,
 } from '@/components/features/try';
-import type { StyleType } from '@/lib/stores/try-store';
+import { getRecommendedStyles } from '@/lib/category-modifiers';
+import type { StyleType, CategoryType } from '@/lib/stores/try-store';
+
+// 品类中文名称映射
+const CATEGORY_LABELS: Record<CategoryType, string> = {
+  fashion: '穿搭',
+  beauty: '美妆',
+  food: '美食',
+  cafe: '探店',
+  home: '家居',
+  travel: '旅行',
+  tech: '数码',
+  fitness: '健身',
+};
 
 interface StyleStepProps {
   onStartProcessing: () => void;
@@ -37,6 +50,7 @@ export function StyleStep({ onStartProcessing, onBack }: StyleStepProps) {
     showCreditModal,
     creditRequired,
     isLoading,
+    selectedCategory,
     setStep,
     setSelectedStyles,
     setStyleSourceType,
@@ -50,6 +64,10 @@ export function StyleStep({ onStartProcessing, onBack }: StyleStepProps) {
   } = useTryStore();
 
   const { total: creditsTotal } = useCreditsStore();
+
+  // 获取基于品类的推荐风格
+  const recommendedStyles = selectedCategory ? getRecommendedStyles(selectedCategory) : [];
+  const categoryLabel = selectedCategory ? CATEGORY_LABELS[selectedCategory] : undefined;
 
   // 获取风格描述
   const getStyleDescription = () => {
@@ -175,6 +193,8 @@ export function StyleStep({ onStartProcessing, onBack }: StyleStepProps) {
             selectedStyles={selectedStyles}
             onChange={setSelectedStyles}
             disabled={isLoading}
+            recommendedStyles={recommendedStyles}
+            categoryLabel={categoryLabel}
           />
         ) : (
           <StyleSourceSelector

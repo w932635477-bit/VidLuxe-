@@ -13,7 +13,9 @@ export { SeedingScoreCard } from './SeedingScoreCard';
 export { StyleSourceSelector, getStylePreset } from './StyleSelector';
 export type { StyleType, StyleSourceType } from './StyleSelector';
 export { StyleMultiSelector, STYLE_OPTIONS } from './StyleMultiSelector';
-export type { StyleMultiSelectorProps, MultiStyleType } from './StyleMultiSelector';
+export type { StyleMultiSelectorProps } from './StyleMultiSelector';
+// MultiStyleType 从 try-store 导出
+export type { MultiStyleType } from '@/lib/stores/try-store';
 export { BatchPreviewGrid } from './BatchPreviewGrid';
 export { BatchConfirmModal } from './BatchConfirmModal';
 export { BatchResultGrid } from './BatchResultGrid';

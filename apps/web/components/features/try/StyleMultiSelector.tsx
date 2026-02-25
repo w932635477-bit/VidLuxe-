@@ -1,14 +1,14 @@
 'use client';
 
 import { useState } from 'react';
-
-// Multi-select style type for batch generation
-export type MultiStyleType = 'minimal' | 'warmLuxury' | 'coolPro' | 'morandi';
+import type { MultiStyleType } from '@/lib/stores/try-store';
 
 interface StyleMultiSelectorProps {
   selectedStyles: MultiStyleType[];
   onChange: (styles: MultiStyleType[]) => void;
   disabled?: boolean;
+  recommendedStyles?: MultiStyleType[]; // 基于品类推荐的风格
+  categoryLabel?: string; // 品类名称，用于显示推荐标签
 }
 
 const STYLE_OPTIONS: { id: MultiStyleType; name: string; description: string; preview: string }[] = [
@@ -36,12 +36,20 @@ const STYLE_OPTIONS: { id: MultiStyleType; name: string; description: string; pr
     description: 'Kinfolk 风格，低饱和度',
     preview: '🎨',
   },
+  {
+    id: 'soft',
+    name: '温柔日系',
+    description: '柔和自然，清新治愈',
+    preview: '🌸',
+  },
 ];
 
 export function StyleMultiSelector({
   selectedStyles,
   onChange,
-  disabled = false
+  disabled = false,
+  recommendedStyles = [],
+  categoryLabel,
 }: StyleMultiSelectorProps) {
   const toggleStyle = (styleId: MultiStyleType) => {
     if (disabled) return;
@@ -104,9 +112,30 @@ export function StyleMultiSelector({
         </div>
       </div>
 
+      {/* 推荐风格提示 */}
+      {recommendedStyles.length > 0 && categoryLabel && (
+        <div style={{
+          marginBottom: '12px',
+          padding: '10px 14px',
+          borderRadius: '8px',
+          background: 'rgba(212, 175, 55, 0.08)',
+          border: '1px solid rgba(212, 175, 55, 0.15)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+        }}>
+          <span style={{ fontSize: '14px' }}>✨</span>
+          <span style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.7)' }}>
+            为<span style={{ color: '#D4AF37', fontWeight: 500 }}>{categoryLabel}</span>内容推荐：
+            {recommendedStyles.map(s => STYLE_OPTIONS.find(opt => opt.id === s)?.name).join('、')}
+          </span>
+        </div>
+      )}
+
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
         {STYLE_OPTIONS.map((style) => {
           const isSelected = selectedStyles.includes(style.id);
+          const isRecommended = recommendedStyles.includes(style.id);
           return (
             <button
               key={style.id}
@@ -117,16 +146,37 @@ export function StyleMultiSelector({
                 borderRadius: '12px',
                 border: isSelected
                   ? '1px solid #D4AF37'
-                  : '1px solid rgba(255,255,255,0.1)',
+                  : isRecommended
+                    ? '1px solid rgba(212, 175, 55, 0.4)'
+                    : '1px solid rgba(255,255,255,0.1)',
                 background: isSelected
                   ? 'rgba(212,175,55,0.1)'
-                  : 'rgba(255,255,255,0.02)',
+                  : isRecommended
+                    ? 'rgba(212,175,55,0.05)'
+                    : 'rgba(255,255,255,0.02)',
                 cursor: disabled ? 'not-allowed' : 'pointer',
                 textAlign: 'left',
                 transition: 'all 0.2s ease',
                 opacity: disabled ? 0.5 : 1,
+                position: 'relative',
               }}
             >
+              {/* 推荐标签 */}
+              {isRecommended && !isSelected && (
+                <div style={{
+                  position: 'absolute',
+                  top: '-6px',
+                  right: '8px',
+                  padding: '2px 8px',
+                  borderRadius: '4px',
+                  background: 'rgba(212, 175, 55, 0.9)',
+                  fontSize: '10px',
+                  fontWeight: 600,
+                  color: '#000',
+                }}>
+                  推荐
+                </div>
+              )}
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
                 <span style={{ fontSize: '20px' }}>{style.preview}</span>
                 <span style={{
