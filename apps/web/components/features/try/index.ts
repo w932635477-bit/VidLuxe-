@@ -15,3 +15,4 @@ export type { StyleType, StyleSourceType } from './StyleSelector';
 export { StyleMultiSelector, STYLE_OPTIONS } from './StyleMultiSelector';
 export type { StyleMultiSelectorProps, MultiStyleType } from './StyleMultiSelector';
 export { BatchPreviewGrid } from './BatchPreviewGrid';
+export { BatchConfirmModal } from './BatchConfirmModal';
