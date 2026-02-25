@@ -13,9 +13,12 @@ const QUOTA_API_CONFIG = {
   maxIdLength: 64,
 } as const;
 
+// 显式声明此路由为动态渲染
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
+    const { searchParams } = request.nextUrl;
     const anonymousId = searchParams.get('anonymousId');
     const fingerprint = searchParams.get('fingerprint');
     const ip = request.headers.get('x-forwarded-for') ||

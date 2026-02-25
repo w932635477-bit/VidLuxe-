@@ -4,19 +4,19 @@
   "private": true,
   "scripts": {
     "dev": "remotion studio src/Root.tsx",
-    "build": "remotion render src/Root.tsx VidLuxeComposition out/video.mp4",
+    "build": "remotion render src/Root.tsx VideoEnhancement out/video.mp4",
     "render": "remotion render src/Root.tsx",
     "studio": "remotion studio src/Root.tsx"
   },
   "dependencies": {
-    "@remotion/cli": "^4.0.0",
-    "@remotion/player": "^4.0.0",
+    "@remotion/cli": "4.0.427",
+    "@remotion/player": "4.0.427",
     "@vidluxe/core": "workspace:*",
     "@vidluxe/types": "workspace:*",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "remotion": "^4.0.0",
-    "zod": "3.22.3"
+    "remotion": "4.0.427",
+    "zod": "4.3.6"
   },
   "devDependencies": {
     "@types/react": "^18.2.0",

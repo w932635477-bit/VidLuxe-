@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 const navItems = [
@@ -16,7 +16,12 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const handleUpgrade = () => {
+    router.push('/pricing');
+  };
 
   return (
     <div className="min-h-screen bg-dark-bg">
@@ -50,7 +55,7 @@ export default function DashboardLayout({
             {/* 用户菜单 */}
             <div className="hidden md:flex items-center gap-4">
               <span className="text-sm text-content-secondary">免费版</span>
-              <button className="btn-gold px-4 py-2 text-sm">
+              <button onClick={handleUpgrade} className="btn-gold px-4 py-2 text-sm">
                 升级 Pro
               </button>
             </div>
@@ -85,7 +90,7 @@ export default function DashboardLayout({
                 </Link>
               ))}
               <div className="pt-3 border-t border-white/5">
-                <button className="w-full btn-gold px-4 py-2 text-sm">
+                <button onClick={handleUpgrade} className="w-full btn-gold px-4 py-2 text-sm">
                   升级 Pro
                 </button>
               </div>

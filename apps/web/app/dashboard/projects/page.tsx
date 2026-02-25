@@ -57,6 +57,28 @@ function ProjectCard({ project }: { project: Project }) {
     morandi: '莫兰迪',
   };
 
+  const handleDownload = async () => {
+    if (project.enhancedUrl) {
+      try {
+        const response = await fetch(project.enhancedUrl);
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `vidluxe-${project.id}.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(url);
+      } catch {
+        // 降级方案：直接打开链接
+        window.open(project.enhancedUrl, '_blank');
+      }
+    } else {
+      alert('该项目暂无可下载的结果');
+    }
+  };
+
   return (
     <div style={{
       display: 'flex',
@@ -120,7 +142,9 @@ function ProjectCard({ project }: { project: Project }) {
 
       {/* 操作 */}
       <div style={{ display: 'flex', gap: '8px' }}>
-        <button style={{
+        <button
+          onClick={handleDownload}
+          style={{
           padding: '8px 12px',
           borderRadius: '8px',
           background: 'rgba(255, 255, 255, 0.05)',

@@ -1,10 +1,39 @@
 import React from 'react';
 import { Composition, registerRoot } from 'remotion';
+import { z } from 'zod';
 import { PremiumScoreDemo } from './compositions/PremiumScoreDemo';
 import {
   VideoEnhancementComposition,
   type VideoEnhancementProps,
 } from './compositions/VideoEnhancement';
+
+// 定义 VideoEnhancement 的 schema
+const videoEnhancementSchema = z.object({
+  backgroundUrl: z.string(),
+  foregroundUrl: z.string().optional(),
+  text: z
+    .object({
+      title: z.string().optional(),
+      subtitle: z.string().optional(),
+      highlights: z.array(z.string()).optional(),
+    })
+    .optional(),
+  styleType: z.enum(['magazine', 'soft', 'urban', 'minimal', 'vintage']).optional(),
+  showScore: z.boolean().optional(),
+  scoreData: z
+    .object({
+      overall: z.number(),
+      grade: z.string(),
+      dimensions: z.object({
+        visualAttraction: z.number(),
+        contentMatch: z.number(),
+        authenticity: z.number(),
+        emotionalImpact: z.number(),
+        actionGuidance: z.number(),
+      }),
+    })
+    .optional(),
+});
 
 /**
  * VidLuxe Remotion Root
@@ -17,17 +46,17 @@ export const RemotionRoot: React.FC = () => {
       {/* 视频增强 Composition - 主要用于实际视频处理 */}
       <Composition
         id="VideoEnhancement"
-        component={VideoEnhancementComposition}
+        component={VideoEnhancementComposition as React.FC<z.infer<typeof videoEnhancementSchema>>}
         durationInFrames={150}
         fps={30}
         width={1080}
         height={1920}
+        schema={videoEnhancementSchema}
         defaultProps={{
           backgroundUrl: '',
           styleType: 'magazine',
           showScore: true,
         }}
-        schema={undefined as never} // Remotion 4.x 兼容
       />
 
       {/* 评分演示 Composition - 用于展示评分功能 */}

@@ -136,14 +136,18 @@ export const VideoEnhancementComposition: React.FC<VideoEnhancementProps> = ({
           opacity: backgroundOpacity,
         }}
       >
-        <Img
-          src={backgroundUrl}
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-          }}
-        />
+        {backgroundUrl ? (
+          <Img
+            src={backgroundUrl}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+            }}
+          />
+        ) : (
+          <AbsoluteFill style={{ background: theme.background }} />
+        )}
       </AbsoluteFill>
 
       {/* 渐变遮罩 */}

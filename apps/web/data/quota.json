@@ -1,37 +1,20 @@
 {
   "anon_1771810609071_ymmojb7b": {
     "anonymousId": "anon_1771810609071_ymmojb7b",
-    "usedCount": 1,
+    "usedCount": 6,
     "totalCount": 10,
-    "resetAt": 1771897063777,
-    "createdAt": 1771810663777,
-    "version": 1,
-    "updatedAt": 1771810663777
+    "resetAt": 1772103779833,
+    "createdAt": 1772017379833,
+    "version": 6,
+    "updatedAt": 1772018846792
   },
-  "3e48ef9d22e096da": {
-    "anonymousId": "3e48ef9d22e096da",
+  "anon_1772020810419_xg54woo9": {
+    "anonymousId": "anon_1772020810419_xg54woo9",
     "usedCount": 0,
     "totalCount": 10,
-    "resetAt": 1771899641214,
-    "createdAt": 1771813241214,
-    "version": 0
-  },
-  "test_user_123": {
-    "anonymousId": "test_user_123",
-    "usedCount": 1,
-    "totalCount": 10,
-    "resetAt": 1771903566146,
-    "createdAt": 1771817166146,
-    "version": 1,
-    "updatedAt": 1771817166147
-  },
-  "anon_1771648234106_t7bqbr32": {
-    "anonymousId": "anon_1771648234106_t7bqbr32",
-    "usedCount": 2,
-    "totalCount": 10,
-    "resetAt": 1771916569247,
-    "createdAt": 1771830169247,
-    "version": 4,
-    "updatedAt": 1771830682053
+    "resetAt": 1772107225995,
+    "createdAt": 1772020825995,
+    "version": 6,
+    "updatedAt": 1772020838343
   }
 }
