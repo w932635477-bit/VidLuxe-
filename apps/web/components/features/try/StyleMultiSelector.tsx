@@ -13,34 +13,28 @@ interface StyleMultiSelectorProps {
 
 const STYLE_OPTIONS: { id: MultiStyleType; name: string; description: string; preview: string }[] = [
   {
-    id: 'minimal',
-    name: '极简风格',
-    description: 'Apple 风格，克制、干净',
-    preview: '🏛️',
-  },
-  {
-    id: 'warmLuxury',
-    name: '暖调奢华',
-    description: 'Chanel 风格，温暖高级',
+    id: 'magazine',
+    name: '杂志大片',
+    description: '时尚杂志封面质感，高级奢华',
     preview: '✨',
-  },
-  {
-    id: 'coolPro',
-    name: '冷调专业',
-    description: '科技感，专业可信赖',
-    preview: '💎',
-  },
-  {
-    id: 'morandi',
-    name: '莫兰迪',
-    description: 'Kinfolk 风格，低饱和度',
-    preview: '🎨',
   },
   {
     id: 'soft',
     name: '温柔日系',
     description: '柔和自然，清新治愈',
     preview: '🌸',
+  },
+  {
+    id: 'urban',
+    name: '都市职场',
+    description: '专业干练，可信赖感',
+    preview: '💎',
+  },
+  {
+    id: 'vintage',
+    name: '复古胶片',
+    description: '复古怀旧，电影氛围感',
+    preview: '🎬',
   },
 ];
 

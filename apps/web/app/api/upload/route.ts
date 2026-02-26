@@ -50,6 +50,15 @@ function detectMimeType(filename: string, declaredType: string): string {
 
 export async function POST(request: NextRequest) {
   try {
+    // 检查 Content-Type
+    const contentType = request.headers.get('content-type') || '';
+    if (!contentType.includes('multipart/form-data')) {
+      return NextResponse.json(
+        { success: false, error: 'Content-Type must be multipart/form-data' },
+        { status: 400 }
+      );
+    }
+
     const formData = await request.formData();
     const file = formData.get('file');
 

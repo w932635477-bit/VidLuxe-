@@ -93,10 +93,10 @@ export interface RGBColor {
 // ============================================================================
 
 export type PremiumStyle =
-  | 'minimal'          // 极简风格（Apple 风格）
-  | 'warm_luxury'      // 暖调奢华风格
-  | 'cool_professional' // 冷调专业风格
-  | 'morandi';         // 莫兰迪色系
+  | 'magazine'         // 杂志大片
+  | 'soft'             // 温柔日系
+  | 'urban'            // 都市职场
+  | 'vintage';         // 复古胶片
 
 export interface PremiumProfile {
   name: PremiumStyle;
@@ -182,21 +182,10 @@ export const GRADE_THRESHOLDS: Record<PremiumGrade, number> = {
 // ============================================================================
 
 export const PREMIUM_PROFILES: Record<PremiumStyle, PremiumProfile> = {
-  minimal: {
-    name: 'minimal',
-    displayName: '极简风格',
-    description: 'Apple 风格，克制、干净',
-    saturation: 0.65,
-    contrast: 0.90,
-    temperature: 5200,
-    highlights: -10,
-    shadows: 5,
-    colorCountMax: 3,
-  },
-  warm_luxury: {
-    name: 'warm_luxury',
-    displayName: '暖调奢华',
-    description: '温暖、高级、有质感',
+  magazine: {
+    name: 'magazine',
+    displayName: '杂志大片',
+    description: '时尚杂志封面质感，高级奢华',
     saturation: 0.70,
     contrast: 0.85,
     temperature: 5800,
@@ -204,10 +193,21 @@ export const PREMIUM_PROFILES: Record<PremiumStyle, PremiumProfile> = {
     shadows: 10,
     colorCountMax: 3,
   },
-  cool_professional: {
-    name: 'cool_professional',
-    displayName: '冷调专业',
-    description: '专业、冷静、可信赖',
+  soft: {
+    name: 'soft',
+    displayName: '温柔日系',
+    description: '清新温柔，文艺治愈感',
+    saturation: 0.50,
+    contrast: 0.80,
+    temperature: 5200,
+    highlights: -5,
+    shadows: 5,
+    colorCountMax: 3,
+  },
+  urban: {
+    name: 'urban',
+    displayName: '都市职场',
+    description: '专业干练，可信赖感',
     saturation: 0.60,
     contrast: 0.95,
     temperature: 4800,
@@ -215,14 +215,14 @@ export const PREMIUM_PROFILES: Record<PremiumStyle, PremiumProfile> = {
     shadows: 0,
     colorCountMax: 4,
   },
-  morandi: {
-    name: 'morandi',
-    displayName: '莫兰迪色系',
-    description: '低饱和、高级灰调',
-    saturation: 0.45,
-    contrast: 0.80,
-    temperature: 5000,
-    highlights: -5,
+  vintage: {
+    name: 'vintage',
+    displayName: '复古胶片',
+    description: '复古怀旧，电影氛围感',
+    saturation: 0.55,
+    contrast: 0.85,
+    temperature: 5600,
+    highlights: -10,
     shadows: 5,
     colorCountMax: 3,
   },

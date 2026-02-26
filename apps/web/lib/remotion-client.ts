@@ -7,7 +7,7 @@
  */
 
 // 风格类型（与 StyleSelector 保持一致）
-export type StyleType = 'magazine' | 'soft' | 'urban' | 'minimal' | 'vintage';
+export type StyleType = 'magazine' | 'soft' | 'urban' | 'vintage';
 
 // Remotion Lambda 配置
 const REMOTION_CONFIG = {

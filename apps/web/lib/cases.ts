@@ -7,7 +7,7 @@ export interface Case {
   categoryLabel: string;
   originalUrl: string;   // 用户原图
   enhancedUrl: string;   // AI 升级后
-  recommendedStyle: 'minimal' | 'warmLuxury' | 'coolPro' | 'morandi';
+  recommendedStyle: 'magazine' | 'soft' | 'urban' | 'vintage';
 }
 
 export const CASES: Case[] = [
@@ -17,7 +17,7 @@ export const CASES: Case[] = [
     "categoryLabel": "穿搭 OOTD",
     "originalUrl": "/comparisons/fashion-1-original.jpg",
     "enhancedUrl": "/comparisons/fashion-1-enhanced.jpg",
-    "recommendedStyle": "warmLuxury"
+    "recommendedStyle": "magazine"
   },
   {
     "id": "portrait-1",
@@ -25,7 +25,7 @@ export const CASES: Case[] = [
     "categoryLabel": "背景升级",
     "originalUrl": "/comparisons/portrait-1-original.jpg",
     "enhancedUrl": "/comparisons/portrait-1-enhanced.jpg",
-    "recommendedStyle": "warmLuxury"
+    "recommendedStyle": "magazine"
   },
   {
     "id": "cafe-1",
@@ -33,7 +33,7 @@ export const CASES: Case[] = [
     "categoryLabel": "咖啡探店",
     "originalUrl": "/comparisons/cafe-1-original.jpg",
     "enhancedUrl": "/comparisons/cafe-1-enhanced.jpg",
-    "recommendedStyle": "warmLuxury"
+    "recommendedStyle": "soft"
   },
   {
     "id": "food-1",
@@ -41,7 +41,7 @@ export const CASES: Case[] = [
     "categoryLabel": "探店美食",
     "originalUrl": "/comparisons/food-1-original.jpg",
     "enhancedUrl": "/comparisons/food-1-enhanced.jpg",
-    "recommendedStyle": "warmLuxury"
+    "recommendedStyle": "soft"
   },
   {
     "id": "lifestyle-1",
@@ -49,7 +49,7 @@ export const CASES: Case[] = [
     "categoryLabel": "生活方式",
     "originalUrl": "/comparisons/lifestyle-1-original.jpg",
     "enhancedUrl": "/comparisons/lifestyle-1-enhanced.jpg",
-    "recommendedStyle": "minimal"
+    "recommendedStyle": "vintage"
   },
   {
     "id": "product-1",
@@ -57,7 +57,7 @@ export const CASES: Case[] = [
     "categoryLabel": "美妆升级",
     "originalUrl": "/comparisons/product-1-original.jpg",
     "enhancedUrl": "/comparisons/product-1-enhanced.jpg",
-    "recommendedStyle": "warmLuxury"
+    "recommendedStyle": "magazine"
   }
 ];
 

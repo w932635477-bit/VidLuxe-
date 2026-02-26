@@ -96,23 +96,23 @@ function recognizeSeedingTypeFromText(text: string): { type: SeedingType; confid
  */
 function getSuggestedStyles(category: CategoryType, seedingType: SeedingType): string[] {
   const styleMap: Record<string, string[]> = {
-    'fashion-product': ['warmLuxury', 'magazine'],
-    'fashion-lifestyle': ['morandi', 'minimal'],
-    'beauty-product': ['warmLuxury', 'minimal'],
-    'beauty-lifestyle': ['minimal', 'morandi'],
-    'food-product': ['warmLuxury', 'magazine'],
-    'food-location': ['morandi', 'warmLuxury'],
-    'cafe-location': ['morandi', 'minimal'],
-    'cafe-lifestyle': ['morandi', 'minimal'],
-    'home-lifestyle': ['morandi', 'minimal'],
-    'travel-location': ['magazine', 'morandi'],
-    'travel-lifestyle': ['morandi', 'magazine'],
-    'tech-product': ['minimal', 'coolPro'],
-    'fitness-lifestyle': ['coolPro', 'minimal'],
+    'fashion-product': ['magazine', 'urban'],
+    'fashion-lifestyle': ['soft', 'vintage'],
+    'beauty-product': ['magazine', 'soft'],
+    'beauty-lifestyle': ['soft', 'vintage'],
+    'food-product': ['magazine', 'soft'],
+    'food-location': ['soft', 'vintage'],
+    'cafe-location': ['soft', 'vintage'],
+    'cafe-lifestyle': ['soft', 'vintage'],
+    'home-lifestyle': ['soft', 'vintage'],
+    'travel-location': ['magazine', 'vintage'],
+    'travel-lifestyle': ['vintage', 'soft'],
+    'tech-product': ['urban', 'magazine'],
+    'fitness-lifestyle': ['urban', 'magazine'],
   };
 
   const key = `${category}-${seedingType}`;
-  return styleMap[key] || ['magazine', 'minimal'];
+  return styleMap[key] || ['magazine', 'soft'];
 }
 
 /**

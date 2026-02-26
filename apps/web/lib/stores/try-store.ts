@@ -31,8 +31,8 @@ export type ContentType = 'image' | 'video';
 export type UploadMode = 'single' | 'batch';
 export type StyleSourceType = 'preset' | 'reference';
 
-export type StyleType = 'magazine' | 'soft' | 'urban' | 'minimal' | 'vintage';
-export type MultiStyleType = 'minimal' | 'warmLuxury' | 'coolPro' | 'morandi' | 'soft';
+export type StyleType = 'magazine' | 'soft' | 'urban' | 'vintage';
+export type MultiStyleType = 'magazine' | 'soft' | 'urban' | 'vintage';
 
 // 重新导出 seeding 类型，方便使用
 export type { CategoryType, SeedingType } from '@/lib/types/seeding';

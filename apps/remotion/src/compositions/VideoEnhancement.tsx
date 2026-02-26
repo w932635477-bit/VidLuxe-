@@ -26,7 +26,7 @@ export interface VideoEnhancementProps {
     highlights?: string[];
   };
   /** 风格类型 */
-  styleType?: 'magazine' | 'soft' | 'urban' | 'minimal' | 'vintage';
+  styleType?: 'magazine' | 'soft' | 'urban' | 'vintage';
   /** 是否显示评分 */
   showScore?: boolean;
   /** 评分数据 */
@@ -65,12 +65,6 @@ const STYLE_THEMES = {
     accentColor: '#00b894',
     textColor: '#ffffff',
     secondaryColor: 'rgba(255,255,255,0.6)',
-  },
-  minimal: {
-    background: 'linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%)',
-    accentColor: '#333333',
-    textColor: '#1a1a1a',
-    secondaryColor: 'rgba(0,0,0,0.5)',
   },
   vintage: {
     background: 'linear-gradient(135deg, #d4a373 0%, #ccd5ae 100%)',

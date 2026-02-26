@@ -78,7 +78,6 @@ export function StyleStep({ onStartProcessing, onBack }: StyleStepProps) {
       magazine: '杂志大片',
       soft: '温柔日系',
       urban: '都市职场',
-      minimal: '高级极简',
       vintage: '复古胶片',
     };
     return presetNames[selectedPreset] || selectedPreset;

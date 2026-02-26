@@ -169,38 +169,35 @@ export class NanoBananaError extends Error {
 }
 
 // 风格类型
-export type StyleType = 'minimal' | 'warmLuxury' | 'coolPro' | 'morandi';
+export type StyleType = 'magazine' | 'soft' | 'urban' | 'vintage';
 
 // 风格对应的 Prompt
 export function getStylePrompt(style: StyleType): string {
   const prompts: Record<StyleType, string> = {
-    minimal: `
-      Premium minimalist photo style, Apple keynote aesthetic,
-      clean background with subtle gradient from charcoal to soft gray,
-      soft diffused lighting, professional product photography,
-      generous negative space, elegant and refined,
-      low saturation colors, high contrast subject
+    magazine: `
+      Vogue magazine editorial style, luxury fashion aesthetic,
+      warm golden lighting, sophisticated and elegant,
+      professional model photography, high-end beauty editorial,
+      warm beige and champagne tones, cinematic background,
+      soft studio lighting, premium quality, editorial composition
     `,
-    warmLuxury: `
-      Luxurious warm-toned photo style, Chanel campaign aesthetic,
-      warm beige to deep brown tones, soft golden hour lighting,
-      subtle marble texture, elegant and sophisticated,
-      rich warm colors, premium quality,
-      fashion magazine style
+    soft: `
+      Japanese lifestyle magazine style, soft natural lighting,
+      muted pastel colors, Kinfolk aesthetic, dreamy atmosphere,
+      gentle and warm, artistic and refined, low saturation,
+      earthy tones, natural and authentic, editorial quality
     `,
-    coolPro: `
-      Professional cool-toned photo style, tech aesthetic,
-      steel blue to slate gray tones, clean and modern,
-      high-key lighting with soft shadows,
-      trustworthy and authoritative,
-      corporate premium style, sharp details
+    urban: `
+      Apple keynote style, clean professional background,
+      cool blue-gray tones, corporate executive aesthetic,
+      modern minimalist, trustworthy and authoritative,
+      soft diffused lighting, sharp details, premium corporate style
     `,
-    morandi: `
-      Morandi-style photo, Kinfolk magazine aesthetic,
-      muted sage green, dusty pink, warm gray palette,
-      soft diffused natural lighting,
-      artistic and refined, low saturation,
-      elegant earth tones, editorial quality
+    vintage: `
+      Kodak Portra 400 film look, vintage aesthetic,
+      warm film grain, cinematic color grading,
+      nostalgic atmosphere, retro style, artistic,
+      soft highlights, subtle vignette, analog photography feel
     `,
   };
 

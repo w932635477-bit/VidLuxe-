@@ -103,8 +103,8 @@ export async function getStyleProfile(params: {
     return getStyleProfileFromPreset(params.presetStyle);
   }
 
-  // 默认返回 magazine 风格
-  return getStyleProfileFromPreset('magazine');
+  // 默认返回 soft 风格
+  return getStyleProfileFromPreset('soft');
 }
 
 /**

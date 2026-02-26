@@ -18,7 +18,7 @@ const CASES = [
     categoryLabel: '穿搭 OOTD',
     beforePrompt: `Professional fashion photography of an elegant woman, wearing stylish minimalist outfit, soft natural lighting from large window, clean neutral background with subtle texture, high-end magazine editorial style, professional model pose, premium quality, fashion week street style, sophisticated`,
     afterPrompt: `A woman taking a casual selfie in a messy bedroom, wearing casual everyday clothes, poor lighting from overhead fluorescent, cluttered background with clothes and items, phone camera quality, unflattering angle, amateur photography, no styling`,
-    recommendedStyle: 'warmLuxury' as const,
+    recommendedStyle: 'magazine' as const,
   },
   {
     id: 'fashion-2',
@@ -26,7 +26,7 @@ const CASES = [
     categoryLabel: '穿搭 OOTD',
     beforePrompt: `Stunning street fashion portrait, model wearing designer minimalist clothing, golden hour natural lighting, elegant urban background with bokeh, Vogue magazine cover quality, confident pose, luxury brand aesthetic, high fashion editorial photography`,
     afterPrompt: `Casual photo of someone in a coffee shop, wearing basic outfit, ordinary appearance, harsh overhead lighting, busy background with other customers, iPhone snapshot, unposed, cluttered composition`,
-    recommendedStyle: 'minimal' as const,
+    recommendedStyle: 'soft' as const,
   },
   // 美妆
   {
@@ -35,7 +35,7 @@ const CASES = [
     categoryLabel: '美妆护肤',
     beforePrompt: `Luxury skincare product photography, elegant glass bottle with soft golden lighting, marble surface with rose petals, Chanel beauty campaign aesthetic, professional studio setup, soft shadows and highlights, premium cosmetics advertising`,
     afterPrompt: `Basic product photo of skincare bottle, taken on white desk with harsh flash, cluttered background with other items, amateur product photography, unflattering reflections`,
-    recommendedStyle: 'warmLuxury' as const,
+    recommendedStyle: 'magazine' as const,
   },
   {
     id: 'beauty-2',
@@ -43,7 +43,7 @@ const CASES = [
     categoryLabel: '美妆护肤',
     beforePrompt: `Elegant beauty flat lay photography, premium makeup products arranged artistically, soft diffused lighting, clean marble surface, Instagram beauty influencer aesthetic, professional product styling, luxury cosmetics editorial`,
     afterPrompt: `Snapshot of makeup products on messy vanity, poor lighting, unorganized items visible, phone camera quality, no styling`,
-    recommendedStyle: 'minimal' as const,
+    recommendedStyle: 'soft' as const,
   },
   // 咖啡
   {
@@ -52,7 +52,7 @@ const CASES = [
     categoryLabel: '咖啡探店',
     beforePrompt: `Beautiful latte art photography, perfect rosetta pattern in ceramic cup, soft natural window light, minimalist cafe interior background, Kinfolk magazine aesthetic, professional food photography, warm cozy atmosphere`,
     afterPrompt: `Casual photo of latte art in a cup, taken at a crowded coffee shop, harsh overhead lighting, busy background, phone snapshot, ordinary appearance`,
-    recommendedStyle: 'warmLuxury' as const,
+    recommendedStyle: 'magazine' as const,
   },
   {
     id: 'cafe-2',
@@ -60,7 +60,7 @@ const CASES = [
     categoryLabel: '咖啡探店',
     beforePrompt: `Stunning cafe interior photography, beautiful minimalist design, soft golden hour light streaming through windows, elegant furniture and decor, architectural digest quality, professional interior photography, inviting sophisticated atmosphere`,
     afterPrompt: `Quick snapshot of coffee shop interior, poor lighting, empty chairs visible, unflattering angle, amateur photography`,
-    recommendedStyle: 'morandi' as const,
+    recommendedStyle: 'vintage' as const,
   },
   // 美食
   {
@@ -69,7 +69,7 @@ const CASES = [
     categoryLabel: '探店美食',
     beforePrompt: `Michelin star quality food photography, beautifully plated gourmet dish, professional studio lighting, elegant ceramic plate on dark surface, Bon Appetit magazine style, chef-level presentation, appetizing and artistic`,
     afterPrompt: `Casual photo of restaurant dish, taken at dinner with poor lighting, phone flash creating harsh reflections, unappetizing appearance`,
-    recommendedStyle: 'warmLuxury' as const,
+    recommendedStyle: 'magazine' as const,
   },
   // 生活方式
   {
@@ -78,7 +78,7 @@ const CASES = [
     categoryLabel: '生活方式',
     beforePrompt: `Beautiful minimalist workspace photography, clean organized desk with premium items, soft natural light from large window, neutral color palette, productivity influencer aesthetic, professional interior photography, inspiring and organized`,
     afterPrompt: `Messy desk photo with laptop and items, poor lighting, unorganized workspace, casual snapshot quality`,
-    recommendedStyle: 'minimal' as const,
+    recommendedStyle: 'soft' as const,
   },
   {
     id: 'lifestyle-2',
@@ -86,7 +86,7 @@ const CASES = [
     categoryLabel: '生活方式',
     beforePrompt: `Stunning interior design photography, curated plant corner with beautiful pots, soft filtered natural light, neutral Scandi-style interior, Architectural Digest aesthetic, professional real estate photography, calm and sophisticated`,
     afterPrompt: `Snapshot of home corner with plants, ordinary appearance, harsh lighting, clutter visible in background`,
-    recommendedStyle: 'morandi' as const,
+    recommendedStyle: 'vintage' as const,
   },
   // 数码
   {
@@ -95,7 +95,7 @@ const CASES = [
     categoryLabel: '数码产品',
     beforePrompt: `Premium tech product photography, sleek wireless headphones, minimalist studio lighting, clean white or dark background, Apple product photography style, professional commercial quality, high-end consumer electronics`,
     afterPrompt: `Basic product photo of headphones, taken on messy desk with phone, harsh flash, unflattering background, amateur photography`,
-    recommendedStyle: 'minimal' as const,
+    recommendedStyle: 'soft' as const,
   },
   {
     id: 'tech-2',
@@ -103,7 +103,7 @@ const CASES = [
     categoryLabel: '数码产品',
     beforePrompt: `Professional tech workspace photography, premium laptop on clean desk, soft dramatic studio lighting, minimalist dark background, tech reviewer aesthetic, commercial product photography, sleek and modern`,
     afterPrompt: `Snapshot of laptop on desk, cluttered workspace, poor lighting, unflattering angle`,
-    recommendedStyle: 'coolPro' as const,
+    recommendedStyle: 'urban' as const,
   },
 ];
 
@@ -266,7 +266,7 @@ export interface Case {
   categoryLabel: string;
   beforeUrl: string;  // 升级后
   afterUrl: string;   // 原片
-  recommendedStyle: 'minimal' | 'warmLuxury' | 'coolPro' | 'morandi';
+  recommendedStyle: 'magazine' | 'soft' | 'urban' | 'vintage';
 }
 
 export const CASES: Case[] = ${JSON.stringify(results, null, 2)};

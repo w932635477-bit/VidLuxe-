@@ -18,7 +18,7 @@ export interface CaseConfig {
   // 升级后 Prompt（高级感风格）
   afterPrompt: string;
   // 风格推荐
-  recommendedStyle: 'minimal' | 'warmLuxury' | 'coolPro' | 'morandi';
+  recommendedStyle: 'magazine' | 'soft' | 'urban' | 'vintage';
 }
 
 // 案例配置库
@@ -45,7 +45,7 @@ export const CASE_CONFIGS: CaseConfig[] = [
       professional model pose, premium quality,
       fashion week street style, sophisticated
     `,
-    recommendedStyle: 'warmLuxury',
+    recommendedStyle: 'magazine',
   },
   {
     id: 'fashion-2',
@@ -66,7 +66,7 @@ export const CASE_CONFIGS: CaseConfig[] = [
       confident pose, luxury brand aesthetic,
       high fashion editorial photography
     `,
-    recommendedStyle: 'minimal',
+    recommendedStyle: 'soft',
   },
   {
     id: 'fashion-3',
@@ -86,7 +86,7 @@ export const CASE_CONFIGS: CaseConfig[] = [
       Harper's Bazaar editorial style,
       refined pose, luxury fashion aesthetic
     `,
-    recommendedStyle: 'warmLuxury',
+    recommendedStyle: 'magazine',
   },
 
   // 美妆护肤
@@ -110,7 +110,7 @@ export const CASE_CONFIGS: CaseConfig[] = [
       soft shadows and highlights,
       premium cosmetics advertising
     `,
-    recommendedStyle: 'warmLuxury',
+    recommendedStyle: 'magazine',
   },
   {
     id: 'beauty-2',
@@ -129,7 +129,7 @@ export const CASE_CONFIGS: CaseConfig[] = [
       professional product styling,
       luxury cosmetics editorial
     `,
-    recommendedStyle: 'minimal',
+    recommendedStyle: 'soft',
   },
   {
     id: 'beauty-3',
@@ -148,7 +148,7 @@ export const CASE_CONFIGS: CaseConfig[] = [
       Dior perfume campaign style,
       cinematic quality, premium brand aesthetic
     `,
-    recommendedStyle: 'coolPro',
+    recommendedStyle: 'urban',
   },
 
   // 咖啡探店
@@ -171,7 +171,7 @@ export const CASE_CONFIGS: CaseConfig[] = [
       professional food photography,
       warm cozy atmosphere
     `,
-    recommendedStyle: 'warmLuxury',
+    recommendedStyle: 'magazine',
   },
   {
     id: 'cafe-2',
@@ -191,7 +191,7 @@ export const CASE_CONFIGS: CaseConfig[] = [
       professional interior photography,
       inviting sophisticated atmosphere
     `,
-    recommendedStyle: 'morandi',
+    recommendedStyle: 'vintage',
   },
   {
     id: 'cafe-3',
@@ -211,7 +211,7 @@ export const CASE_CONFIGS: CaseConfig[] = [
       professional food styling,
       warm inviting mood
     `,
-    recommendedStyle: 'warmLuxury',
+    recommendedStyle: 'magazine',
   },
 
   // 美食
@@ -234,7 +234,7 @@ export const CASE_CONFIGS: CaseConfig[] = [
       chef-level presentation,
       appetizing and artistic
     `,
-    recommendedStyle: 'warmLuxury',
+    recommendedStyle: 'magazine',
   },
   {
     id: 'food-2',
@@ -254,7 +254,7 @@ export const CASE_CONFIGS: CaseConfig[] = [
       professional food photography,
       Instagram-worthy presentation
     `,
-    recommendedStyle: 'minimal',
+    recommendedStyle: 'soft',
   },
 
   // 生活方式
@@ -276,7 +276,7 @@ export const CASE_CONFIGS: CaseConfig[] = [
       professional interior photography,
       inspiring and organized
     `,
-    recommendedStyle: 'minimal',
+    recommendedStyle: 'soft',
   },
   {
     id: 'lifestyle-2',
@@ -296,7 +296,7 @@ export const CASE_CONFIGS: CaseConfig[] = [
       professional real estate photography,
       calm and sophisticated
     `,
-    recommendedStyle: 'morandi',
+    recommendedStyle: 'vintage',
   },
 
   // 数码产品
@@ -319,7 +319,7 @@ export const CASE_CONFIGS: CaseConfig[] = [
       professional commercial quality,
       high-end consumer electronics
     `,
-    recommendedStyle: 'minimal',
+    recommendedStyle: 'soft',
   },
   {
     id: 'tech-2',
@@ -339,7 +339,7 @@ export const CASE_CONFIGS: CaseConfig[] = [
       commercial product photography,
       sleek and modern
     `,
-    recommendedStyle: 'coolPro',
+    recommendedStyle: 'urban',
   },
 ];
 

@@ -7,7 +7,7 @@ export interface Project {
   thumbnailUrl: string;
   originalUrl: string;
   enhancedUrl: string;
-  style: 'minimal' | 'warmLuxury' | 'coolPro' | 'morandi';
+  style: 'magazine' | 'soft' | 'urban' | 'vintage';
   score: number;
   dimensions: {
     color: number;
@@ -27,7 +27,7 @@ export const MOCK_PROJECTS: Project[] = [
     thumbnailUrl: '/comparisons/fashion-1-original.jpg',
     originalUrl: '/comparisons/fashion-1-original.jpg',
     enhancedUrl: '/comparisons/fashion-1-enhanced.jpg',
-    style: 'warmLuxury',
+    style: 'magazine',
     score: 82,
     dimensions: { color: 85, composition: 80, typography: 78, detail: 84 },
     status: 'completed',
@@ -39,7 +39,7 @@ export const MOCK_PROJECTS: Project[] = [
     thumbnailUrl: '/comparisons/cafe-1-original.jpg',
     originalUrl: '/comparisons/cafe-1-original.jpg',
     enhancedUrl: '/comparisons/cafe-1-enhanced.jpg',
-    style: 'warmLuxury',
+    style: 'soft',
     score: 78,
     dimensions: { color: 82, composition: 75, typography: 76, detail: 80 },
     status: 'completed',
@@ -51,7 +51,7 @@ export const MOCK_PROJECTS: Project[] = [
     thumbnailUrl: '/comparisons/portrait-1-original.jpg',
     originalUrl: '/comparisons/portrait-1-original.jpg',
     enhancedUrl: '/comparisons/portrait-1-enhanced.jpg',
-    style: 'minimal',
+    style: 'magazine',
     score: 85,
     dimensions: { color: 88, composition: 85, typography: 82, detail: 86 },
     status: 'completed',
@@ -63,7 +63,7 @@ export const MOCK_PROJECTS: Project[] = [
     thumbnailUrl: '/comparisons/product-1-original.jpg',
     originalUrl: '/comparisons/product-1-original.jpg',
     enhancedUrl: '/comparisons/product-1-enhanced.jpg',
-    style: 'coolPro',
+    style: 'urban',
     score: 79,
     dimensions: { color: 78, composition: 80, typography: 82, detail: 76 },
     status: 'completed',
@@ -75,7 +75,7 @@ export const MOCK_PROJECTS: Project[] = [
     thumbnailUrl: '/comparisons/lifestyle-1-original.jpg',
     originalUrl: '/comparisons/lifestyle-1-original.jpg',
     enhancedUrl: '/comparisons/lifestyle-1-enhanced.jpg',
-    style: 'morandi',
+    style: 'vintage',
     score: 81,
     dimensions: { color: 83, composition: 79, typography: 80, detail: 82 },
     status: 'completed',

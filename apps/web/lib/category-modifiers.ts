@@ -82,14 +82,14 @@ const categoryModifiers: Record<CategoryType, CategoryModifiers> = {
 // ============================================
 
 export const styleRecommendations: Record<CategoryType, MultiStyleType[]> = {
-  fashion: ['minimal', 'warmLuxury', 'coolPro'],
-  beauty: ['soft', 'minimal', 'warmLuxury'],
-  food: ['warmLuxury', 'morandi', 'soft'],
-  cafe: ['morandi', 'minimal', 'soft'],
-  home: ['minimal', 'morandi', 'warmLuxury'],
-  travel: ['soft', 'warmLuxury', 'minimal'],
-  tech: ['minimal', 'coolPro', 'warmLuxury'],
-  fitness: ['coolPro', 'minimal', 'warmLuxury'],
+  fashion: ['magazine', 'soft', 'urban'],
+  beauty: ['soft', 'magazine', 'vintage'],
+  food: ['soft', 'magazine', 'vintage'],
+  cafe: ['soft', 'vintage', 'magazine'],
+  home: ['soft', 'vintage', 'urban'],
+  travel: ['soft', 'vintage', 'magazine'],
+  tech: ['urban', 'magazine', 'soft'],
+  fitness: ['urban', 'magazine', 'soft'],
 };
 
 // ============================================
@@ -107,33 +107,12 @@ const seedingTypePrompts: Record<SeedingType, string> = {
 // ============================================
 
 const styleModifiers: Record<MultiStyleType, string[]> = {
-  minimal: [
-    'minimalist composition',
-    'clean lines',
-    'negative space',
-    'Apple style',
-    'white background',
-  ],
-  warmLuxury: [
-    'warm golden tones',
+  magazine: [
+    'Vogue editorial style',
     'luxurious atmosphere',
-    'Chanel style',
+    'fashion photography',
     'elegant lighting',
-    'rich colors',
-  ],
-  coolPro: [
-    'cool blue tones',
-    'professional look',
-    'tech aesthetic',
-    'clean modern',
-    'gradient background',
-  ],
-  morandi: [
-    'Morandi colors',
-    'muted tones',
-    'Kinfolk style',
-    'low saturation',
-    'artistic composition',
+    'rich golden tones',
   ],
   soft: [
     'soft natural light',
@@ -141,6 +120,20 @@ const styleModifiers: Record<MultiStyleType, string[]> = {
     'Japanese aesthetic',
     'dreamy atmosphere',
     'pastel tones',
+  ],
+  urban: [
+    'cool blue tones',
+    'professional look',
+    'tech aesthetic',
+    'clean modern',
+    'gradient background',
+  ],
+  vintage: [
+    'film grain texture',
+    'warm retro tones',
+    'Kodak Portra style',
+    'nostalgic atmosphere',
+    'cinematic color',
   ],
 };
 

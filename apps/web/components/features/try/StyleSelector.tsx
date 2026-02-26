@@ -3,7 +3,7 @@
 import { useState } from 'react';
 
 // 风格预设类型
-export type StyleType = 'magazine' | 'soft' | 'urban' | 'minimal' | 'vintage';
+export type StyleType = 'magazine' | 'soft' | 'urban' | 'vintage';
 
 // 风格来源类型
 export type StyleSourceType = 'reference' | 'preset';
@@ -69,21 +69,6 @@ export const STYLE_PRESETS: StylePreset[] = [
     thumbnail: {
       before: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=711&fit=crop',
       after: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=711&fit=crop',
-    },
-  },
-  {
-    id: 'minimal',
-    name: '高级极简',
-    nameEn: 'Minimal',
-    description: '极简干净，Apple 风格',
-    tags: ['极简干净', '质感高级', '留白'],
-    suitableFor: ['产品展示', '静物', '护肤品', '数码产品'],
-    accentColor: '#8E8E93',
-    gradientFrom: '#AEAEB2',
-    gradientTo: '#636366',
-    thumbnail: {
-      before: 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&h=711&fit=crop',
-      after: 'https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400&h=711&fit=crop',
     },
   },
   {
@@ -361,7 +346,7 @@ export function StyleSelector({
           gap: '12px',
         }}
       >
-        {STYLE_PRESETS.slice(0, 4).map((preset) => (
+        {STYLE_PRESETS.map((preset) => (
           <StyleCard
             key={preset.id}
             preset={preset}
@@ -369,15 +354,6 @@ export function StyleSelector({
             onSelect={() => onSelect(preset.id)}
           />
         ))}
-      </div>
-
-      {/* 第5个风格（复古胶片）单独一行 */}
-      <div style={{ marginTop: '12px' }}>
-        <StyleCard
-          preset={STYLE_PRESETS[4]}
-          isSelected={selectedStyle === STYLE_PRESETS[4].id}
-          onSelect={() => onSelect(STYLE_PRESETS[4].id)}
-        />
       </div>
     </div>
   );

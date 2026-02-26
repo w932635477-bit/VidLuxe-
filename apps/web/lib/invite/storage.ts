@@ -114,7 +114,7 @@ export function getInviteStats(anonymousId: string): {
 }
 
 // 使用邀请码
-export function useInviteCode(
+export function applyInviteCode(
   code: string,
   inviteeId: string
 ): { success: boolean; error?: string } {

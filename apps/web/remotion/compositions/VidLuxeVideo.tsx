@@ -18,7 +18,7 @@ import {
 } from 'remotion';
 
 // 预设风格类型
-export type StyleType = 'magazine' | 'soft' | 'urban' | 'minimal' | 'vintage';
+export type StyleType = 'magazine' | 'soft' | 'urban' | 'vintage';
 
 // 组件 Props
 export interface VidLuxeVideoProps {
@@ -36,7 +36,6 @@ const STYLE_COLORS: Record<StyleType, { primary: string; secondary: string }> = 
   magazine: { primary: '#D4AF37', secondary: '#1A1A1A' },
   soft: { primary: '#F5E6D3', secondary: '#8B7355' },
   urban: { primary: '#2C3E50', secondary: '#3498DB' },
-  minimal: { primary: '#FFFFFF', secondary: '#000000' },
   vintage: { primary: '#C9A86C', secondary: '#4A3728' },
 };
 

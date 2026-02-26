@@ -109,7 +109,7 @@ export interface Case {
   categoryLabel: string;
   beforeUrl: string;  // 升级后
   afterUrl: string;   // 原片
-  recommendedStyle: 'minimal' | 'warmLuxury' | 'coolPro' | 'morandi';
+  recommendedStyle: 'magazine' | 'soft' | 'urban' | 'vintage';
 }
 
 export const CASES: Case[] = ${JSON.stringify(results, null, 2)};

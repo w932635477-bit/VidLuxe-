@@ -45,12 +45,12 @@ const config: Config = {
           muted: 'rgba(255, 255, 255, 0.3)',
           disabled: 'rgba(255, 255, 255, 0.15)',
         },
-        // 高级感风格色 - Apple 风格
+        // 高级感风格色
         style: {
-          minimal: '#8E8E93',
-          warmLuxury: '#D4AF37',
-          coolPro: '#5E6C84',
-          morandi: '#9CAF88',
+          magazine: '#D4AF37',
+          soft: '#B8A99A',
+          urban: '#5E7A99',
+          vintage: '#C9A86C',
         },
       },
       fontFamily: {

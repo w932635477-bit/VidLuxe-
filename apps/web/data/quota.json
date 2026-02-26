@@ -16,5 +16,13 @@
     "createdAt": 1772020825995,
     "version": 6,
     "updatedAt": 1772020838343
+  },
+  "3e48ef9d22e096da": {
+    "anonymousId": "3e48ef9d22e096da",
+    "usedCount": 0,
+    "totalCount": 10,
+    "resetAt": 1772154689734,
+    "createdAt": 1772068289734,
+    "version": 0
   }
 }

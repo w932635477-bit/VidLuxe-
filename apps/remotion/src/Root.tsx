@@ -18,7 +18,7 @@ const videoEnhancementSchema = z.object({
       highlights: z.array(z.string()).optional(),
     })
     .optional(),
-  styleType: z.enum(['magazine', 'soft', 'urban', 'minimal', 'vintage']).optional(),
+  styleType: z.enum(['magazine', 'soft', 'urban', 'vintage']).optional(),
   showScore: z.boolean().optional(),
   scoreData: z
     .object({

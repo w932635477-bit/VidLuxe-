@@ -5,7 +5,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { useInviteCode } from '@/lib/invite/storage';
+import { applyInviteCode } from '@/lib/invite/storage';
 import { getAvailableCredits } from '@/lib/credits';
 
 export async function POST(
@@ -24,7 +24,7 @@ export async function POST(
       );
     }
 
-    const result = useInviteCode(code.toUpperCase(), anonymousId);
+    const result = applyInviteCode(code.toUpperCase(), anonymousId);
 
     if (!result.success) {
       return NextResponse.json(

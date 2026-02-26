@@ -7,7 +7,7 @@ export interface Case {
   categoryLabel: string;
   beforeUrl: string;  // 升级后
   afterUrl: string;   // 原片
-  recommendedStyle: 'minimal' | 'warmLuxury' | 'coolPro' | 'morandi';
+  recommendedStyle: 'magazine' | 'soft' | 'urban' | 'vintage';
 }
 
 // 使用 picsum 作为占位图（开发阶段）
@@ -19,7 +19,7 @@ export const CASES: Case[] = [
     categoryLabel: '穿搭 OOTD',
     beforeUrl: 'https://picsum.photos/seed/vidluxe-fashion1-up/540/960',
     afterUrl: 'https://picsum.photos/seed/vidluxe-fashion1-orig/540/960',
-    recommendedStyle: 'warmLuxury',
+    recommendedStyle: 'magazine',
   },
   {
     id: 'fashion-2',
@@ -27,7 +27,7 @@ export const CASES: Case[] = [
     categoryLabel: '穿搭 OOTD',
     beforeUrl: 'https://picsum.photos/seed/vidluxe-fashion2-up/540/960',
     afterUrl: 'https://picsum.photos/seed/vidluxe-fashion2-orig/540/960',
-    recommendedStyle: 'minimal',
+    recommendedStyle: 'soft',
   },
   {
     id: 'fashion-3',
@@ -35,7 +35,7 @@ export const CASES: Case[] = [
     categoryLabel: '穿搭 OOTD',
     beforeUrl: 'https://picsum.photos/seed/vidluxe-fashion3-up/540/960',
     afterUrl: 'https://picsum.photos/seed/vidluxe-fashion3-orig/540/960',
-    recommendedStyle: 'warmLuxury',
+    recommendedStyle: 'magazine',
   },
   {
     id: 'beauty-1',
@@ -43,7 +43,7 @@ export const CASES: Case[] = [
     categoryLabel: '美妆护肤',
     beforeUrl: 'https://picsum.photos/seed/vidluxe-beauty1-up/540/960',
     afterUrl: 'https://picsum.photos/seed/vidluxe-beauty1-orig/540/960',
-    recommendedStyle: 'warmLuxury',
+    recommendedStyle: 'magazine',
   },
   {
     id: 'beauty-2',
@@ -51,7 +51,7 @@ export const CASES: Case[] = [
     categoryLabel: '美妆护肤',
     beforeUrl: 'https://picsum.photos/seed/vidluxe-beauty2-up/540/960',
     afterUrl: 'https://picsum.photos/seed/vidluxe-beauty2-orig/540/960',
-    recommendedStyle: 'minimal',
+    recommendedStyle: 'soft',
   },
   {
     id: 'beauty-3',
@@ -59,7 +59,7 @@ export const CASES: Case[] = [
     categoryLabel: '美妆护肤',
     beforeUrl: 'https://picsum.photos/seed/vidluxe-beauty3-up/540/960',
     afterUrl: 'https://picsum.photos/seed/vidluxe-beauty3-orig/540/960',
-    recommendedStyle: 'coolPro',
+    recommendedStyle: 'urban',
   },
   {
     id: 'cafe-1',
@@ -67,7 +67,7 @@ export const CASES: Case[] = [
     categoryLabel: '咖啡探店',
     beforeUrl: 'https://picsum.photos/seed/vidluxe-cafe1-up/540/960',
     afterUrl: 'https://picsum.photos/seed/vidluxe-cafe1-orig/540/960',
-    recommendedStyle: 'warmLuxury',
+    recommendedStyle: 'magazine',
   },
   {
     id: 'cafe-2',
@@ -75,7 +75,7 @@ export const CASES: Case[] = [
     categoryLabel: '咖啡探店',
     beforeUrl: 'https://picsum.photos/seed/vidluxe-cafe2-up/540/960',
     afterUrl: 'https://picsum.photos/seed/vidluxe-cafe2-orig/540/960',
-    recommendedStyle: 'morandi',
+    recommendedStyle: 'vintage',
   },
   {
     id: 'cafe-3',
@@ -83,7 +83,7 @@ export const CASES: Case[] = [
     categoryLabel: '咖啡探店',
     beforeUrl: 'https://picsum.photos/seed/vidluxe-cafe3-up/540/960',
     afterUrl: 'https://picsum.photos/seed/vidluxe-cafe3-orig/540/960',
-    recommendedStyle: 'warmLuxury',
+    recommendedStyle: 'magazine',
   },
   {
     id: 'food-1',
@@ -91,7 +91,7 @@ export const CASES: Case[] = [
     categoryLabel: '探店美食',
     beforeUrl: 'https://picsum.photos/seed/vidluxe-food1-up/540/960',
     afterUrl: 'https://picsum.photos/seed/vidluxe-food1-orig/540/960',
-    recommendedStyle: 'warmLuxury',
+    recommendedStyle: 'magazine',
   },
   {
     id: 'food-2',
@@ -99,7 +99,7 @@ export const CASES: Case[] = [
     categoryLabel: '探店美食',
     beforeUrl: 'https://picsum.photos/seed/vidluxe-food2-up/540/960',
     afterUrl: 'https://picsum.photos/seed/vidluxe-food2-orig/540/960',
-    recommendedStyle: 'minimal',
+    recommendedStyle: 'soft',
   },
   {
     id: 'lifestyle-1',
@@ -107,7 +107,7 @@ export const CASES: Case[] = [
     categoryLabel: '生活方式',
     beforeUrl: 'https://picsum.photos/seed/vidluxe-life1-up/540/960',
     afterUrl: 'https://picsum.photos/seed/vidluxe-life1-orig/540/960',
-    recommendedStyle: 'minimal',
+    recommendedStyle: 'soft',
   },
   {
     id: 'lifestyle-2',
@@ -115,7 +115,7 @@ export const CASES: Case[] = [
     categoryLabel: '生活方式',
     beforeUrl: 'https://picsum.photos/seed/vidluxe-life2-up/540/960',
     afterUrl: 'https://picsum.photos/seed/vidluxe-life2-orig/540/960',
-    recommendedStyle: 'morandi',
+    recommendedStyle: 'vintage',
   },
   {
     id: 'tech-1',
@@ -123,7 +123,7 @@ export const CASES: Case[] = [
     categoryLabel: '数码产品',
     beforeUrl: 'https://picsum.photos/seed/vidluxe-tech1-up/540/960',
     afterUrl: 'https://picsum.photos/seed/vidluxe-tech1-orig/540/960',
-    recommendedStyle: 'minimal',
+    recommendedStyle: 'soft',
   },
   {
     id: 'tech-2',
@@ -131,7 +131,7 @@ export const CASES: Case[] = [
     categoryLabel: '数码产品',
     beforeUrl: 'https://picsum.photos/seed/vidluxe-tech2-up/540/960',
     afterUrl: 'https://picsum.photos/seed/vidluxe-tech2-orig/540/960',
-    recommendedStyle: 'coolPro',
+    recommendedStyle: 'urban',
   },
 ];
 

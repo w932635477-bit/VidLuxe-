@@ -51,10 +51,10 @@ function ProjectsNav() {
 // 项目卡片
 function ProjectCard({ project }: { project: Project }) {
   const styleNames: Record<string, string> = {
-    minimal: '极简',
-    warmLuxury: '暖调奢华',
-    coolPro: '冷调专业',
-    morandi: '莫兰迪',
+    magazine: '杂志大片',
+    soft: '温柔日系',
+    urban: '都市职场',
+    vintage: '复古胶片',
   };
 
   const handleDownload = async () => {

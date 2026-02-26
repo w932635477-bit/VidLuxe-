@@ -34,7 +34,7 @@ export const RemotionRoot: React.FC = () => {
         defaultProps={{
           backgroundUrl: '',
           foregroundUrl: '',
-          styleType: 'minimal',
+          styleType: 'soft',
         }}
       />
     </>

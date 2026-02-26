@@ -50,21 +50,21 @@ export function getSeedingTypeConfig(id: SeedingType): SeedingTypeConfig | undef
 export function getRecommendedStyles(category: CategoryType, seedingType: SeedingType): string[] {
   // 简单推荐逻辑，后续可优化
   const styleMap: Record<string, string[]> = {
-    'fashion-product': ['magazine', 'warmLuxury'],
-    'fashion-lifestyle': ['morandi', 'magazine'],
-    'beauty-product': ['warmLuxury', 'minimal'],
-    'beauty-lifestyle': ['minimal', 'morandi'],
-    'food-product': ['warmLuxury', 'magazine'],
-    'food-location': ['morandi', 'warmLuxury'],
-    'cafe-location': ['morandi', 'coolPro'],
-    'cafe-lifestyle': ['morandi', 'minimal'],
-    'home-lifestyle': ['morandi', 'minimal'],
-    'travel-location': ['magazine', 'morandi'],
-    'travel-lifestyle': ['morandi', 'magazine'],
-    'tech-product': ['minimal', 'coolPro'],
-    'fitness-lifestyle': ['coolPro', 'minimal'],
+    'fashion-product': ['magazine', 'urban'],
+    'fashion-lifestyle': ['soft', 'magazine'],
+    'beauty-product': ['magazine', 'soft'],
+    'beauty-lifestyle': ['soft', 'vintage'],
+    'food-product': ['magazine', 'soft'],
+    'food-location': ['soft', 'vintage'],
+    'cafe-location': ['soft', 'vintage'],
+    'cafe-lifestyle': ['soft', 'vintage'],
+    'home-lifestyle': ['soft', 'vintage'],
+    'travel-location': ['magazine', 'vintage'],
+    'travel-lifestyle': ['vintage', 'soft'],
+    'tech-product': ['urban', 'magazine'],
+    'fitness-lifestyle': ['urban', 'magazine'],
   };
 
   const key = `${category}-${seedingType}`;
-  return styleMap[key] || ['magazine', 'minimal'];
+  return styleMap[key] || ['magazine', 'soft'];
 }

@@ -951,5 +951,371 @@
     },
     "createdAt": 1772020810538,
     "updatedAt": 1772022487416
+  },
+  "test_user_1772068170671_1": {
+    "anonymousId": "test_user_1772068170671_1",
+    "balance": 0,
+    "totalEarned": 0,
+    "totalSpent": 0,
+    "packages": [],
+    "inviteCredits": [],
+    "transactions": [],
+    "freeCredits": {
+      "monthlyLimit": 3,
+      "usedThisMonth": 0,
+      "resetAt": 1772294400000
+    },
+    "createdAt": 1772068170671,
+    "updatedAt": 1772068170671
+  },
+  "test_user_1772068170672_2": {
+    "anonymousId": "test_user_1772068170672_2",
+    "balance": 10,
+    "totalEarned": 10,
+    "totalSpent": 0,
+    "packages": [
+      {
+        "id": "txn_test_1772068170672",
+        "amount": 10,
+        "type": "purchase",
+        "description": "Test purchase",
+        "createdAt": 1772068170672
+      }
+    ],
+    "inviteCredits": [],
+    "transactions": [
+      {
+        "id": "txn_test_1772068170672",
+        "amount": 10,
+        "type": "purchase",
+        "description": "Test purchase",
+        "createdAt": 1772068170672
+      }
+    ],
+    "freeCredits": {
+      "monthlyLimit": 3,
+      "usedThisMonth": 0,
+      "resetAt": 1772294400000
+    },
+    "createdAt": 1772068170672,
+    "updatedAt": 1772068170672
+  },
+  "test_user_1772068170673_3": {
+    "anonymousId": "test_user_1772068170673_3",
+    "balance": 0,
+    "totalEarned": 0,
+    "totalSpent": 0,
+    "packages": [],
+    "inviteCredits": [],
+    "transactions": [],
+    "freeCredits": {
+      "monthlyLimit": 3,
+      "usedThisMonth": 0,
+      "resetAt": 1772294400000
+    },
+    "createdAt": 1772068170673,
+    "updatedAt": 1772068170673
+  },
+  "test_user_1772068170673_4": {
+    "anonymousId": "test_user_1772068170673_4",
+    "balance": 2,
+    "totalEarned": 5,
+    "totalSpent": 3,
+    "packages": [
+      {
+        "id": "txn_test_1772068170673",
+        "amount": 5,
+        "type": "purchase",
+        "description": "Test purchase",
+        "createdAt": 1772068170673
+      }
+    ],
+    "inviteCredits": [],
+    "transactions": [
+      {
+        "id": "txn_test_1772068170673",
+        "amount": 5,
+        "type": "purchase",
+        "description": "Test purchase",
+        "createdAt": 1772068170673
+      },
+      {
+        "id": "txn_1772068170674_2oj33iae",
+        "amount": -3,
+        "type": "spend",
+        "description": "Test task",
+        "createdAt": 1772068170674
+      }
+    ],
+    "freeCredits": {
+      "monthlyLimit": 3,
+      "usedThisMonth": 0,
+      "resetAt": 1772294400000
+    },
+    "createdAt": 1772068170673,
+    "updatedAt": 1772068170674
+  },
+  "test_user_1772068170674_5": {
+    "anonymousId": "test_user_1772068170674_5",
+    "balance": 5,
+    "totalEarned": 5,
+    "totalSpent": 0,
+    "packages": [],
+    "inviteCredits": [
+      {
+        "id": "txn_1772068170675_7204ww90",
+        "amount": 5,
+        "type": "invite_earned",
+        "description": "邀请好友奖励",
+        "inviteCode": "test_user_1772068170674_6",
+        "createdAt": 1772068170675,
+        "expiresAt": 1774660170675
+      }
+    ],
+    "transactions": [
+      {
+        "id": "txn_1772068170675_7204ww90",
+        "amount": 5,
+        "type": "invite_earned",
+        "description": "邀请好友奖励",
+        "inviteCode": "test_user_1772068170674_6",
+        "createdAt": 1772068170675,
+        "expiresAt": 1774660170675
+      }
+    ],
+    "freeCredits": {
+      "monthlyLimit": 3,
+      "usedThisMonth": 0,
+      "resetAt": 1772294400000
+    },
+    "createdAt": 1772068170675,
+    "updatedAt": 1772068170675
+  },
+  "test_user_1772068170674_6": {
+    "anonymousId": "test_user_1772068170674_6",
+    "balance": 5,
+    "totalEarned": 5,
+    "totalSpent": 0,
+    "packages": [],
+    "inviteCredits": [
+      {
+        "id": "txn_1772068170675_aqrnu35x",
+        "amount": 5,
+        "type": "invite_bonus",
+        "description": "新用户邀请奖励",
+        "inviteCode": "test_user_1772068170674_5",
+        "createdAt": 1772068170675,
+        "expiresAt": 1774660170675
+      }
+    ],
+    "transactions": [
+      {
+        "id": "txn_1772068170675_aqrnu35x",
+        "amount": 5,
+        "type": "invite_bonus",
+        "description": "新用户邀请奖励",
+        "inviteCode": "test_user_1772068170674_5",
+        "createdAt": 1772068170675,
+        "expiresAt": 1774660170675
+      }
+    ],
+    "freeCredits": {
+      "monthlyLimit": 3,
+      "usedThisMonth": 0,
+      "resetAt": 1772294400000
+    },
+    "createdAt": 1772068170675,
+    "updatedAt": 1772068170675
+  },
+  "test_user_1772068197745_1": {
+    "anonymousId": "test_user_1772068197745_1",
+    "balance": 0,
+    "totalEarned": 0,
+    "totalSpent": 0,
+    "packages": [],
+    "inviteCredits": [],
+    "transactions": [],
+    "freeCredits": {
+      "monthlyLimit": 3,
+      "usedThisMonth": 0,
+      "resetAt": 1772294400000
+    },
+    "createdAt": 1772068197745,
+    "updatedAt": 1772068197745
+  },
+  "test_user_1772068197746_2": {
+    "anonymousId": "test_user_1772068197746_2",
+    "balance": 10,
+    "totalEarned": 10,
+    "totalSpent": 0,
+    "packages": [
+      {
+        "id": "txn_test_1772068197746",
+        "amount": 10,
+        "type": "purchase",
+        "description": "Test purchase",
+        "createdAt": 1772068197746
+      }
+    ],
+    "inviteCredits": [],
+    "transactions": [
+      {
+        "id": "txn_test_1772068197746",
+        "amount": 10,
+        "type": "purchase",
+        "description": "Test purchase",
+        "createdAt": 1772068197746
+      }
+    ],
+    "freeCredits": {
+      "monthlyLimit": 3,
+      "usedThisMonth": 0,
+      "resetAt": 1772294400000
+    },
+    "createdAt": 1772068197746,
+    "updatedAt": 1772068197746
+  },
+  "test_user_1772068197746_3": {
+    "anonymousId": "test_user_1772068197746_3",
+    "balance": 0,
+    "totalEarned": 0,
+    "totalSpent": 0,
+    "packages": [],
+    "inviteCredits": [],
+    "transactions": [],
+    "freeCredits": {
+      "monthlyLimit": 3,
+      "usedThisMonth": 0,
+      "resetAt": 1772294400000
+    },
+    "createdAt": 1772068197747,
+    "updatedAt": 1772068197747
+  },
+  "test_user_1772068197747_4": {
+    "anonymousId": "test_user_1772068197747_4",
+    "balance": 2,
+    "totalEarned": 5,
+    "totalSpent": 3,
+    "packages": [
+      {
+        "id": "txn_test_1772068197747",
+        "amount": 5,
+        "type": "purchase",
+        "description": "Test purchase",
+        "createdAt": 1772068197747
+      }
+    ],
+    "inviteCredits": [],
+    "transactions": [
+      {
+        "id": "txn_test_1772068197747",
+        "amount": 5,
+        "type": "purchase",
+        "description": "Test purchase",
+        "createdAt": 1772068197747
+      },
+      {
+        "id": "txn_1772068197748_wt5sgwob",
+        "amount": -3,
+        "type": "spend",
+        "description": "Test task",
+        "createdAt": 1772068197748
+      }
+    ],
+    "freeCredits": {
+      "monthlyLimit": 3,
+      "usedThisMonth": 0,
+      "resetAt": 1772294400000
+    },
+    "createdAt": 1772068197747,
+    "updatedAt": 1772068197748
+  },
+  "test_user_1772068197749_5": {
+    "anonymousId": "test_user_1772068197749_5",
+    "balance": 5,
+    "totalEarned": 5,
+    "totalSpent": 0,
+    "packages": [],
+    "inviteCredits": [
+      {
+        "id": "txn_1772068197750_cpl84vrk",
+        "amount": 5,
+        "type": "invite_earned",
+        "description": "邀请好友奖励",
+        "inviteCode": "test_user_1772068197749_6",
+        "createdAt": 1772068197750,
+        "expiresAt": 1774660197750
+      }
+    ],
+    "transactions": [
+      {
+        "id": "txn_1772068197750_cpl84vrk",
+        "amount": 5,
+        "type": "invite_earned",
+        "description": "邀请好友奖励",
+        "inviteCode": "test_user_1772068197749_6",
+        "createdAt": 1772068197750,
+        "expiresAt": 1774660197750
+      }
+    ],
+    "freeCredits": {
+      "monthlyLimit": 3,
+      "usedThisMonth": 0,
+      "resetAt": 1772294400000
+    },
+    "createdAt": 1772068197749,
+    "updatedAt": 1772068197750
+  },
+  "test_user_1772068197749_6": {
+    "anonymousId": "test_user_1772068197749_6",
+    "balance": 5,
+    "totalEarned": 5,
+    "totalSpent": 0,
+    "packages": [],
+    "inviteCredits": [
+      {
+        "id": "txn_1772068197750_svxdl8bq",
+        "amount": 5,
+        "type": "invite_bonus",
+        "description": "新用户邀请奖励",
+        "inviteCode": "test_user_1772068197749_5",
+        "createdAt": 1772068197750,
+        "expiresAt": 1774660197750
+      }
+    ],
+    "transactions": [
+      {
+        "id": "txn_1772068197750_svxdl8bq",
+        "amount": 5,
+        "type": "invite_bonus",
+        "description": "新用户邀请奖励",
+        "inviteCode": "test_user_1772068197749_5",
+        "createdAt": 1772068197750,
+        "expiresAt": 1774660197750
+      }
+    ],
+    "freeCredits": {
+      "monthlyLimit": 3,
+      "usedThisMonth": 0,
+      "resetAt": 1772294400000
+    },
+    "createdAt": 1772068197749,
+    "updatedAt": 1772068197750
+  },
+  "test-user-123": {
+    "anonymousId": "test-user-123",
+    "balance": 0,
+    "totalEarned": 0,
+    "totalSpent": 0,
+    "packages": [],
+    "inviteCredits": [],
+    "transactions": [],
+    "freeCredits": {
+      "monthlyLimit": 3,
+      "usedThisMonth": 0,
+      "resetAt": 1772294400000
+    },
+    "createdAt": 1772068363735,
+    "updatedAt": 1772068363735
   }
 }
