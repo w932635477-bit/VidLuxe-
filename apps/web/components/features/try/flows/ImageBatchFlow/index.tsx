@@ -338,7 +338,7 @@ function UploadStep({ batchFiles, isLoading, onFilesChange, onRemove, onClear, c
                 onClick={() => !isLoading && item.status !== 'uploading' && onRemove(item.id)}
                 style={{
                   position: 'relative',
-                  aspectRatio: '1',
+                  aspectRatio: '9/16',
                   borderRadius: '12px',
                   overflow: 'hidden',
                   cursor: isLoading || item.status === 'uploading' ? 'default' : 'pointer',
@@ -661,7 +661,7 @@ function ResultStep({ results, onReset }: { results: BatchResultItem[]; onReset:
             onClick={() => setSelectedResult(result)}
             style={{
               position: 'relative',
-              aspectRatio: '1',
+              aspectRatio: '9/16',
               borderRadius: '12px',
               overflow: 'hidden',
               cursor: 'pointer',
