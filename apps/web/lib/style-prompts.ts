@@ -5,6 +5,8 @@
  * 用于 Nano Banana API 调用
  */
 
+import type { ContentType } from './content-types';
+
 // 预设风格类型
 export type PresetStyle = 'magazine' | 'soft' | 'urban' | 'vintage';
 
@@ -123,28 +125,70 @@ export function getNegativePrompt(style: PresetStyle): string {
 
 /**
  * 构建完整的图片升级 Prompt
+ * 支持内容类型增强词
  */
 export function buildEnhancePrompt(params: {
   style: PresetStyle;
-  contentType: 'image' | 'video';
+  contentType?: ContentType;
+  mediaType?: 'image' | 'video';
   customKeywords?: string[];
 }): string {
-  const { style, contentType, customKeywords = [] } = params;
+  const { style, contentType, mediaType = 'image', customKeywords = [] } = params;
   const styleConfig = getStyleConfig(style);
 
+  // 基础风格 Prompt
   const basePrompt = styleConfig.prompt;
 
-  // 根据内容类型添加额外描述
-  const contentTypePrompt = contentType === 'video'
-    ? 'suitable for video background, consistent style across frames'
-    : 'high resolution, detailed';
+  // 内容类型增强词
+  let contentPrompt = '';
+  if (contentType) {
+    const { getContentTypeConfig } = require('./content-types');
+    const contentConfig = getContentTypeConfig(contentType);
+    contentPrompt = contentConfig.keywords;
+  }
 
-  // 添加自定义关键词
-  const keywordsPrompt = customKeywords.length > 0
-    ? customKeywords.join(', ')
+  // 媒体类型描述
+  const mediaPrompt = mediaType === 'video'
+    ? 'suitable for video background, consistent style across frames'
     : '';
 
-  return [basePrompt, contentTypePrompt, keywordsPrompt]
+  // 质量保证词
+  const qualityPrompt = '8K, high resolution, professional photography, premium quality, sharp details';
+
+  // 自定义关键词
+  const keywordsPrompt = customKeywords.length > 0 ? customKeywords.join(', ') : '';
+
+  return [basePrompt, contentPrompt, mediaPrompt, qualityPrompt, keywordsPrompt]
+    .filter(Boolean)
+    .join(', ');
+}
+
+/**
+ * 构建增强版负面 Prompt
+ * 支持内容类型负面词
+ */
+export function buildEnhanceNegativePrompt(params: {
+  style: PresetStyle;
+  contentType?: ContentType;
+}): string {
+  const { style, contentType } = params;
+  const styleConfig = getStyleConfig(style);
+
+  // 基础负面 Prompt
+  const baseNegative = styleConfig.negativePrompt;
+
+  // 内容类型负面词
+  let contentNegative = '';
+  if (contentType) {
+    const { getContentTypeConfig } = require('./content-types');
+    const contentConfig = getContentTypeConfig(contentType);
+    contentNegative = contentConfig.negativeKeywords;
+  }
+
+  // 通用负面词
+  const generalNegative = 'low quality, blurry, distorted, watermark, signature, amateur, bad anatomy';
+
+  return [baseNegative, contentNegative, generalNegative]
     .filter(Boolean)
     .join(', ');
 }
