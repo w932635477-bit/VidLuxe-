@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import JSZip from 'jszip';
+import fs from 'fs';
+import path from 'path';
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,15 +13,39 @@ export async function POST(request: NextRequest) {
     }
 
     const zip = new JSZip();
+    const publicDir = path.join(process.cwd(), 'public');
 
     const fetchPromises = urls.map(async (url, index) => {
       try {
-        const response = await fetch(url);
-        if (!response.ok) return null;
-        const blob = await response.blob();
+        let buffer: Buffer;
+
+        // 判断是本地路径还是远程 URL
+        if (url.startsWith('/uploads/') || url.startsWith('/public/')) {
+          // 本地文件，直接读取
+          const filePath = path.join(publicDir, url.replace(/^\/public/, ''));
+          if (fs.existsSync(filePath)) {
+            buffer = fs.readFileSync(filePath);
+          } else {
+            console.warn(`[ZIP API] Local file not found: ${filePath}`);
+            return null;
+          }
+        } else if (url.startsWith('http')) {
+          // 远程 URL，fetch 获取
+          const response = await fetch(url);
+          if (!response.ok) {
+            console.warn(`[ZIP API] Fetch failed: ${url}, status: ${response.status}`);
+            return null;
+          }
+          buffer = Buffer.from(await response.arrayBuffer());
+        } else {
+          console.warn(`[ZIP API] Invalid URL format: ${url}`);
+          return null;
+        }
+
         const filename = filenames?.[index] || `image_${index + 1}.jpg`;
-        return { filename, blob };
-      } catch {
+        return { filename, buffer };
+      } catch (error) {
+        console.warn(`[ZIP API] Error processing ${url}:`, error);
         return null;
       }
     });
@@ -28,7 +54,7 @@ export async function POST(request: NextRequest) {
 
     for (const result of results) {
       if (result) {
-        zip.file(result.filename, result.blob);
+        zip.file(result.filename, result.buffer);
       }
     }
 
