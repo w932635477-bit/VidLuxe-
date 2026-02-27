@@ -352,7 +352,7 @@ export async function processVideoEnhancement(params: {
   onProgress?.(12, '生成高级感背景');
   const backgroundPrompt = buildEnhancePrompt({
     style: presetStyle || 'magazine',
-    contentType: 'video',
+    mediaType: 'video',
     customKeywords: ['video background', 'no text', 'abstract', 'premium quality'],
   });
 

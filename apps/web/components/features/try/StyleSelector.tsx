@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import type { ContentType } from '@/lib/content-types';
+import { getContentTypeConfig } from '@/lib/content-types';
 
 // 风格预设类型
 export type StyleType = 'magazine' | 'soft' | 'urban' | 'vintage';
@@ -23,6 +25,8 @@ export interface StylePreset {
     before: string;
     after: string;
   };
+  // 根据内容类型的不同对比图
+  comparisonImagesByType?: Partial<Record<ContentType, { before: string; after: string }>>;
 }
 
 export const STYLE_PRESETS: StylePreset[] = [
@@ -37,8 +41,14 @@ export const STYLE_PRESETS: StylePreset[] = [
     gradientFrom: '#D4AF37',
     gradientTo: '#8B6914',
     thumbnail: {
-      before: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&h=711&fit=crop',
-      after: 'https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=400&h=711&fit=crop',
+      before: '/comparisons/fashion-1-original.jpg',
+      after: '/comparisons/fashion-1-enhanced.jpg',
+    },
+    comparisonImagesByType: {
+      outfit: { before: '/comparisons/fashion-1-original.jpg', after: '/comparisons/fashion-1-enhanced.jpg' },
+      beauty: { before: '/hero/hero-beauty-before.jpg', after: '/hero/hero-beauty-after.jpg' },
+      cafe: { before: '/comparisons/cafe-1-original.jpg', after: '/comparisons/cafe-1-enhanced.jpg' },
+      food: { before: '/comparisons/food-1-original.jpg', after: '/comparisons/food-1-enhanced.jpg' },
     },
   },
   {
@@ -52,8 +62,15 @@ export const STYLE_PRESETS: StylePreset[] = [
     gradientFrom: '#D4C5B9',
     gradientTo: '#9A8A7A',
     thumbnail: {
-      before: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=711&fit=crop',
-      after: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&h=711&fit=crop',
+      before: '/comparisons/lifestyle-1-original.jpg',
+      after: '/comparisons/lifestyle-1-enhanced.jpg',
+    },
+    comparisonImagesByType: {
+      outfit: { before: '/comparisons/portrait-1-original.jpg', after: '/comparisons/portrait-1-enhanced.jpg' },
+      beauty: { before: '/hero/hero-beauty-before.jpg', after: '/hero/hero-beauty-after.jpg' },
+      cafe: { before: '/comparisons/cafe-1-original.jpg', after: '/comparisons/cafe-1-enhanced.jpg' },
+      travel: { before: '/comparisons/lifestyle-1-original.jpg', after: '/comparisons/lifestyle-1-enhanced.jpg' },
+      food: { before: '/comparisons/food-1-original.jpg', after: '/comparisons/food-1-enhanced.jpg' },
     },
   },
   {
@@ -67,8 +84,12 @@ export const STYLE_PRESETS: StylePreset[] = [
     gradientFrom: '#6B8AAD',
     gradientTo: '#3D5A80',
     thumbnail: {
-      before: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=711&fit=crop',
-      after: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400&h=711&fit=crop',
+      before: '/comparisons/cafe-1-original.jpg',
+      after: '/comparisons/cafe-1-enhanced.jpg',
+    },
+    comparisonImagesByType: {
+      outfit: { before: '/comparisons/fashion-1-original.jpg', after: '/comparisons/fashion-1-enhanced.jpg' },
+      cafe: { before: '/comparisons/cafe-1-original.jpg', after: '/comparisons/cafe-1-enhanced.jpg' },
     },
   },
   {
@@ -82,8 +103,13 @@ export const STYLE_PRESETS: StylePreset[] = [
     gradientFrom: '#D4B896',
     gradientTo: '#8B7355',
     thumbnail: {
-      before: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=400&h=711&fit=crop',
-      after: 'https://images.unsplash.com/photo-1502823403499-6ccfcf4fb453?w=400&h=711&fit=crop',
+      before: '/comparisons/portrait-1-original.jpg',
+      after: '/comparisons/portrait-1-enhanced.jpg',
+    },
+    comparisonImagesByType: {
+      outfit: { before: '/comparisons/fashion-1-original.jpg', after: '/comparisons/fashion-1-enhanced.jpg' },
+      travel: { before: '/comparisons/lifestyle-1-original.jpg', after: '/comparisons/lifestyle-1-enhanced.jpg' },
+      cafe: { before: '/comparisons/cafe-1-original.jpg', after: '/comparisons/cafe-1-enhanced.jpg' },
     },
   },
 ];
@@ -92,6 +118,7 @@ export const STYLE_PRESETS: StylePreset[] = [
 interface StyleSelectorProps {
   selectedStyle: StyleType;
   onSelect: (style: StyleType) => void;
+  contentType?: ContentType;
   className?: string;
 }
 
@@ -100,12 +127,24 @@ function StyleCard({
   preset,
   isSelected,
   onSelect,
+  contentType,
 }: {
   preset: StylePreset;
   isSelected: boolean;
   onSelect: () => void;
+  contentType?: ContentType;
 }) {
   const [isHovered, setIsHovered] = useState(false);
+
+  // 根据 content type 获取对比图
+  const getComparisonImages = () => {
+    if (contentType && preset.comparisonImagesByType?.[contentType]) {
+      return preset.comparisonImagesByType[contentType];
+    }
+    return preset.thumbnail;
+  };
+
+  const images = getComparisonImages();
 
   return (
     <button
@@ -151,7 +190,7 @@ function StyleCard({
         >
           {/* Before 图片 */}
           <img
-            src={preset.thumbnail.before}
+            src={images.before}
             alt={`${preset.name} - 原图`}
             style={{
               position: 'absolute',
@@ -166,7 +205,7 @@ function StyleCard({
           />
           {/* After 图片 */}
           <img
-            src={preset.thumbnail.after}
+            src={images.after}
             alt={`${preset.name} - 效果图`}
             style={{
               position: 'absolute',
@@ -311,6 +350,7 @@ function StyleCard({
 export function StyleSelector({
   selectedStyle,
   onSelect,
+  contentType,
   className = '',
 }: StyleSelectorProps) {
   return (
@@ -352,6 +392,7 @@ export function StyleSelector({
             preset={preset}
             isSelected={selectedStyle === preset.id}
             onSelect={() => onSelect(preset.id)}
+            contentType={contentType}
           />
         ))}
       </div>
@@ -367,6 +408,7 @@ interface StyleSourceSelectorProps {
   onReferenceFileChange: (file: File | null) => void;
   selectedPreset: StyleType;
   onPresetChange: (style: StyleType) => void;
+  contentType?: ContentType;
 }
 
 export function StyleSourceSelector({
@@ -376,6 +418,7 @@ export function StyleSourceSelector({
   onReferenceFileChange,
   selectedPreset,
   onPresetChange,
+  contentType,
 }: StyleSourceSelectorProps) {
   const [referencePreview, setReferencePreview] = useState<string | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -818,6 +861,7 @@ export function StyleSourceSelector({
         <StyleSelector
           selectedStyle={selectedPreset}
           onSelect={onPresetChange}
+          contentType={contentType}
         />
       )}
     </div>
