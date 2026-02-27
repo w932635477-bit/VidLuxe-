@@ -194,28 +194,17 @@ export function VideoFlow() {
 
       const data = await response.json();
 
-      if (data.success && data.keyframes) {
+      if (data.success && data.keyframes && data.keyframes.length > 0) {
         setKeyframes(data.keyframes);
-        if (data.keyframes.length > 0) {
-          setSelectedKeyframe(data.keyframes[0]);
-        }
+        setSelectedKeyframe(data.keyframes[0]);
       } else {
-        // 模拟关键帧
-        const mockFrames: KeyFrame[] = [
-          { url: previewUrl || '', timestamp: 0, score: 85, details: { sharpness: 90, composition: 85, brightness: 80, hasFace: true } },
-          { url: previewUrl || '', timestamp: 1, score: 78, details: { sharpness: 80, composition: 75, brightness: 85, hasFace: true } },
-          { url: previewUrl || '', timestamp: 2, score: 72, details: { sharpness: 75, composition: 70, brightness: 75, hasFace: false } },
-        ];
-        setKeyframes(mockFrames);
-        setSelectedKeyframe(mockFrames[0]);
+        setError(data.error || '提取关键帧失败，请重试');
+        setStep('upload');
       }
-    } catch {
-      // 模拟关键帧
-      const mockFrames: KeyFrame[] = [
-        { url: previewUrl || '', timestamp: 0, score: 85, details: { sharpness: 90, composition: 85, brightness: 80, hasFace: true } },
-      ];
-      setKeyframes(mockFrames);
-      setSelectedKeyframe(mockFrames[0]);
+    } catch (error) {
+      console.error('提取关键帧失败:', error);
+      setError('提取关键帧失败，请检查视频格式后重试');
+      setStep('upload');
     } finally {
       setIsLoading(false);
       setCurrentStage('');

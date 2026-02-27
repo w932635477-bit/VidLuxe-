@@ -65,16 +65,15 @@ export function KeyframeSelector({
                   background: 'rgba(255, 255, 255, 0.02)',
                 }}
               >
-                {/* 视频缩略图 */}
-                <video
-                  src={previewUrl}
+                {/* 关键帧图片 */}
+                <img
+                  src={frame.url}
+                  alt={`关键帧 ${index + 1}`}
                   style={{
                     width: '100%',
                     height: '100%',
                     objectFit: 'cover',
                   }}
-                  muted
-                  playsInline
                 />
 
                 {/* 选中标签 */}
@@ -148,16 +147,15 @@ export function KeyframeSelector({
                   transition: 'opacity 0.2s ease',
                 }}
               >
-                {/* 视频缩略图 */}
-                <video
-                  src={previewUrl}
+                {/* 关键帧图片 */}
+                <img
+                  src={frame.url}
+                  alt={`关键帧 ${index + 1}`}
                   style={{
                     width: '100%',
                     height: '100%',
                     objectFit: 'cover',
                   }}
-                  muted
-                  playsInline
                 />
 
                 {/* 选中勾选 */}
