@@ -23,13 +23,15 @@ export function ModeTabs({ activeMode, onModeChange }: ModeTabsProps) {
   return (
     <div
       style={{
-        position: 'sticky',
+        position: 'fixed',
         top: '60px',
+        left: 0,
+        right: 0,
         display: 'flex',
         justifyContent: 'center',
         gap: '12px',
         padding: '16px 24px',
-        background: 'rgba(0, 0, 0, 0.6)',
+        background: 'rgba(0, 0, 0, 0.9)',
         backdropFilter: 'blur(20px)',
         borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
         zIndex: 1000,
