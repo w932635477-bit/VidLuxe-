@@ -53,7 +53,7 @@ export type StyleType = 'magazine' | 'soft' | 'urban' | 'vintage';
 export type StyleSourceType = 'preset' | 'reference';
 
 // ============================================
-// 批量文件项
+// 批量文件项（扩展：包含独立的风格选择）
 // ============================================
 
 export interface BatchFileItem {
@@ -63,6 +63,13 @@ export interface BatchFileItem {
   uploadedUrl: string | null;
   status: 'pending' | 'uploading' | 'success' | 'error';
   error?: string;
+  // 每张图片独立的风格选择
+  selectedStyles: StyleType[];
+  // 处理状态
+  processingProgress?: number;
+  processingStatus?: 'pending' | 'processing' | 'completed' | 'error';
+  // 结果
+  results?: BatchResultItem[];
 }
 
 // ============================================
@@ -70,6 +77,8 @@ export interface BatchFileItem {
 // ============================================
 
 export interface BatchResultItem {
+  id: string;
+  fileIndex: number;
   originalUrl: string;
   enhancedUrl: string;
   style: StyleType;
@@ -86,6 +95,8 @@ export interface BatchResultItem {
     feedback: string[];
     improvementSuggestions: string[];
   };
+  status: 'pending' | 'processing' | 'completed' | 'error';
+  error?: string;
 }
 
 // ============================================
@@ -118,5 +129,6 @@ export interface ResultData {
   enhancedUrl: string;
   originalUrl: string;
   enhancedCoverUrl?: string;
+  enhancedVideoUrl?: string;
   score?: BatchResultItem['score'];
 }

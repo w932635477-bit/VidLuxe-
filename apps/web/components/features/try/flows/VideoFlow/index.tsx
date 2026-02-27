@@ -10,6 +10,8 @@ import { useState, useCallback, useEffect } from 'react';
 import { useVideoStore } from '@/lib/stores/flows';
 import { useCreditsStore } from '@/lib/stores/credits-store';
 import { MinimalNav } from '@/components/features/try';
+import { ProcessingAnimation } from '@/components/features/try/flows/shared/ProcessingAnimation';
+import { KeyframeSelector } from './KeyframeSelector';
 import type { StyleType, StyleSourceType, KeyFrame } from '@/lib/types/flow';
 
 // 生成匿名 ID
@@ -26,6 +28,7 @@ function generateAnonymousId(): string {
 
 export function VideoFlow() {
   const [anonymousId, setAnonymousId] = useState<string>('');
+  const [replaceFrames, setReplaceFrames] = useState<KeyFrame[]>([]);
 
   const {
     step,
@@ -68,6 +71,15 @@ export function VideoFlow() {
   } = useVideoStore();
 
   const { total, fetchCredits } = useCreditsStore();
+
+  // 替换帧切换
+  const handleReplaceToggle = useCallback((frame: KeyFrame) => {
+    setReplaceFrames((prev) =>
+      prev.some((f) => f.timestamp === frame.timestamp && f.url === frame.url)
+        ? prev.filter((f) => !(f.timestamp === frame.timestamp && f.url === frame.url))
+        : [...prev, frame]
+    );
+  }, []);
 
   // 初始化
   useEffect(() => {
@@ -372,8 +384,6 @@ export function VideoFlow() {
       {/* 关键帧选择步骤 */}
       {step === 'keyframe' && (
         <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', padding: '80px 24px 40px', maxWidth: '480px', margin: '0 auto' }}>
-          <p style={{ fontSize: '17px', fontWeight: 500, marginBottom: '16px' }}>选择封面帧</p>
-
           {isLoading ? (
             <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <div style={{ textAlign: 'center' }}>
@@ -383,31 +393,20 @@ export function VideoFlow() {
             </div>
           ) : (
             <>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '24px' }}>
-                {keyframes.map((frame, index) => (
-                  <div
-                    key={index}
-                    onClick={() => setSelectedKeyframe(frame)}
-                    style={{
-                      aspectRatio: '9/16',
-                      borderRadius: '12px',
-                      overflow: 'hidden',
-                      border: selectedKeyframe === frame ? '2px solid #D4AF37' : '1px solid rgba(255, 255, 255, 0.1)',
-                      cursor: 'pointer',
-                      position: 'relative',
-                    }}
-                  >
-                    <video src={previewUrl} style={{ width: '100%', height: '100%', objectFit: 'cover' }} muted />
-                    <div style={{ position: 'absolute', bottom: '8px', right: '8px', padding: '4px 8px', borderRadius: '4px', background: 'rgba(0,0,0,0.6)', fontSize: '12px', color: '#D4AF37' }}>
-                      {frame.score}分
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <KeyframeSelector
+                keyframes={keyframes}
+                coverFrame={selectedKeyframe}
+                replaceFrames={replaceFrames}
+                onCoverSelect={setSelectedKeyframe}
+                onReplaceToggle={handleReplaceToggle}
+                previewUrl={previewUrl || ''}
+              />
 
-              <div style={{ display: 'flex', gap: '12px' }}>
+              <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
                 <button onClick={() => setStep('style')} style={{ flex: 1, padding: '16px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.1)', background: 'transparent', color: 'white', fontSize: '16px', fontWeight: 500, cursor: 'pointer' }}>返回</button>
-                <button onClick={handleKeyframeConfirm} disabled={!selectedKeyframe} style={{ flex: 2, padding: '16px', borderRadius: '12px', border: 'none', background: selectedKeyframe ? '#D4AF37' : 'rgba(255, 255, 255, 0.1)', color: selectedKeyframe ? '#000' : 'rgba(255, 255, 255, 0.3)', fontSize: '16px', fontWeight: 600, cursor: selectedKeyframe ? 'pointer' : 'not-allowed' }}>生成封面</button>
+                <button onClick={handleKeyframeConfirm} disabled={!selectedKeyframe} style={{ flex: 2, padding: '16px', borderRadius: '12px', border: 'none', background: selectedKeyframe ? '#D4AF37' : 'rgba(255, 255, 255, 0.1)', color: selectedKeyframe ? '#000' : 'rgba(255, 255, 255, 0.3)', fontSize: '16px', fontWeight: 600, cursor: selectedKeyframe ? 'pointer' : 'not-allowed' }}>
+                  开始增强 ({replaceFrames.length + 1} 张)
+                </button>
               </div>
             </>
           )}
@@ -416,25 +415,155 @@ export function VideoFlow() {
 
       {/* 处理步骤 */}
       {step === 'processing' && (
-        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 24px' }}>
-          <div style={{ width: '80px', height: '80px', marginBottom: '32px', borderRadius: '50%', border: '3px solid rgba(255,255,255,0.1)', borderTopColor: '#D4AF37', animation: 'spin 1s linear infinite' }} />
-          <p style={{ fontSize: '21px', fontWeight: 500, marginBottom: '8px' }}>{currentStage}</p>
-          <p style={{ fontSize: '48px', fontWeight: 600, color: '#D4AF37' }}>{progress}%</p>
-        </div>
+        <ProcessingAnimation
+          progress={progress}
+          currentStage={currentStage}
+          mode="video"
+        />
       )}
 
       {/* 结果步骤 */}
       {step === 'result' && resultData && (
         <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', padding: '80px 24px 40px', maxWidth: '480px', margin: '0 auto' }}>
-          <p style={{ fontSize: '24px', fontWeight: 600, marginBottom: '24px', textAlign: 'center' }}>封面生成完成！</p>
+          <p style={{ fontSize: '24px', fontWeight: 600, marginBottom: '24px', textAlign: 'center' }}>
+            {replaceFrames.length > 0 ? '视频增强完成！' : '封面生成完成！'}
+          </p>
 
+          {/* 封面预览 */}
           {enhancedCoverUrl && (
-            <div style={{ marginBottom: '24px', borderRadius: '16px', overflow: 'hidden' }}>
+            <div style={{ marginBottom: '24px', borderRadius: '16px', overflow: 'hidden', position: 'relative' }}>
               <img src={enhancedCoverUrl} alt="增强封面" style={{ width: '100%', aspectRatio: '9/16', objectFit: 'cover' }} />
+              {/* 封面下载按钮 - 右上角 */}
+              <button
+                onClick={async () => {
+                  try {
+                    const response = await fetch(enhancedCoverUrl);
+                    const blob = await response.blob();
+                    const blobUrl = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = blobUrl;
+                    link.download = 'vidluxe_cover.jpg';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(blobUrl);
+                  } catch {
+                    alert('下载失败，请重试');
+                  }
+                }}
+                style={{
+                  position: 'absolute',
+                  top: '12px',
+                  right: '12px',
+                  width: '40px',
+                  height: '40px',
+                  borderRadius: '10px',
+                  background: 'rgba(0, 0, 0, 0.6)',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
+                </svg>
+              </button>
             </div>
           )}
 
-          <button onClick={handleReset} style={{ width: '100%', padding: '16px', borderRadius: '12px', border: 'none', background: '#D4AF37', color: '#000', fontSize: '16px', fontWeight: 600, cursor: 'pointer' }}>继续使用</button>
+          {/* 下载按钮区域 */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
+            {/* 下载封面按钮 */}
+            {enhancedCoverUrl && (
+              <button
+                onClick={async () => {
+                  try {
+                    const response = await fetch(enhancedCoverUrl);
+                    const blob = await response.blob();
+                    const blobUrl = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = blobUrl;
+                    link.download = 'vidluxe_cover.jpg';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(blobUrl);
+                  } catch {
+                    alert('下载失败，请重试');
+                  }
+                }}
+                style={{
+                  width: '100%',
+                  padding: '16px',
+                  borderRadius: '12px',
+                  border: '1px solid rgba(255, 255, 255, 0.15)',
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  color: 'white',
+                  fontSize: '16px',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                  <circle cx="8.5" cy="8.5" r="1.5" />
+                  <polyline points="21 15 16 10 5 21" />
+                </svg>
+                下载封面图片
+              </button>
+            )}
+
+            {/* 下载增强视频按钮 - 金色 */}
+            {resultData.enhancedVideoUrl && (
+              <button
+                onClick={async () => {
+                  try {
+                    const response = await fetch(resultData.enhancedVideoUrl!);
+                    const blob = await response.blob();
+                    const blobUrl = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = blobUrl;
+                    link.download = 'vidluxe_enhanced_video.mp4';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(blobUrl);
+                  } catch {
+                    alert('下载失败，请重试');
+                  }
+                }}
+                style={{
+                  width: '100%',
+                  padding: '16px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  background: '#D4AF37',
+                  color: '#000',
+                  fontSize: '16px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polygon points="23 7 16 12 23 17 23 7" />
+                  <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
+                </svg>
+                下载增强视频
+              </button>
+            )}
+          </div>
+
+          <button onClick={handleReset} style={{ width: '100%', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.15)', background: 'transparent', color: 'white', fontSize: '16px', fontWeight: 500, cursor: 'pointer' }}>继续使用</button>
         </div>
       )}
 
