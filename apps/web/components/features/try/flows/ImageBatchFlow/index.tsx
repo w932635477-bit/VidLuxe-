@@ -10,7 +10,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useImageBatchStore } from '@/lib/stores/flows';
 import { useCreditsStore } from '@/lib/stores/credits-store';
-import { MinimalNav } from '@/components/features/try';
 import { ProcessingAnimation } from '@/components/features/try/flows/shared/ProcessingAnimation';
 import type { BatchFileItem, StyleType, BatchResultItem } from '@/lib/types/flow';
 
@@ -230,9 +229,7 @@ export function ImageBatchFlow() {
   }, [clearBatchFiles, clearResults, reset]);
 
   return (
-    <main style={{ minHeight: '100vh', background: '#000000' }}>
-      <MinimalNav />
-
+    <>
       {/* 错误提示 */}
       {error && (
         <div
@@ -296,7 +293,7 @@ export function ImageBatchFlow() {
       )}
 
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-    </main>
+    </>
   );
 }
 

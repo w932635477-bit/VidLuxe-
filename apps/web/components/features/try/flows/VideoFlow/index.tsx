@@ -9,7 +9,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useVideoStore } from '@/lib/stores/flows';
 import { useCreditsStore } from '@/lib/stores/credits-store';
-import { MinimalNav } from '@/components/features/try';
 import { ProcessingAnimation } from '@/components/features/try/flows/shared/ProcessingAnimation';
 import { KeyframeSelector } from './KeyframeSelector';
 import type { StyleType, StyleSourceType, KeyFrame } from '@/lib/types/flow';
@@ -283,9 +282,7 @@ export function VideoFlow() {
   ];
 
   return (
-    <main style={{ minHeight: '100vh', background: '#000000' }}>
-      <MinimalNav />
-
+    <>
       {/* 错误提示 */}
       {error && (
         <div style={{ position: 'fixed', top: '60px', left: '50%', transform: 'translateX(-50%)', padding: '12px 24px', borderRadius: '12px', background: 'rgba(255, 59, 48, 0.2)', border: '1px solid rgba(255, 59, 48, 0.3)', color: '#FF3B30', zIndex: 100 }}>
@@ -568,7 +565,7 @@ export function VideoFlow() {
       )}
 
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-    </main>
+    </>
   );
 }
 

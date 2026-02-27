@@ -8,6 +8,7 @@
 
 import { useState } from 'react';
 import { ModeTabs, type FlowMode } from '@/components/features/try/ModeTabs';
+import { MinimalNav } from '@/components/features/try';
 import { ImageSingleFlow } from '@/components/features/try/flows/ImageSingleFlow';
 import { ImageBatchFlow } from '@/components/features/try/flows/ImageBatchFlow';
 import { VideoFlow } from '@/components/features/try/flows/VideoFlow';
@@ -29,9 +30,12 @@ export default function TryPage() {
   };
 
   return (
-    <>
+    <div style={{ minHeight: '100vh', background: '#000000' }}>
+      <MinimalNav />
       <ModeTabs activeMode={activeMode} onModeChange={setActiveMode} />
-      {renderFlow()}
-    </>
+      <div style={{ paddingTop: '110px' }}>
+        {renderFlow()}
+      </div>
+    </div>
   );
 }
