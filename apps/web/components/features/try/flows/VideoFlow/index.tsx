@@ -223,7 +223,7 @@ export function VideoFlow() {
     setCurrentStage('正在增强封面...');
 
     try {
-      // 增强封面
+      // 1. 增强封面帧
       const enhanceResponse = await fetch('/api/video/enhance-cover', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -234,9 +234,67 @@ export function VideoFlow() {
       });
 
       const enhanceData = await enhanceResponse.json();
+      let coverUrl = selectedKeyframe.url;
 
       if (enhanceData.success && enhanceData.enhancedUrl) {
+        coverUrl = enhanceData.enhancedUrl;
         setEnhancedCoverUrl(enhanceData.enhancedUrl);
+      }
+
+      setProgress(30);
+      setCurrentStage('封面增强完成');
+
+      // 2. 增强替换帧（如果有）
+      const enhancedFrames: { timestamp: number; enhancedUrl: string }[] = [];
+
+      if (replaceFrames.length > 0) {
+        setProgress(40);
+        setCurrentStage(`正在增强替换帧 (0/${replaceFrames.length})...`);
+
+        for (let i = 0; i < replaceFrames.length; i++) {
+          const frame = replaceFrames[i];
+          const frameResponse = await fetch('/api/video/enhance-cover', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              keyframeUrl: frame.url,
+              style: selectedPreset,
+            }),
+          });
+
+          const frameData = await frameResponse.json();
+          if (frameData.success && frameData.enhancedUrl) {
+            enhancedFrames.push({
+              timestamp: frame.timestamp,
+              enhancedUrl: frameData.enhancedUrl,
+            });
+          }
+
+          setProgress(40 + Math.round((i + 1) / replaceFrames.length * 30));
+          setCurrentStage(`正在增强替换帧 (${i + 1}/${replaceFrames.length})...`);
+        }
+      }
+
+      // 3. 合成新视频（如果有替换帧）
+      let videoUrl = uploadedFileUrl || '';
+
+      if (enhancedFrames.length > 0) {
+        setProgress(75);
+        setCurrentStage('正在合成视频...');
+
+        const replaceResponse = await fetch('/api/video/replace-frames', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            videoUrl: uploadedFileUrl,
+            frames: enhancedFrames,
+          }),
+        });
+
+        const replaceData = await replaceResponse.json();
+        if (replaceData.success && replaceData.outputUrl) {
+          videoUrl = replaceData.outputUrl;
+        }
       }
 
       setProgress(100);
@@ -244,18 +302,20 @@ export function VideoFlow() {
 
       // 设置结果
       setResultData({
-        enhancedUrl: enhancedCoverUrl || selectedKeyframe.url,
+        enhancedUrl: coverUrl,
         originalUrl: uploadedFileUrl || '',
-        enhancedCoverUrl: enhancedCoverUrl,
+        enhancedCoverUrl: coverUrl,
+        enhancedVideoUrl: enhancedFrames.length > 0 ? videoUrl : undefined,
       });
 
       fetchCredits(anonymousId);
       setStep('result');
-    } catch {
-      setError('处理失败');
+    } catch (error) {
+      console.error('处理失败:', error);
+      setError('处理失败，请重试');
       setStep('keyframe');
     }
-  }, [selectedKeyframe, selectedPreset, uploadedFileUrl, enhancedCoverUrl, anonymousId, setStep, setProgress, setCurrentStage, setEnhancedCoverUrl, setResultData, fetchCredits, setError]);
+  }, [selectedKeyframe, selectedPreset, uploadedFileUrl, replaceFrames, anonymousId, setStep, setProgress, setCurrentStage, setEnhancedCoverUrl, setResultData, fetchCredits, setError]);
 
   // 重置
   const handleReset = useCallback(() => {
