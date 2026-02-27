@@ -14,7 +14,6 @@ interface KeyframeSelectorProps {
   replaceFrames: KeyFrame[];
   onCoverSelect: (frame: KeyFrame) => void;
   onReplaceToggle: (frame: KeyFrame) => void;
-  previewUrl: string;
 }
 
 // 格式化时间戳为 mm:ss 格式
@@ -30,7 +29,6 @@ export function KeyframeSelector({
   replaceFrames,
   onCoverSelect,
   onReplaceToggle,
-  previewUrl,
 }: KeyframeSelectorProps) {
   const isSelectedForReplace = (frame: KeyFrame) =>
     replaceFrames.some((f) => f.timestamp === frame.timestamp && f.url === frame.url);

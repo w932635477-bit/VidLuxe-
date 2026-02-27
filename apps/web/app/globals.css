@@ -10,10 +10,10 @@
 
   /* 文字色级 - Apple 灰阶 */
   --text-primary: rgba(255, 255, 255, 0.95);
-  --text-secondary: rgba(255, 255, 255, 0.6);
-  --text-tertiary: rgba(255, 255, 255, 0.45);
-  --text-muted: rgba(255, 255, 255, 0.3);
-  --text-subtle: rgba(255, 255, 255, 0.15);
+  --text-secondary: rgba(255, 255, 255, 0.7);
+  --text-tertiary: rgba(255, 255, 255, 0.5);
+  --text-muted: rgba(255, 255, 255, 0.35);
+  --text-subtle: rgba(255, 255, 255, 0.2);
 
   /* 评分等级色 */
   --grade-s: #FFD700;
@@ -27,14 +27,56 @@
   --bg-secondary: #0a0a0a;
   --bg-elevated: #1c1c1e;
   --bg-card: rgba(255, 255, 255, 0.03);
+  --bg-hover: rgba(255, 255, 255, 0.06);
+  --bg-active: rgba(255, 255, 255, 0.08);
 
   /* 边框色 */
   --border-subtle: rgba(255, 255, 255, 0.06);
   --border-default: rgba(255, 255, 255, 0.1);
+  --border-hover: rgba(255, 255, 255, 0.15);
+  --border-focus: rgba(212, 175, 55, 0.4);
+
+  /* 圆角系统 - Apple Style */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 24px;
+  --radius-full: 980px;
+
+  /* 动画时长 - Apple Style */
+  --duration-instant: 100ms;
+  --duration-fast: 150ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+  --duration-slower: 400ms;
 
   /* Apple 缓动曲线 */
-  --ease-apple: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --ease-default: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
   --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-apple: cubic-bezier(0.25, 0.1, 0.25, 1);
+
+  /* 阴影系统 */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.2);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.25);
+  --shadow-glow: 0 0 24px rgba(212, 175, 55, 0.3);
+
+  /* 间距系统 */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
 }
 
 * {
@@ -484,4 +526,227 @@ p {
   .show-mobile-only {
     display: none !important;
   }
+}
+
+/* ========================================
+   Animation Utilities - Apple Style
+   ======================================== */
+
+/* 过渡动画基础类 */
+.transition-all {
+  transition: all var(--duration-normal) var(--ease-default);
+}
+
+.transition-colors {
+  transition: color var(--duration-fast) var(--ease-default),
+              background-color var(--duration-fast) var(--ease-default),
+              border-color var(--duration-fast) var(--ease-default);
+}
+
+.transition-transform {
+  transition: transform var(--duration-normal) var(--ease-spring);
+}
+
+.transition-opacity {
+  transition: opacity var(--duration-normal) var(--ease-default);
+}
+
+/* Hover 交互效果 */
+.hover-lift {
+  transition: transform var(--duration-normal) var(--ease-spring),
+              box-shadow var(--duration-normal) var(--ease-default);
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.hover-scale {
+  transition: transform var(--duration-fast) var(--ease-spring);
+}
+
+.hover-scale:hover {
+  transform: scale(1.02);
+}
+
+.hover-scale:active {
+  transform: scale(0.98);
+}
+
+.hover-glow:hover {
+  box-shadow: var(--shadow-glow);
+}
+
+/* 按钮按下效果 */
+.press-effect {
+  transition: transform var(--duration-instant) var(--ease-default);
+}
+
+.press-effect:active {
+  transform: scale(0.97);
+}
+
+/* 淡入动画 */
+.animate-fade-in {
+  animation: fadeIn var(--duration-slow) var(--ease-out);
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp var(--duration-slower) var(--ease-out);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 脉冲动画 - 用于加载状态 */
+.animate-pulse {
+  animation: pulse 2s var(--ease-in-out) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* 旋转动画 */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ========================================
+   减少动画 - 辅助功能
+   ======================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ========================================
+   Flow 组件通用样式
+   ======================================== */
+
+/* 流程容器 */
+.flow-container {
+  display: flex;
+  flex-direction: column;
+  min-height: calc(100vh - 120px);
+  padding: var(--space-6);
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* 流程标题 */
+.flow-title {
+  font-size: clamp(28px, 5vw, 40px);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  text-align: center;
+  margin-bottom: var(--space-6);
+  color: var(--text-primary);
+}
+
+/* 流程副标题 */
+.flow-subtitle {
+  font-size: 15px;
+  color: var(--text-secondary);
+  text-align: center;
+  max-width: 320px;
+  margin: 0 auto var(--space-8);
+}
+
+/* 流程按钮组 */
+.flow-buttons {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
+}
+
+/* 预览容器 */
+.preview-container {
+  border-radius: var(--radius-2xl);
+  overflow: hidden;
+  background: var(--bg-card);
+  border: 0.5px solid var(--border-subtle);
+  margin-bottom: var(--space-6);
+}
+
+/* 信息卡片 */
+.info-card {
+  padding: var(--space-4) var(--space-5);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 255, 255, 0.03);
+  border: 0.5px solid rgba(255, 255, 255, 0.06);
+}
+
+/* 标签样式 */
+.label-text {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: var(--space-1);
+}
+
+.value-text {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* 状态指示器 */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: var(--space-2);
+}
+
+.status-dot.active {
+  background: var(--grade-a);
+  box-shadow: 0 0 8px rgba(52, 199, 89, 0.4);
+}
+
+.status-dot.warning {
+  background: var(--grade-c);
+}
+
+.status-dot.error {
+  background: var(--grade-d);
+}
+
+/* 金色强调 */
+.text-gold {
+  color: var(--brand-primary);
+}
+
+.bg-gold {
+  background-color: var(--brand-primary);
+}
+
+.border-gold {
+  border-color: var(--brand-primary);
 }

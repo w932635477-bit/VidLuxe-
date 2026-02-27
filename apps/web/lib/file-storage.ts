@@ -298,13 +298,12 @@ export class FileStorage {
   }
 
   /**
-   * 上传文件到临时托管服务（litterbox.catbox.moe）
-   * 用于本地开发时获取公网 URL
-   * litterbox 支持 1-72 小时临时存储，可被 AI API 访问
+   * 上传文件到临时图床（litterbox.catbox.moe）
+   * 用于获取公网 URL 供 Nano Banana API 使用
    */
-  private async uploadToTmpfiles(localPath: string): Promise<string | null> {
+  private async uploadToLitterbox(localPath: string): Promise<string | null> {
     const maxRetries = 3;
-    const timeout = 30000; // 30 秒超时
+    const timeout = 30000;
 
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
@@ -312,14 +311,12 @@ export class FileStorage {
         const fileBuffer = fs.readFileSync(localPath);
         const filename = path.basename(localPath);
 
-        // 使用 litterbox.catbox.moe API（临时存储）
         const blob = new Blob([fileBuffer], { type: 'image/jpeg' });
         const formData = new FormData();
         formData.append('reqtype', 'fileupload');
-        formData.append('time', '1h'); // 1 小时后过期，足够处理
+        formData.append('time', '1h');
         formData.append('fileToUpload', blob, filename);
 
-        // 添加超时控制
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), timeout);
 
@@ -334,13 +331,12 @@ export class FileStorage {
         if (!response.ok) {
           console.warn(`[FileStorage] litterbox upload failed (attempt ${attempt}):`, response.status);
           if (attempt < maxRetries) {
-            await new Promise(resolve => setTimeout(resolve, 1000 * attempt)); // 指数退避
+            await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
             continue;
           }
           return null;
         }
 
-        // litterbox 直接返回图片 URL
         const url = (await response.text()).trim();
         if (url && url.startsWith('https://')) {
           console.log('[FileStorage] Uploaded to litterbox:', url);
@@ -354,7 +350,7 @@ export class FileStorage {
         }
         return null;
       } catch (error) {
-        console.warn(`[FileStorage] Temp file upload error (attempt ${attempt}):`, error instanceof Error ? error.message : error);
+        console.warn(`[FileStorage] litterbox upload error (attempt ${attempt}):`, error instanceof Error ? error.message : error);
         if (attempt < maxRetries) {
           await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
           continue;
@@ -569,7 +565,7 @@ export class FileStorage {
 
   /**
    * 将本地文件上传到公网（用于 Image-to-Image API）
-   * 优先级：R2 > tmpfiles.org > NEXT_PUBLIC_BASE_URL
+   * 优先级：R2 > litterbox
    */
   async getPublicUrl(localPath: string): Promise<string | null> {
     // 如果文件已经是公网 URL，直接返回
@@ -588,29 +584,17 @@ export class FileStorage {
       try {
         return await this.uploadToR2(localPath);
       } catch (error) {
-        console.warn('[FileStorage] R2 upload failed, trying tmpfiles:', error);
+        console.warn('[FileStorage] R2 upload failed, trying litterbox:', error);
       }
     }
 
-    // 尝试上传到 tmpfiles.org（备选）
-    const tmpfilesUrl = await this.uploadToTmpfiles(localPath);
-    if (tmpfilesUrl) {
-      return tmpfilesUrl;
+    // 尝试上传到 litterbox（备选）
+    const litterboxUrl = await this.uploadToLitterbox(localPath);
+    if (litterboxUrl) {
+      return litterboxUrl;
     }
 
-    // 最后尝试使用 NEXT_PUBLIC_BASE_URL
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-    if (baseUrl && baseUrl.startsWith('https://')) {
-      // 只有 HTTPS 的公网 URL 才有效
-      const publicDir = path.resolve(process.cwd(), 'public');
-      if (localPath.startsWith(publicDir)) {
-        const url = `${baseUrl}${localPath.replace(publicDir, '')}`;
-        console.log('[FileStorage] Using base URL:', url);
-        return url;
-      }
-    }
-
-    console.warn('[FileStorage] No public URL available for:', localPath);
+    console.warn('[FileStorage] All upload methods failed');
     return null;
   }
 

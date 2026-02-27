@@ -130,7 +130,6 @@ const STEP_ORDER: VideoStep[] = [
   'upload',
   'recognition',
   'style',
-  'colorGrade',
   'keyframe',
   'processing',
   'result',

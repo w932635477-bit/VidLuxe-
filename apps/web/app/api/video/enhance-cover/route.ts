@@ -62,13 +62,6 @@ async function fetchWithTimeout(url: string, options: RequestInit, timeout: numb
 }
 
 /**
- * 检查 URL 是否可被公网访问
- */
-function isPublicUrl(url: string): boolean {
-  return url.startsWith('https://') && !url.includes('localhost');
-}
-
-/**
  * 创建 Nano Banana 任务
  */
 async function createNanoBananaTask(params: {
@@ -84,10 +77,13 @@ async function createNanoBananaTask(params: {
   };
 
   // Debug: Log the exact request being sent
+  const logImageUrls = params.imageUrls?.map(url =>
+    url.startsWith('data:') ? `base64:${url.substring(0, 50)}...` : url
+  );
   console.log('[EnhanceCover] API Request:', JSON.stringify({
     model: requestBody.model,
     prompt: requestBody.prompt.substring(0, 100) + '...',
-    image_urls: requestBody.image_urls,
+    image_urls: logImageUrls,
     size: requestBody.size,
     quality: requestBody.quality,
   }, null, 2));
@@ -123,6 +119,8 @@ async function getTaskStatus(taskId: string): Promise<{
   status: 'pending' | 'processing' | 'completed' | 'failed';
   progress: number;
   results?: string[];
+  error?: string;
+  error_message?: string;
 }> {
   const response = await fetchWithTimeout(
     `${NANO_BANANA_CONFIG.baseUrl}/v1/tasks/${taskId}`,
@@ -140,7 +138,9 @@ async function getTaskStatus(taskId: string): Promise<{
     throw new Error(`Failed to get task status: ${response.status}`);
   }
 
-  return response.json();
+  const result = await response.json();
+  console.log(`[EnhanceCover] Task ${taskId} status:`, JSON.stringify(result, null, 2));
+  return result;
 }
 
 /**
@@ -162,7 +162,9 @@ async function waitForTask(taskId: string): Promise<string[]> {
     }
 
     if (status.status === 'failed') {
-      throw new Error('Enhancement task failed');
+      const errorMsg = status.error_message || status.error || 'Enhancement task failed (no details)';
+      console.error(`[EnhanceCover] Task ${taskId} failed:`, errorMsg);
+      throw new Error(errorMsg);
     }
 
     await new Promise((resolve) => setTimeout(resolve, pollInterval));
@@ -239,40 +241,35 @@ export async function POST(request: NextRequest): Promise<NextResponse<EnhanceCo
       );
     }
 
-    // 尝试获取公网 URL（上传到 R2）
-    let publicUrl: string | null = null;
-
-    if (!frameUrl.startsWith('http')) {
-      publicUrl = await storage.getPublicUrl(localPath);
-      if (publicUrl) {
-        console.log('[EnhanceCover] Got public URL:', publicUrl);
-      } else {
-        console.warn('[EnhanceCover] Failed to get public URL, will use text-to-image mode');
-      }
-    } else {
-      publicUrl = frameUrl;
-    }
-
     // 构建 prompt
     const stylePrompt = STYLE_PROMPTS[style] || STYLE_PROMPTS.magazine;
     const basePrompt = `${stylePrompt}, maintain the original person/subject, enhance background and lighting, keep natural look`;
 
-    let imageUrls: string[] | undefined;
-    let finalPrompt = basePrompt;
+    // 获取公网 URL
+    let publicUrl: string | null = null;
 
-    if (publicUrl && isPublicUrl(publicUrl)) {
-      imageUrls = [publicUrl];
-      console.log('[EnhanceCover] Using Image-to-Image mode with public URL');
+    if (frameUrl.startsWith('http')) {
+      publicUrl = frameUrl;
+      console.log('[EnhanceCover] Using provided URL:', frameUrl);
     } else {
-      // 无法使用 Image-to-Image，回退到 text-to-image
-      finalPrompt = `${basePrompt}, high quality photography, professional editing, portrait of a beautiful person`;
-      console.log('[EnhanceCover] Using Text-to-Image mode (no public URL available)');
+      // 上传到图床获取公网 URL
+      publicUrl = await storage.getPublicUrl(localPath);
+      if (publicUrl) {
+        console.log('[EnhanceCover] Got public URL:', publicUrl);
+      } else {
+        return NextResponse.json(
+          { success: false, error: '无法上传图片到图床，请检查网络连接' },
+          { status: 500 }
+        );
+      }
     }
+
+    console.log('[EnhanceCover] Creating enhancement task...');
 
     // 创建增强任务
     const { taskId } = await createNanoBananaTask({
-      prompt: finalPrompt,
-      imageUrls,
+      prompt: basePrompt,
+      imageUrls: [publicUrl],
     });
 
     console.log('[EnhanceCover] Task created:', taskId);

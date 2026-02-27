@@ -1,7 +1,8 @@
 /**
  * VideoFlow - 视频流程
  *
- * upload → recognition → style → colorGrade → keyframe → processing → result
+ * upload → style → keyframe → processing → result
+ * 调色和增强合并到 processing 步骤
  */
 
 'use client';
@@ -11,7 +12,113 @@ import { useVideoStore } from '@/lib/stores/flows';
 import { useCreditsStore } from '@/lib/stores/credits-store';
 import { ProcessingAnimation } from '@/components/features/try/flows/shared/ProcessingAnimation';
 import { KeyframeSelector } from './KeyframeSelector';
-import type { StyleType, StyleSourceType, KeyFrame } from '@/lib/types/flow';
+import type { StyleType, KeyFrame } from '@/lib/types/flow';
+
+// 按钮样式 - Apple Premium Style
+const BUTTON_STYLES = {
+  // 返回按钮
+  secondary: {
+    flex: 1,
+    padding: '16px',
+    borderRadius: '12px',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    background: 'transparent',
+    color: 'white',
+    fontSize: '16px',
+    fontWeight: 500,
+    cursor: 'pointer',
+    transition: 'all 200ms cubic-bezier(0.25, 0.1, 0.25, 1)',
+  } as const,
+  // 主按钮
+  primary: {
+    flex: 2,
+    padding: '16px',
+    borderRadius: '12px',
+    border: 'none',
+    background: '#D4AF37',
+    color: '#000',
+    fontSize: '16px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    transition: 'all 150ms cubic-bezier(0.25, 0.1, 0.25, 1)',
+  } as const,
+  // 禁用状态
+  disabled: {
+    flex: 2,
+    padding: '16px',
+    borderRadius: '12px',
+    border: 'none',
+    background: 'rgba(255, 255, 255, 0.1)',
+    color: 'rgba(255, 255, 255, 0.3)',
+    fontSize: '16px',
+    fontWeight: 600,
+    cursor: 'not-allowed',
+    transition: 'all 150ms cubic-bezier(0.25, 0.1, 0.25, 1)',
+  } as const,
+  // 继续使用按钮
+  ghost: {
+    width: '100%',
+    padding: '16px',
+    borderRadius: '12px',
+    border: '1px solid rgba(255, 255, 255, 0.15)',
+    background: 'transparent',
+    color: 'white',
+    fontSize: '16px',
+    fontWeight: 500,
+    cursor: 'pointer',
+    transition: 'all 200ms cubic-bezier(0.25, 0.1, 0.25, 1)',
+  } as const,
+  // 下载按钮
+  download: {
+    width: '100%',
+    padding: '16px',
+    borderRadius: '12px',
+    border: '1px solid rgba(255, 255, 255, 0.15)',
+    background: 'rgba(255, 255, 255, 0.05)',
+    color: 'white',
+    fontSize: '16px',
+    fontWeight: 500,
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '8px',
+    transition: 'all 200ms cubic-bezier(0.25, 0.1, 0.25, 1)',
+  } as const,
+  // 金色下载按钮
+  downloadPrimary: {
+    width: '100%',
+    padding: '16px',
+    borderRadius: '12px',
+    border: 'none',
+    background: '#D4AF37',
+    color: '#000',
+    fontSize: '16px',
+    fontWeight: 600,
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: '8px',
+    transition: 'all 150ms cubic-bezier(0.25, 0.1, 0.25, 1)',
+  } as const,
+  // 小图标按钮
+  icon: {
+    position: 'absolute' as const,
+    top: '12px',
+    right: '12px',
+    width: '40px',
+    height: '40px',
+    borderRadius: '10px',
+    background: 'rgba(0, 0, 0, 0.6)',
+    border: 'none',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'all 150ms cubic-bezier(0.25, 0.1, 0.25, 1)',
+  } as const,
+};
 
 // 生成匿名 ID
 function generateAnonymousId(): string {
@@ -31,19 +138,13 @@ export function VideoFlow() {
 
   const {
     step,
-    uploadedFile,
     uploadedFileUrl,
     previewUrl,
     isLoading,
     progress,
     currentStage,
     error,
-    selectedCategory,
     selectedPreset,
-    styleSourceType,
-    referenceFileUrl,
-    colorGradeExplanation,
-    gradedVideoUrl,
     keyframes,
     selectedKeyframe,
     enhancedCoverUrl,
@@ -58,10 +159,6 @@ export function VideoFlow() {
     setError,
     setSelectedCategory,
     setSelectedPreset,
-    setStyleSourceType,
-    setReferenceFileUrl,
-    setColorGradeExplanation,
-    setGradedVideoUrl,
     setKeyframes,
     setSelectedKeyframe,
     setEnhancedCoverUrl,
@@ -132,55 +229,14 @@ export function VideoFlow() {
     }
   }, [setPreviewUrl, setUploadedFile, setIsLoading, setUploadedFileUrl, setStep, setSelectedCategory, setError]);
 
-  // 风格确认后进入调色
-  const handleStyleConfirm = useCallback(() => {
-    setStep('colorGrade');
-    analyzeAndGrade();
-  }, [setStep]);
-
-  // 分析并调色
-  const analyzeAndGrade = useCallback(async () => {
-    if (!uploadedFileUrl) return;
-
-    setIsLoading(true);
-    setProgress(0);
-    setCurrentStage('正在分析视频色彩...');
-
-    try {
-      const response = await fetch('/api/video/color-grade', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ videoUrl: uploadedFileUrl }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        setColorGradeExplanation(data.explanation || '已优化视频色彩');
-        setGradedVideoUrl(data.gradedVideoUrl || uploadedFileUrl);
-        setProgress(100);
-
-        // 自动进入关键帧选择
-        setTimeout(() => {
-          fetchKeyframes();
-        }, 1000);
-      } else {
-        setError(data.error || '调色失败');
-        // 即使失败也继续
-        fetchKeyframes();
-      }
-    } catch {
-      setError('调色请求失败');
-      fetchKeyframes();
-    } finally {
-      setIsLoading(false);
-    }
-  }, [uploadedFileUrl, setColorGradeExplanation, setGradedVideoUrl]);
-
   // 获取关键帧
   const fetchKeyframes = useCallback(async () => {
-    if (!uploadedFileUrl) return;
+    if (!uploadedFileUrl) {
+      console.log('[VideoFlow] fetchKeyframes: uploadedFileUrl is empty, skipping');
+      return;
+    }
 
+    console.log('[VideoFlow] fetchKeyframes: starting with uploadedFileUrl:', uploadedFileUrl);
     setStep('keyframe');
     setIsLoading(true);
     setCurrentStage('正在提取关键帧...');
@@ -209,9 +265,15 @@ export function VideoFlow() {
       setIsLoading(false);
       setCurrentStage('');
     }
-  }, [uploadedFileUrl, previewUrl, setStep, setKeyframes, setSelectedKeyframe]);
+  }, [uploadedFileUrl, setStep, setKeyframes, setSelectedKeyframe, setIsLoading, setCurrentStage, setError]);
 
-  // 关键帧确认后开始处理
+  // 风格确认后直接进入关键帧选择
+  const handleStyleConfirm = useCallback(() => {
+    console.log('[VideoFlow] handleStyleConfirm called, uploadedFileUrl:', uploadedFileUrl);
+    fetchKeyframes();
+  }, [uploadedFileUrl, fetchKeyframes]);
+
+  // 关键帧确认后开始处理（包含调色和增强）
   const handleKeyframeConfirm = useCallback(async () => {
     if (!selectedKeyframe) {
       setError('请选择一个关键帧');
@@ -220,10 +282,53 @@ export function VideoFlow() {
 
     setStep('processing');
     setProgress(0);
-    setCurrentStage('正在增强封面...');
+
+    const stages = [
+      '🎨 正在分析视频色彩...',
+      '✨ 正在应用 ' + (selectedPreset === 'magazine' ? '杂志大片' : selectedPreset === 'soft' ? '温柔日系' : selectedPreset === 'urban' ? '都市职场' : '复古胶片') + '风格...',
+      '🖼️ 正在增强封面帧...',
+    ];
+
+    // 添加替换帧的阶段
+    if (replaceFrames.length > 0) {
+      stages.push(`📸 正在增强 ${replaceFrames.length} 张替换帧...`);
+      stages.push('🎬 正在合成增强视频...');
+    }
+    stages.push('✅ 完成！');
 
     try {
-      // 1. 增强封面帧
+      let currentProgress = 0;
+      const progressPerStage = 100 / stages.length;
+
+      // 1. 调色（可选，如果有替换帧）
+      if (replaceFrames.length > 0) {
+        setCurrentStage(stages[0]);
+        const gradeResponse = await fetch('/api/video/color-grade', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            videoUrl: uploadedFileUrl,
+            style: selectedPreset,
+          }),
+        });
+
+        const gradeData = await gradeResponse.json();
+        if (!gradeData.success) {
+          console.warn('[VideoFlow] Color grade warning:', gradeData.error);
+          // 继续处理，颜色分级不是必须的
+        }
+        currentProgress += progressPerStage;
+        setProgress(Math.round(currentProgress));
+
+        setCurrentStage(stages[1]);
+        // 给用户一些反馈时间
+        await new Promise(resolve => setTimeout(resolve, 500));
+        currentProgress += progressPerStage;
+        setProgress(Math.round(currentProgress));
+      }
+
+      // 2. 增强封面帧
+      setCurrentStage(stages[2]);
       const enhanceResponse = await fetch('/api/video/enhance-cover', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -241,16 +346,14 @@ export function VideoFlow() {
 
       let coverUrl = enhanceData.enhancedUrl || selectedKeyframe.url;
       setEnhancedCoverUrl(coverUrl);
+      currentProgress += progressPerStage;
+      setProgress(Math.round(currentProgress));
 
-      setProgress(30);
-      setCurrentStage('封面增强完成');
-
-      // 2. 增强替换帧（如果有）
+      // 3. 增强替换帧（如果有）
       const enhancedFrames: { timestamp: number; enhancedUrl: string }[] = [];
 
       if (replaceFrames.length > 0) {
-        setProgress(40);
-        setCurrentStage(`正在增强替换帧 (0/${replaceFrames.length})...`);
+        setCurrentStage(stages[3]);
 
         for (let i = 0; i < replaceFrames.length; i++) {
           const frame = replaceFrames[i];
@@ -266,7 +369,7 @@ export function VideoFlow() {
           const frameData = await frameResponse.json();
           if (!frameData.success) {
             console.error(`替换帧 ${i + 1} 增强失败:`, frameData.error);
-            continue; // 跳过失败的帧，继续处理其他帧
+            continue;
           }
           if (frameData.enhancedUrl) {
             enhancedFrames.push({
@@ -274,50 +377,69 @@ export function VideoFlow() {
               enhancedUrl: frameData.enhancedUrl,
             });
           }
-
-          setProgress(40 + Math.round((i + 1) / replaceFrames.length * 30));
-          setCurrentStage(`正在增强替换帧 (${i + 1}/${replaceFrames.length})...`);
         }
-      }
+        currentProgress += progressPerStage;
+        setProgress(Math.round(currentProgress));
 
-      // 3. 合成新视频（如果有替换帧）
-      let videoUrl = uploadedFileUrl || '';
+        // 4. 合成新视频
+        setCurrentStage(stages[4]);
+        let finalVideoUrl = uploadedFileUrl || '';
 
-      if (enhancedFrames.length > 0) {
-        setProgress(75);
-        setCurrentStage('正在合成视频...');
+        if (enhancedFrames.length > 0) {
+          const replaceResponse = await fetch('/api/video/replace-frames', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              videoUrl: uploadedFileUrl,
+              frames: enhancedFrames,
+            }),
+          });
 
-        const replaceResponse = await fetch('/api/video/replace-frames', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            videoUrl: uploadedFileUrl,
-            frames: enhancedFrames,
-          }),
+          const replaceData = await replaceResponse.json();
+          if (replaceData.success && replaceData.outputUrl) {
+            finalVideoUrl = replaceData.outputUrl;
+            console.log('[VideoFlow] Video synthesized:', finalVideoUrl);
+          }
+        }
+        currentProgress += progressPerStage;
+        setProgress(Math.round(currentProgress));
+
+        // 5. 完成
+        setCurrentStage(stages[stages.length - 1]);
+        setProgress(100);
+
+        // 设置结果 - 使用合成后的视频 URL
+        setResultData({
+          enhancedUrl: coverUrl,
+          originalUrl: uploadedFileUrl || '',
+          enhancedCoverUrl: coverUrl,
+          enhancedVideoUrl: finalVideoUrl, // 使用合成后的视频 URL
         });
 
-        const replaceData = await replaceResponse.json();
-        if (replaceData.success && replaceData.outputUrl) {
-          videoUrl = replaceData.outputUrl;
-        }
+        fetchCredits(anonymousId);
+
+        // 短暂延迟后显示结果
+        await new Promise(resolve => setTimeout(resolve, 500));
+        setStep('result');
+      } else {
+        // 没有替换帧，只生成封面
+        setCurrentStage(stages[stages.length - 1]);
+        setProgress(100);
+
+        setResultData({
+          enhancedUrl: coverUrl,
+          originalUrl: uploadedFileUrl || '',
+          enhancedCoverUrl: coverUrl,
+          enhancedVideoUrl: undefined,
+        });
+
+        fetchCredits(anonymousId);
+        await new Promise(resolve => setTimeout(resolve, 500));
+        setStep('result');
       }
-
-      setProgress(100);
-      setCurrentStage('处理完成！');
-
-      // 设置结果
-      setResultData({
-        enhancedUrl: coverUrl,
-        originalUrl: uploadedFileUrl || '',
-        enhancedCoverUrl: coverUrl,
-        enhancedVideoUrl: enhancedFrames.length > 0 ? videoUrl : undefined,
-      });
-
-      fetchCredits(anonymousId);
-      setStep('result');
     } catch (error) {
       console.error('处理失败:', error);
-      setError('处理失败，请重试');
+      setError(error instanceof Error ? error.message : '处理失败，请重试');
       setStep('keyframe');
     }
   }, [selectedKeyframe, selectedPreset, uploadedFileUrl, replaceFrames, anonymousId, setStep, setProgress, setCurrentStage, setEnhancedCoverUrl, setResultData, fetchCredits, setError]);
@@ -417,18 +539,9 @@ export function VideoFlow() {
 
           {/* 按钮 */}
           <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
-            <button onClick={() => setStep('upload')} style={{ flex: 1, padding: '16px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.1)', background: 'transparent', color: 'white', fontSize: '16px', fontWeight: 500, cursor: 'pointer' }}>返回</button>
-            <button onClick={handleStyleConfirm} style={{ flex: 2, padding: '16px', borderRadius: '12px', border: 'none', background: '#D4AF37', color: '#000', fontSize: '16px', fontWeight: 600, cursor: 'pointer' }}>继续</button>
+            <button onClick={() => setStep('upload')} style={BUTTON_STYLES.secondary}>返回</button>
+            <button onClick={handleStyleConfirm} style={BUTTON_STYLES.primary}>继续</button>
           </div>
-        </div>
-      )}
-
-      {/* 调色步骤 */}
-      {step === 'colorGrade' && (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
-          <div style={{ width: '80px', height: '80px', marginBottom: '32px', borderRadius: '50%', border: '3px solid rgba(255,255,255,0.1)', borderTopColor: '#D4AF37', animation: 'spin 1s linear infinite' }} />
-          <p style={{ fontSize: '21px', fontWeight: 500, marginBottom: '8px' }}>{currentStage || '正在调色...'}</p>
-          {colorGradeExplanation && <p style={{ fontSize: '15px', color: 'rgba(255, 255, 255, 0.5)', textAlign: 'center', maxWidth: '320px' }}>{colorGradeExplanation}</p>}
         </div>
       )}
 
@@ -450,12 +563,15 @@ export function VideoFlow() {
                 replaceFrames={replaceFrames}
                 onCoverSelect={setSelectedKeyframe}
                 onReplaceToggle={handleReplaceToggle}
-                previewUrl={previewUrl || ''}
               />
 
               <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
-                <button onClick={() => setStep('style')} style={{ flex: 1, padding: '16px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.1)', background: 'transparent', color: 'white', fontSize: '16px', fontWeight: 500, cursor: 'pointer' }}>返回</button>
-                <button onClick={handleKeyframeConfirm} disabled={!selectedKeyframe} style={{ flex: 2, padding: '16px', borderRadius: '12px', border: 'none', background: selectedKeyframe ? '#D4AF37' : 'rgba(255, 255, 255, 0.1)', color: selectedKeyframe ? '#000' : 'rgba(255, 255, 255, 0.3)', fontSize: '16px', fontWeight: 600, cursor: selectedKeyframe ? 'pointer' : 'not-allowed' }}>
+                <button onClick={() => setStep('style')} style={BUTTON_STYLES.secondary}>返回</button>
+                <button
+                  onClick={handleKeyframeConfirm}
+                  disabled={!selectedKeyframe}
+                  style={selectedKeyframe ? BUTTON_STYLES.primary : BUTTON_STYLES.disabled}
+                >
                   开始增强 ({replaceFrames.length + 1} 张)
                 </button>
               </div>
@@ -477,8 +593,23 @@ export function VideoFlow() {
       {step === 'result' && resultData && (
         <div style={{ display: 'flex', flexDirection: 'column', padding: '24px', maxWidth: '480px', margin: '0 auto' }}>
           <p style={{ fontSize: '24px', fontWeight: 600, marginBottom: '24px', textAlign: 'center' }}>
-            {replaceFrames.length > 0 ? '视频增强完成！' : '封面生成完成！'}
+            {resultData.enhancedVideoUrl ? '视频增强完成！' : '封面生成完成！'}
           </p>
+
+          {/* 视频预览（如果有增强视频） */}
+          {resultData.enhancedVideoUrl && (
+            <div style={{ marginBottom: '24px', borderRadius: '16px', overflow: 'hidden', position: 'relative', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+              <video
+                src={resultData.enhancedVideoUrl}
+                style={{ width: '100%', maxHeight: '50vh', display: 'block', margin: '0 auto' }}
+                controls
+                playsInline
+              />
+              <p style={{ textAlign: 'center', fontSize: '13px', color: 'rgba(255, 255, 255, 0.5)', padding: '12px', margin: 0 }}>
+                增强后视频预览
+              </p>
+            </div>
+          )}
 
           {/* 封面预览 */}
           {enhancedCoverUrl && (
@@ -502,20 +633,7 @@ export function VideoFlow() {
                     alert('下载失败，请重试');
                   }
                 }}
-                style={{
-                  position: 'absolute',
-                  top: '12px',
-                  right: '12px',
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '10px',
-                  background: 'rgba(0, 0, 0, 0.6)',
-                  border: 'none',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
+                style={BUTTON_STYLES.icon}
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
@@ -545,21 +663,7 @@ export function VideoFlow() {
                     alert('下载失败，请重试');
                   }
                 }}
-                style={{
-                  width: '100%',
-                  padding: '16px',
-                  borderRadius: '12px',
-                  border: '1px solid rgba(255, 255, 255, 0.15)',
-                  background: 'rgba(255, 255, 255, 0.05)',
-                  color: 'white',
-                  fontSize: '16px',
-                  fontWeight: 500,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                }}
+                style={BUTTON_STYLES.download}
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
@@ -589,21 +693,7 @@ export function VideoFlow() {
                     alert('下载失败，请重试');
                   }
                 }}
-                style={{
-                  width: '100%',
-                  padding: '16px',
-                  borderRadius: '12px',
-                  border: 'none',
-                  background: '#D4AF37',
-                  color: '#000',
-                  fontSize: '16px',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '8px',
-                }}
+                style={BUTTON_STYLES.downloadPrimary}
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <polygon points="23 7 16 12 23 17 23 7" />
@@ -614,7 +704,7 @@ export function VideoFlow() {
             )}
           </div>
 
-          <button onClick={handleReset} style={{ width: '100%', padding: '16px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.15)', background: 'transparent', color: 'white', fontSize: '16px', fontWeight: 500, cursor: 'pointer' }}>继续使用</button>
+          <button onClick={handleReset} style={BUTTON_STYLES.ghost}>继续使用</button>
         </div>
       )}
 

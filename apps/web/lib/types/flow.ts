@@ -39,7 +39,6 @@ export type VideoStep =
   | 'upload'
   | 'recognition'
   | 'style'
-  | 'colorGrade'
   | 'keyframe'
   | 'processing'
   | 'result';

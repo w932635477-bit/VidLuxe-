@@ -234,29 +234,27 @@ export async function processImageEnhancement(params: {
   onProgress?.(15, '构建升级 Prompt');
   const prompt = styleProfile.prompt;
 
-  // 获取公网 URL（上传到图床）
+  // 获取公网 URL
   let publicUrl: string | null = null;
 
   if (imageUrl.startsWith('http')) {
-    // 已经是公网 URL
     publicUrl = imageUrl;
+    console.log('[Workflow] Using provided URL:', imageUrl);
   } else {
-    // 本地文件，需要上传到图床
-    onProgress?.(16, '上传图片到图床');
+    // 本地文件，上传到图床
+    onProgress?.(16, '上传图片');
     const storage = getFileStorage();
     const localPath = imageUrl.startsWith('/')
       ? `${process.cwd()}/public${imageUrl}`
       : imageUrl;
 
-    console.log('[Workflow] Converting URL to local path:', imageUrl, '->', localPath);
-    console.log('[Workflow] File exists:', require('fs').existsSync(localPath));
-
+    console.log('[Workflow] Local path:', localPath);
     publicUrl = await storage.getPublicUrl(localPath);
 
     if (publicUrl) {
       console.log('[Workflow] Got public URL:', publicUrl);
     } else {
-      console.error('[Workflow] Failed to get public URL for image:', localPath);
+      throw new Error('无法上传图片到图床，请检查网络连接');
     }
   }
 
@@ -268,20 +266,13 @@ export async function processImageEnhancement(params: {
     quality: string;
   } = {
     prompt,
+    imageUrls: [publicUrl],
     size: '9:16',
     quality: '2K',
   };
 
-  // 只有当有公网 URL 时才使用 Image-to-Image
-  if (publicUrl && isPublicUrl(publicUrl)) {
-    taskParams.imageUrls = [publicUrl];
-    onProgress?.(20, '提交升级任务 (Image-to-Image)');
-    console.log('[Workflow] Using Image-to-Image mode with public URL');
-  } else {
-    // 无法获取公网 URL，这是一个错误情况
-    console.error('[Workflow] No public URL available, cannot perform Image-to-Image');
-    throw new Error('无法上传图片到图床，请检查网络连接或稍后重试');
-  }
+  onProgress?.(20, '提交升级任务');
+  console.log('[Workflow] Creating enhancement task with public URL');
 
   const { taskId } = await createNanoBananaTask(taskParams);
 
