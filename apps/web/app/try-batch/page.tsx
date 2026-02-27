@@ -1,13 +1,11 @@
 /**
- * TryPage - 主页面
- *
- * 使用新的独立流程架构
+ * Try Batch 页面 - 测试新的批量流程
  */
 
 'use client';
 
 import { ImageBatchFlow } from '@/components/features/try/flows/ImageBatchFlow';
 
-export default function TryPage() {
+export default function TryBatchPage() {
   return <ImageBatchFlow />;
 }

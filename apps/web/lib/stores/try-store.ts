@@ -1,6 +1,13 @@
 /**
  * Try Page Store (Zustand)
  *
+ * @deprecated 此 store 已弃用，请使用独立流程 stores:
+ * - `lib/stores/flows/image-single-store.ts` - 单图流程
+ * - `lib/stores/flows/image-batch-store.ts` - 批量流程
+ * - `lib/stores/flows/video-store.ts` - 视频流程
+ *
+ * 此文件保留用于向后兼容，后续将移除
+ *
  * 管理 Try 页面的所有状态，遵循最佳实践：
  * - 状态与操作分离
  * - 初始状态单独定义
