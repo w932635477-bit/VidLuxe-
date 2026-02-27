@@ -21,3 +21,8 @@ export { BatchConfirmModal } from './BatchConfirmModal';
 export { BatchResultGrid } from './BatchResultGrid';
 export { KeyframeMultiSelector } from './KeyframeMultiSelector';
 export { ModeTabs, type FlowMode } from './ModeTabs';
+
+// 内容类型相关
+export { ContentTypeSelector } from './ContentTypeSelector';
+export { StyleFlowSelector } from './StyleFlowSelector';
+export type { ContentType } from '@/lib/content-types';
