@@ -12,7 +12,9 @@ import { useVideoStore } from '@/lib/stores/flows';
 import { useCreditsStore } from '@/lib/stores/credits-store';
 import { ProcessingAnimation } from '@/components/features/try/flows/shared/ProcessingAnimation';
 import { KeyframeSelector } from './KeyframeSelector';
+import { StyleFlowSelector } from '@/components/features/try/StyleFlowSelector';
 import type { StyleType, KeyFrame } from '@/lib/types/flow';
+import type { ContentType } from '@/lib/content-types';
 
 // 按钮样式 - Apple Premium Style
 const BUTTON_STYLES = {
@@ -134,6 +136,7 @@ function generateAnonymousId(): string {
 
 export function VideoFlow() {
   const [anonymousId, setAnonymousId] = useState<string>('');
+  const [selectedContentType, setSelectedContentType] = useState<ContentType>('outfit');
   const [replaceFrames, setReplaceFrames] = useState<KeyFrame[]>([]);
 
   const {
@@ -335,6 +338,7 @@ export function VideoFlow() {
         body: JSON.stringify({
           frameUrl: selectedKeyframe.url,
           style: selectedPreset,
+          contentType: selectedContentType,
         }),
       });
 
@@ -363,6 +367,7 @@ export function VideoFlow() {
             body: JSON.stringify({
               frameUrl: frame.url,
               style: selectedPreset,
+              contentType: selectedContentType,
             }),
           });
 
@@ -450,13 +455,6 @@ export function VideoFlow() {
     reset();
   }, [previewUrl, reset]);
 
-  const styles: { id: StyleType; name: string; desc: string }[] = [
-    { id: 'magazine', name: '杂志大片', desc: '时尚杂志封面质感' },
-    { id: 'soft', name: '温柔日系', desc: '清新温柔文艺感' },
-    { id: 'urban', name: '都市职场', desc: '专业干练可信赖' },
-    { id: 'vintage', name: '复古胶片', desc: '复古怀旧电影感' },
-  ];
-
   return (
     <>
       {/* 错误提示 */}
@@ -515,27 +513,13 @@ export function VideoFlow() {
             <video src={previewUrl} style={{ width: '100%', maxHeight: '60vh', display: 'block', margin: '0 auto' }} muted autoPlay loop playsInline />
           </div>
 
-          {/* 风格选择 */}
-          <div style={{ flex: 1 }}>
-            <p style={{ fontSize: '17px', fontWeight: 500, marginBottom: '16px' }}>选择风格</p>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
-              {styles.map((style) => (
-                <div
-                  key={style.id}
-                  onClick={() => setSelectedPreset(style.id)}
-                  style={{
-                    padding: '16px', borderRadius: '12px',
-                    border: selectedPreset === style.id ? '2px solid #D4AF37' : '1px solid rgba(255, 255, 255, 0.1)',
-                    background: selectedPreset === style.id ? 'rgba(212, 175, 55, 0.1)' : 'rgba(255, 255, 255, 0.03)',
-                    cursor: 'pointer',
-                  }}
-                >
-                  <p style={{ fontSize: '15px', fontWeight: 500, marginBottom: '4px' }}>{style.name}</p>
-                  <p style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.5)' }}>{style.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
+          {/* 内容类型 + 风格选择 */}
+          <StyleFlowSelector
+            selectedStyle={selectedPreset}
+            selectedContentType={selectedContentType}
+            onStyleSelect={setSelectedPreset}
+            onContentTypeSelect={setSelectedContentType}
+          />
 
           {/* 按钮 */}
           <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
