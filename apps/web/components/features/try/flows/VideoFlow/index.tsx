@@ -302,7 +302,7 @@ export function VideoFlow() {
           <div
             onClick={() => !isLoading && document.getElementById('video-file-input')?.click()}
             style={{
-              width: '100%', maxWidth: '480px', aspectRatio: '16/9',
+              width: '100%', maxWidth: '320px', aspectRatio: '9/16',
               borderRadius: '24px', border: '2px dashed rgba(255, 255, 255, 0.15)',
               background: 'rgba(255, 255, 255, 0.02)', cursor: isLoading ? 'wait' : 'pointer',
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
@@ -336,7 +336,7 @@ export function VideoFlow() {
         <div style={{ display: 'flex', flexDirection: 'column', padding: '24px', maxWidth: '480px', margin: '0 auto' }}>
           {/* 视频预览 */}
           <div style={{ marginBottom: '24px', borderRadius: '16px', overflow: 'hidden', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
-            <video src={previewUrl} style={{ width: '100%', aspectRatio: '16/9', objectFit: 'cover', display: 'block' }} muted autoPlay loop playsInline />
+            <video src={previewUrl} style={{ width: '100%', maxHeight: '60vh', display: 'block', margin: '0 auto' }} muted autoPlay loop playsInline />
           </div>
 
           {/* 风格选择 */}
