@@ -10,6 +10,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { useImageSingleStore } from '@/lib/stores/flows';
 import { useCreditsStore } from '@/lib/stores/credits-store';
 import { MinimalNav } from '@/components/features/try';
+import { ProcessingAnimation } from '@/components/features/try/flows/shared/ProcessingAnimation';
 import type { StyleType, StyleSourceType, ResultData } from '@/lib/types/flow';
 
 // 生成匿名 ID
@@ -235,7 +236,7 @@ export function ImageSingleFlow() {
 
       {/* 上传步骤 */}
       {step === 'upload' && (
-        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 24px' }}>
+        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '130px 24px 80px' }}>
           <div style={{ textAlign: 'center', marginBottom: '48px' }}>
             <h1 style={{ fontSize: '48px', fontWeight: 600, letterSpacing: '-0.03em', marginBottom: '16px' }}>让普通素材变爆款</h1>
             <p style={{ fontSize: '21px', color: 'rgba(255, 255, 255, 0.5)', maxWidth: '400px' }}>光线差、背景乱？一键提升高级感</p>
@@ -273,9 +274,18 @@ export function ImageSingleFlow() {
         </div>
       )}
 
+      {/* AI 识别步骤 */}
+      {step === 'recognition' && (
+        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '130px 24px 80px' }}>
+          <div style={{ width: '80px', height: '80px', marginBottom: '32px', borderRadius: '50%', border: '3px solid rgba(255,255,255,0.1)', borderTopColor: '#D4AF37', animation: 'spin 1s linear infinite' }} />
+          <p style={{ fontSize: '21px', fontWeight: 500, marginBottom: '8px' }}>AI 正在分析图片...</p>
+          <p style={{ fontSize: '15px', color: 'rgba(255, 255, 255, 0.5)' }}>识别品类和最佳风格</p>
+        </div>
+      )}
+
       {/* 风格选择步骤 */}
       {step === 'style' && previewUrl && (
-        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', padding: '80px 24px 40px', maxWidth: '480px', margin: '0 auto' }}>
+        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', padding: '130px 24px 40px', maxWidth: '480px', margin: '0 auto' }}>
           {/* 步骤指示器 */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '32px' }}>
             {['upload', 'style', 'processing', 'result'].map((s, i) => (
@@ -323,20 +333,57 @@ export function ImageSingleFlow() {
 
       {/* 处理步骤 */}
       {step === 'processing' && (
-        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 24px' }}>
-          <div style={{ width: '80px', height: '80px', marginBottom: '32px', borderRadius: '50%', border: '3px solid rgba(255,255,255,0.1)', borderTopColor: '#D4AF37', animation: 'spin 1s linear infinite' }} />
-          <p style={{ fontSize: '21px', fontWeight: 500, marginBottom: '8px' }}>{currentStage}</p>
-          <p style={{ fontSize: '48px', fontWeight: 600, color: '#D4AF37' }}>{progress}%</p>
-        </div>
+        <ProcessingAnimation
+          progress={progress}
+          currentStage={currentStage}
+          mode="image"
+        />
       )}
 
       {/* 结果步骤 */}
       {step === 'result' && resultData && (
-        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', padding: '80px 24px 40px', maxWidth: '480px', margin: '0 auto' }}>
+        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', padding: '130px 24px 40px', maxWidth: '480px', margin: '0 auto' }}>
           <p style={{ fontSize: '24px', fontWeight: 600, marginBottom: '24px', textAlign: 'center' }}>升级完成！</p>
 
-          <div style={{ marginBottom: '24px', borderRadius: '16px', overflow: 'hidden' }}>
+          <div style={{ marginBottom: '24px', borderRadius: '16px', overflow: 'hidden', position: 'relative' }}>
             <img src={resultData.enhancedUrl} alt="结果" style={{ width: '100%', aspectRatio: '9/16', objectFit: 'cover' }} />
+            {/* 下载按钮 */}
+            <button
+              onClick={async () => {
+                try {
+                  const response = await fetch(resultData.enhancedUrl);
+                  const blob = await response.blob();
+                  const blobUrl = URL.createObjectURL(blob);
+                  const link = document.createElement('a');
+                  link.href = blobUrl;
+                  link.download = 'vidluxe_enhanced.jpg';
+                  document.body.appendChild(link);
+                  link.click();
+                  document.body.removeChild(link);
+                  URL.revokeObjectURL(blobUrl);
+                } catch {
+                  alert('下载失败，请重试');
+                }
+              }}
+              style={{
+                position: 'absolute',
+                top: '12px',
+                right: '12px',
+                width: '40px',
+                height: '40px',
+                borderRadius: '10px',
+                background: 'rgba(0, 0, 0, 0.6)',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
+              </svg>
+            </button>
           </div>
 
           {resultData.score && (

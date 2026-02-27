@@ -296,7 +296,7 @@ export function VideoFlow() {
 
       {/* 上传步骤 */}
       {step === 'upload' && (
-        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 24px' }}>
+        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '130px 24px 80px' }}>
           <div style={{ textAlign: 'center', marginBottom: '48px' }}>
             <h1 style={{ fontSize: '48px', fontWeight: 600, letterSpacing: '-0.03em', marginBottom: '16px' }}>视频升级</h1>
             <p style={{ fontSize: '21px', color: 'rgba(255, 255, 255, 0.5)', maxWidth: '400px' }}>上传视频，AI 自动优化</p>
@@ -336,7 +336,7 @@ export function VideoFlow() {
 
       {/* 风格选择步骤 */}
       {step === 'style' && previewUrl && (
-        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', padding: '80px 24px 40px', maxWidth: '480px', margin: '0 auto' }}>
+        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', padding: '130px 24px 40px', maxWidth: '480px', margin: '0 auto' }}>
           {/* 视频预览 */}
           <div style={{ marginBottom: '24px', borderRadius: '16px', overflow: 'hidden', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
             <video src={previewUrl} style={{ width: '100%', aspectRatio: '16/9', objectFit: 'cover', display: 'block' }} muted autoPlay loop playsInline />
@@ -374,7 +374,7 @@ export function VideoFlow() {
 
       {/* 调色步骤 */}
       {step === 'colorGrade' && (
-        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 24px' }}>
+        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '130px 24px 80px' }}>
           <div style={{ width: '80px', height: '80px', marginBottom: '32px', borderRadius: '50%', border: '3px solid rgba(255,255,255,0.1)', borderTopColor: '#D4AF37', animation: 'spin 1s linear infinite' }} />
           <p style={{ fontSize: '21px', fontWeight: 500, marginBottom: '8px' }}>{currentStage || '正在调色...'}</p>
           {colorGradeExplanation && <p style={{ fontSize: '15px', color: 'rgba(255, 255, 255, 0.5)', textAlign: 'center', maxWidth: '320px' }}>{colorGradeExplanation}</p>}
@@ -383,7 +383,7 @@ export function VideoFlow() {
 
       {/* 关键帧选择步骤 */}
       {step === 'keyframe' && (
-        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', padding: '80px 24px 40px', maxWidth: '480px', margin: '0 auto' }}>
+        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', padding: '130px 24px 40px', maxWidth: '480px', margin: '0 auto' }}>
           {isLoading ? (
             <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <div style={{ textAlign: 'center' }}>
@@ -424,7 +424,7 @@ export function VideoFlow() {
 
       {/* 结果步骤 */}
       {step === 'result' && resultData && (
-        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', padding: '80px 24px 40px', maxWidth: '480px', margin: '0 auto' }}>
+        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', padding: '130px 24px 40px', maxWidth: '480px', margin: '0 auto' }}>
           <p style={{ fontSize: '24px', fontWeight: 600, marginBottom: '24px', textAlign: 'center' }}>
             {replaceFrames.length > 0 ? '视频增强完成！' : '封面生成完成！'}
           </p>

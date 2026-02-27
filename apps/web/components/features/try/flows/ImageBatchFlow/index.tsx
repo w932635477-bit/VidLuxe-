@@ -313,7 +313,7 @@ function UploadStep({ batchFiles, isLoading, onFilesChange, onRemove, onClear, c
   credits: { total: number; paid: number; free: number };
 }) {
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 24px' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '130px 24px 80px' }}>
       {/* 标题 */}
       <div style={{ textAlign: 'center', marginBottom: '48px' }}>
         <h1 style={{ fontSize: '48px', fontWeight: 600, letterSpacing: '-0.03em', marginBottom: '16px' }}>
@@ -463,7 +463,7 @@ function StyleStep({ batchFiles, onToggleStyle, onStartProcessing, onBack, credi
   const totalCost = calculateTotalTasks();
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', padding: '80px 24px 40px', maxWidth: '680px', margin: '0 auto' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', padding: '130px 24px 40px', maxWidth: '680px', margin: '0 auto' }}>
       {/* 步骤指示器 */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '32px' }}>
         {['upload', 'style', 'progress', 'result'].map((s, i) => (
@@ -651,7 +651,7 @@ function ResultStep({ results, onReset }: { results: BatchResultItem[]; onReset:
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', padding: '80px 24px 40px', maxWidth: '680px', margin: '0 auto' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', padding: '130px 24px 40px', maxWidth: '680px', margin: '0 auto' }}>
       <p style={{ fontSize: '24px', fontWeight: 600, marginBottom: '8px', textAlign: 'center' }}>生成完成！</p>
       <p style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.5)', marginBottom: '24px', textAlign: 'center' }}>
         共生成 {results.length} 张图片，点击图片查看大图

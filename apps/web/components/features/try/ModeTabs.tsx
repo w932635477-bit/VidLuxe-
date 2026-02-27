@@ -32,7 +32,7 @@ export function ModeTabs({ activeMode, onModeChange }: ModeTabsProps) {
         background: 'rgba(0, 0, 0, 0.6)',
         backdropFilter: 'blur(20px)',
         borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
-        zIndex: 50,
+        zIndex: 1000,
       }}
     >
       {MODES.map((mode) => {
