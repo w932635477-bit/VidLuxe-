@@ -228,18 +228,19 @@ export function VideoFlow() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          keyframeUrl: selectedKeyframe.url,
+          frameUrl: selectedKeyframe.url,
           style: selectedPreset,
         }),
       });
 
       const enhanceData = await enhanceResponse.json();
-      let coverUrl = selectedKeyframe.url;
 
-      if (enhanceData.success && enhanceData.enhancedUrl) {
-        coverUrl = enhanceData.enhancedUrl;
-        setEnhancedCoverUrl(enhanceData.enhancedUrl);
+      if (!enhanceData.success) {
+        throw new Error(enhanceData.error || '封面增强失败');
       }
+
+      let coverUrl = enhanceData.enhancedUrl || selectedKeyframe.url;
+      setEnhancedCoverUrl(coverUrl);
 
       setProgress(30);
       setCurrentStage('封面增强完成');
@@ -257,13 +258,17 @@ export function VideoFlow() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              keyframeUrl: frame.url,
+              frameUrl: frame.url,
               style: selectedPreset,
             }),
           });
 
           const frameData = await frameResponse.json();
-          if (frameData.success && frameData.enhancedUrl) {
+          if (!frameData.success) {
+            console.error(`替换帧 ${i + 1} 增强失败:`, frameData.error);
+            continue; // 跳过失败的帧，继续处理其他帧
+          }
+          if (frameData.enhancedUrl) {
             enhancedFrames.push({
               timestamp: frame.timestamp,
               enhancedUrl: frameData.enhancedUrl,
