@@ -11,7 +11,9 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { useImageBatchStore } from '@/lib/stores/flows';
 import { useCreditsStore } from '@/lib/stores/credits-store';
 import { ProcessingAnimation } from '@/components/features/try/flows/shared/ProcessingAnimation';
+import { ContentTypeSelector } from '@/components/features/try/ContentTypeSelector';
 import type { BatchFileItem, StyleType, BatchResultItem } from '@/lib/types/flow';
+import type { ContentType } from '@/lib/content-types';
 
 // 生成匿名 ID
 function generateAnonymousId(): string {
@@ -27,6 +29,7 @@ function generateAnonymousId(): string {
 
 export function ImageBatchFlow() {
   const [anonymousId, setAnonymousId] = useState<string>('');
+  const [selectedContentType, setSelectedContentType] = useState<ContentType>('outfit');
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const {
@@ -165,6 +168,7 @@ export function ImageBatchFlow() {
             body: JSON.stringify({
               content: { type: 'image', url: file.uploadedUrl },
               styleSource: { type: 'preset', presetStyle: style },
+              contentType: selectedContentType,
               anonymousId,
             }),
           });
@@ -274,6 +278,8 @@ export function ImageBatchFlow() {
           credits={{ total, paid: 0, free: total }}
           calculateTotalTasks={calculateTotalTasks}
           allFilesHaveStyles={allFilesHaveStyles}
+          selectedContentType={selectedContentType}
+          onContentTypeSelect={setSelectedContentType}
         />
       )}
 
@@ -440,7 +446,7 @@ function UploadStep({ batchFiles, isLoading, onFilesChange, onRemove, onClear, c
   );
 }
 
-function StyleStep({ batchFiles, onToggleStyle, onStartProcessing, onBack, credits, calculateTotalTasks, allFilesHaveStyles }: {
+function StyleStep({ batchFiles, onToggleStyle, onStartProcessing, onBack, credits, calculateTotalTasks, allFilesHaveStyles, selectedContentType, onContentTypeSelect }: {
   batchFiles: BatchFileItem[];
   onToggleStyle: (fileId: string, style: StyleType) => void;
   onStartProcessing: () => void;
@@ -448,6 +454,8 @@ function StyleStep({ batchFiles, onToggleStyle, onStartProcessing, onBack, credi
   credits: { total: number; paid: number; free: number };
   calculateTotalTasks: () => number;
   allFilesHaveStyles: boolean;
+  selectedContentType: ContentType;
+  onContentTypeSelect: (type: ContentType) => void;
 }) {
   const styles: { id: StyleType; name: string; desc: string }[] = [
     { id: 'magazine', name: '杂志大片', desc: '时尚杂志封面质感' },
@@ -478,6 +486,15 @@ function StyleStep({ batchFiles, onToggleStyle, onStartProcessing, onBack, credi
           点击图片下方的风格标签，为每张图片单独选择 1-4 种风格
         </p>
       </div>
+
+      {/* 内容类型选择 */}
+      <ContentTypeSelector
+        selectedType={selectedContentType}
+        onSelect={onContentTypeSelect}
+      />
+
+      {/* 分隔线 */}
+      <div style={{ height: '0.5px', background: 'rgba(255, 255, 255, 0.06)', margin: '24px 0' }} />
 
       {/* 每张图片的风格选择 */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '20px' }}>
