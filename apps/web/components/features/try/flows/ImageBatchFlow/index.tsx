@@ -1,7 +1,8 @@
 /**
  * ImageBatchFlow - 多图批量流程
  *
- * upload → style → processing → result
+ * upload → style → progress → result
+ * 支持每张图片独立选择风格
  */
 
 'use client';
@@ -10,6 +11,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { useImageBatchStore } from '@/lib/stores/flows';
 import { useCreditsStore } from '@/lib/stores/credits-store';
 import { MinimalNav } from '@/components/features/try';
+import { ProcessingAnimation } from '@/components/features/try/flows/shared/ProcessingAnimation';
 import type { BatchFileItem, StyleType, BatchResultItem } from '@/lib/types/flow';
 
 // 生成匿名 ID
@@ -31,13 +33,11 @@ export function ImageBatchFlow() {
   const {
     step,
     batchFiles,
-    selectedStyles,
     batchResults,
     isLoading,
     progress,
     currentStage,
     error,
-    showConfirmModal,
     setStep,
     setBatchFiles,
     updateBatchFile,
@@ -47,9 +47,9 @@ export function ImageBatchFlow() {
     setProgress,
     setCurrentStage,
     setError,
-    setSelectedStyles,
-    setBatchResults,
-    setShowConfirmModal,
+    addBatchResult,
+    clearResults,
+    toggleFileStyle,
     reset,
   } = useImageBatchStore();
 
@@ -75,6 +75,7 @@ export function ImageBatchFlow() {
       previewUrl: URL.createObjectURL(file),
       uploadedUrl: null,
       status: 'pending' as const,
+      selectedStyles: [], // 初始化为空，用户后续选择
     }));
 
     setBatchFiles(newItems);
@@ -103,6 +104,21 @@ export function ImageBatchFlow() {
     setStep('style');
   }, [setBatchFiles, updateBatchFile, setStep]);
 
+  // 计算总任务数
+  const calculateTotalTasks = useCallback(() => {
+    return batchFiles.reduce((total, file) => {
+      if (file.status === 'success' && file.uploadedUrl) {
+        return total + (file.selectedStyles.length > 0 ? file.selectedStyles.length : 1);
+      }
+      return total;
+    }, 0);
+  }, [batchFiles]);
+
+  // 检查是否所有图片都选择了风格
+  const allFilesHaveStyles = batchFiles
+    .filter((f) => f.status === 'success')
+    .every((f) => f.selectedStyles.length > 0);
+
   // 开始批量处理
   const handleStartProcessing = useCallback(async () => {
     const successFiles = batchFiles.filter((f) => f.status === 'success' && f.uploadedUrl);
@@ -111,30 +127,36 @@ export function ImageBatchFlow() {
       return;
     }
 
-    const imageCount = successFiles.length;
-    const styleCount = selectedStyles.length > 0 ? selectedStyles.length : 1;
-    const totalCost = imageCount * styleCount;
+    const totalCost = calculateTotalTasks();
 
     if (total < totalCost) {
-      setShowConfirmModal(true);
+      setError('额度不足');
       return;
     }
 
-    await processBatch(successFiles, selectedStyles.length > 0 ? selectedStyles : ['magazine']);
-  }, [batchFiles, selectedStyles, total, setError, setShowConfirmModal]);
+    await processBatch(successFiles);
+  }, [batchFiles, total, calculateTotalTasks, setError]);
 
   // 批量处理
-  const processBatch = async (files: BatchFileItem[], styles: StyleType[]) => {
-    const results: typeof batchResults = [];
-    const totalTasks = files.length * styles.length;
+  const processBatch = async (files: BatchFileItem[]) => {
+    const results: BatchResultItem[] = [];
     let completed = 0;
 
-    setStep('processing');
+    // 计算总任务数
+    const totalTasks = files.reduce((total, file) => {
+      return total + (file.selectedStyles.length > 0 ? file.selectedStyles.length : 1);
+    }, 0);
+
+    setStep('progress');
     setProgress(0);
     setCurrentStage('准备批量生成...');
+    clearResults();
 
     for (const file of files) {
-      for (const style of styles) {
+      // 使用该图片选择的风格，如果没选择则默认用 magazine
+      const stylesToProcess = file.selectedStyles.length > 0 ? file.selectedStyles : ['magazine' as StyleType];
+
+      for (const style of stylesToProcess) {
         try {
           setCurrentStage(`处理中... (${completed + 1}/${totalTasks})`);
 
@@ -160,12 +182,19 @@ export function ImageBatchFlow() {
               const statusData = await statusResponse.json();
 
               if (statusData.status === 'completed' && statusData.result) {
-                results.push({
+                const result: BatchResultItem = {
+                  id: `${file.id}_${style}`,
+                  fileIndex: batchFiles.indexOf(file),
                   originalUrl: file.uploadedUrl!,
                   enhancedUrl: statusData.result.enhancedUrl,
                   style,
-                  score: statusData.result.score,
-                });
+                  status: 'completed',
+                };
+                if (statusData.result.score) {
+                  result.score = statusData.result.score;
+                }
+                results.push(result);
+                addBatchResult(result);
                 taskCompleted = true;
                 break;
               }
@@ -190,15 +219,15 @@ export function ImageBatchFlow() {
     }
 
     fetchCredits(anonymousId);
-    setBatchResults(results);
     setStep('result');
   };
 
   // 重置
   const handleReset = useCallback(() => {
     clearBatchFiles();
+    clearResults();
     reset();
-  }, [clearBatchFiles, reset]);
+  }, [clearBatchFiles, clearResults, reset]);
 
   return (
     <main style={{ minHeight: '100vh', background: '#000000' }}>
@@ -242,16 +271,21 @@ export function ImageBatchFlow() {
       {step === 'style' && (
         <StyleStep
           batchFiles={batchFiles}
-          selectedStyles={selectedStyles}
-          onStylesChange={setSelectedStyles}
+          onToggleStyle={toggleFileStyle}
           onStartProcessing={handleStartProcessing}
           onBack={() => setStep('upload')}
           credits={{ total, paid: 0, free: total }}
+          calculateTotalTasks={calculateTotalTasks}
+          allFilesHaveStyles={allFilesHaveStyles}
         />
       )}
 
-      {step === 'processing' && (
-        <ProcessingStep progress={progress} currentStage={currentStage} />
+      {step === 'progress' && (
+        <ProcessingAnimation
+          progress={progress}
+          currentStage={currentStage}
+          mode="batch"
+        />
       )}
 
       {step === 'result' && (
@@ -409,13 +443,14 @@ function UploadStep({ batchFiles, isLoading, onFilesChange, onRemove, onClear, c
   );
 }
 
-function StyleStep({ batchFiles, selectedStyles, onStylesChange, onStartProcessing, onBack, credits }: {
+function StyleStep({ batchFiles, onToggleStyle, onStartProcessing, onBack, credits, calculateTotalTasks, allFilesHaveStyles }: {
   batchFiles: BatchFileItem[];
-  selectedStyles: StyleType[];
-  onStylesChange: (styles: StyleType[]) => void;
+  onToggleStyle: (fileId: string, style: StyleType) => void;
   onStartProcessing: () => void;
   onBack: () => void;
   credits: { total: number; paid: number; free: number };
+  calculateTotalTasks: () => number;
+  allFilesHaveStyles: boolean;
 }) {
   const styles: { id: StyleType; name: string; desc: string }[] = [
     { id: 'magazine', name: '杂志大片', desc: '时尚杂志封面质感' },
@@ -425,15 +460,13 @@ function StyleStep({ batchFiles, selectedStyles, onStylesChange, onStartProcessi
   ];
 
   const successFiles = batchFiles.filter((f) => f.status === 'success' && f.uploadedUrl);
-  const imageCount = successFiles.length;
-  const styleCount = selectedStyles.length > 0 ? selectedStyles.length : 1;
-  const totalCost = imageCount * styleCount;
+  const totalCost = calculateTotalTasks();
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', padding: '80px 24px 40px', maxWidth: '480px', margin: '0 auto' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', padding: '80px 24px 40px', maxWidth: '680px', margin: '0 auto' }}>
       {/* 步骤指示器 */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '32px' }}>
-        {['upload', 'style', 'processing', 'result'].map((s, i) => (
+        {['upload', 'style', 'progress', 'result'].map((s, i) => (
           <div key={s} style={{ display: 'flex', alignItems: 'center' }}>
             <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: s === 'style' ? '#D4AF37' : 'rgba(255, 255, 255, 0.2)' }} />
             {i < 3 && <div style={{ width: '24px', height: '2px', background: 'rgba(255, 255, 255, 0.1)' }} />}
@@ -441,52 +474,73 @@ function StyleStep({ batchFiles, selectedStyles, onStylesChange, onStartProcessi
         ))}
       </div>
 
-      {/* 图片预览 */}
+      {/* 标题 */}
       <div style={{ marginBottom: '24px' }}>
-        <p style={{ fontSize: '15px', fontWeight: 500, marginBottom: '12px' }}>已选择 {imageCount} 张图片</p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
-          {successFiles.slice(0, 6).map((item) => (
-            <div key={item.id} style={{ aspectRatio: '1', borderRadius: '12px', overflow: 'hidden' }}>
-              <img src={item.previewUrl} alt="预览" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            </div>
-          ))}
-        </div>
+        <p style={{ fontSize: '21px', fontWeight: 600, marginBottom: '8px' }}>为每张图片选择风格</p>
+        <p style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.5)' }}>
+          点击图片下方的风格标签，为每张图片单独选择 1-4 种风格
+        </p>
       </div>
 
-      {/* 风格选择 */}
-      <div style={{ flex: 1 }}>
-        <p style={{ fontSize: '17px', fontWeight: 500, marginBottom: '16px' }}>选择风格（可多选）</p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
-          {styles.map((style) => (
-            <div
-              key={style.id}
-              onClick={() => {
-                if (selectedStyles.includes(style.id)) {
-                  onStylesChange(selectedStyles.filter((s) => s !== style.id));
-                } else {
-                  onStylesChange([...selectedStyles, style.id]);
-                }
-              }}
-              style={{
-                padding: '16px',
-                borderRadius: '12px',
-                border: selectedStyles.includes(style.id) ? '2px solid #D4AF37' : '1px solid rgba(255, 255, 255, 0.1)',
-                background: selectedStyles.includes(style.id) ? 'rgba(212, 175, 55, 0.1)' : 'rgba(255, 255, 255, 0.03)',
-                cursor: 'pointer',
-              }}
-            >
-              <p style={{ fontSize: '15px', fontWeight: 500, marginBottom: '4px' }}>{style.name}</p>
-              <p style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.5)' }}>{style.desc}</p>
+      {/* 每张图片的风格选择 */}
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        {successFiles.map((file, fileIndex) => (
+          <div
+            key={file.id}
+            style={{
+              padding: '16px',
+              borderRadius: '16px',
+              background: 'rgba(255, 255, 255, 0.03)',
+              border: '1px solid rgba(255, 255, 255, 0.08)',
+            }}
+          >
+            {/* 图片预览 */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
+              <div style={{ width: '80px', height: '80px', borderRadius: '12px', overflow: 'hidden', flexShrink: 0 }}>
+                <img src={file.previewUrl} alt="预览" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
+              <div>
+                <p style={{ fontSize: '15px', fontWeight: 500, marginBottom: '4px' }}>图片 {fileIndex + 1}</p>
+                <p style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.5)' }}>
+                  已选择 {file.selectedStyles.length} 种风格
+                </p>
+              </div>
             </div>
-          ))}
-        </div>
+
+            {/* 风格选择按钮 */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              {styles.map((style) => {
+                const isSelected = file.selectedStyles.includes(style.id);
+                return (
+                  <button
+                    key={style.id}
+                    onClick={() => onToggleStyle(file.id, style.id)}
+                    style={{
+                      padding: '8px 16px',
+                      borderRadius: '20px',
+                      border: isSelected ? '2px solid #D4AF37' : '1px solid rgba(255, 255, 255, 0.15)',
+                      background: isSelected ? 'rgba(212, 175, 55, 0.15)' : 'rgba(255, 255, 255, 0.03)',
+                      color: isSelected ? '#D4AF37' : 'rgba(255, 255, 255, 0.7)',
+                      fontSize: '14px',
+                      fontWeight: 500,
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                    }}
+                  >
+                    {style.name}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* 费用信息 */}
-      <div style={{ padding: '12px 16px', borderRadius: '12px', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.06)', marginBottom: '12px' }}>
+      <div style={{ padding: '12px 16px', borderRadius: '12px', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.06)', marginBottom: '12px', marginTop: '20px' }}>
         <p style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.5)', marginBottom: '4px' }}>批量生成</p>
         <p style={{ fontSize: '15px', fontWeight: 500, color: '#D4AF37' }}>
-          {imageCount} 张图片 × {styleCount} 种风格 = {totalCost} 个额度
+          共 {totalCost} 个任务 = 消耗 {totalCost} 个额度
         </p>
       </div>
 
@@ -507,48 +561,246 @@ function StyleStep({ batchFiles, selectedStyles, onStylesChange, onStartProcessi
         </button>
         <button
           onClick={onStartProcessing}
-          disabled={selectedStyles.length === 0}
+          disabled={!allFilesHaveStyles || credits.total < totalCost}
           style={{
             flex: 2,
             padding: '16px',
             borderRadius: '12px',
             border: 'none',
-            background: selectedStyles.length > 0 ? '#D4AF37' : 'rgba(255, 255, 255, 0.1)',
-            color: selectedStyles.length > 0 ? '#000' : 'rgba(255, 255, 255, 0.3)',
+            background: allFilesHaveStyles && credits.total >= totalCost ? '#D4AF37' : 'rgba(255, 255, 255, 0.1)',
+            color: allFilesHaveStyles && credits.total >= totalCost ? '#000' : 'rgba(255, 255, 255, 0.3)',
             fontSize: '16px',
             fontWeight: 600,
-            cursor: selectedStyles.length > 0 ? 'pointer' : 'not-allowed',
+            cursor: allFilesHaveStyles && credits.total >= totalCost ? 'pointer' : 'not-allowed',
           }}
         >
-          开始升级
+          {allFilesHaveStyles ? '开始升级' : '请为每张图片选择风格'}
         </button>
       </div>
     </div>
   );
 }
 
-function ProcessingStep({ progress, currentStage }: { progress: number; currentStage: string }) {
-  return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 24px' }}>
-      <div style={{ width: '80px', height: '80px', marginBottom: '32px', borderRadius: '50%', border: '3px solid rgba(255,255,255,0.1)', borderTopColor: '#D4AF37', animation: 'spin 1s linear infinite' }} />
-      <p style={{ fontSize: '21px', fontWeight: 500, marginBottom: '8px' }}>{currentStage}</p>
-      <p style={{ fontSize: '48px', fontWeight: 600, color: '#D4AF37' }}>{progress}%</p>
-    </div>
-  );
-}
-
 function ResultStep({ results, onReset }: { results: BatchResultItem[]; onReset: () => void }) {
+  const [selectedResult, setSelectedResult] = useState<BatchResultItem | null>(null);
+  const [downloading, setDownloading] = useState(false);
+  const [downloadingAll, setDownloadingAll] = useState(false);
+
+  const styleNames: Record<StyleType, string> = {
+    magazine: '杂志大片',
+    soft: '温柔日系',
+    urban: '都市职场',
+    vintage: '复古胶片',
+  };
+
+  // 下载单张图片
+  const downloadImage = async (url: string, filename: string) => {
+    try {
+      setDownloading(true);
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error('下载失败:', error);
+      alert('下载失败，请重试');
+    } finally {
+      setDownloading(false);
+    }
+  };
+
+  // 批量下载所有图片（ZIP 打包）
+  const downloadAllAsZip = async () => {
+    try {
+      setDownloadingAll(true);
+
+      const response = await fetch('/api/download/zip', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          urls: results.map(r => r.enhancedUrl),
+          filenames: results.map((r, i) => `vidluxe_${styleNames[r.style]}_${i + 1}.jpg`),
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create ZIP');
+      }
+
+      const blob = await response.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = 'vidluxe_images.zip';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error('批量下载失败:', error);
+      alert('下载失败，请重试');
+    } finally {
+      setDownloadingAll(false);
+    }
+  };
+
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', padding: '80px 24px 40px', maxWidth: '480px', margin: '0 auto' }}>
-      <p style={{ fontSize: '24px', fontWeight: 600, marginBottom: '24px', textAlign: 'center' }}>生成完成！</p>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', padding: '80px 24px 40px', maxWidth: '680px', margin: '0 auto' }}>
+      <p style={{ fontSize: '24px', fontWeight: 600, marginBottom: '8px', textAlign: 'center' }}>生成完成！</p>
+      <p style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.5)', marginBottom: '24px', textAlign: 'center' }}>
+        共生成 {results.length} 张图片，点击图片查看大图
+      </p>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginBottom: '24px' }}>
         {results.map((result, index) => (
-          <div key={index} style={{ aspectRatio: '1', borderRadius: '12px', overflow: 'hidden' }}>
+          <div
+            key={result.id}
+            onClick={() => setSelectedResult(result)}
+            style={{
+              position: 'relative',
+              aspectRatio: '1',
+              borderRadius: '12px',
+              overflow: 'hidden',
+              cursor: 'pointer',
+            }}
+          >
             <img src={result.enhancedUrl} alt="结果" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            <div style={{
+              position: 'absolute',
+              bottom: '8px',
+              left: '8px',
+              padding: '4px 8px',
+              borderRadius: '6px',
+              background: 'rgba(0, 0, 0, 0.6)',
+              fontSize: '12px',
+              color: 'white',
+            }}>
+              {styleNames[result.style]}
+            </div>
+            {/* 下载按钮 */}
+            <button
+              onClick={async (e) => {
+                e.stopPropagation();
+                const filename = `vidluxe_${styleNames[result.style]}_${index + 1}.jpg`;
+                await downloadImage(result.enhancedUrl, filename);
+              }}
+              style={{
+                position: 'absolute',
+                top: '8px',
+                right: '8px',
+                width: '32px',
+                height: '32px',
+                borderRadius: '8px',
+                background: 'rgba(0, 0, 0, 0.6)',
+                border: 'none',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
+              </svg>
+            </button>
           </div>
         ))}
       </div>
+
+      {/* 选中图片详情 */}
+      {selectedResult && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.9)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 100,
+            padding: '24px',
+          }}
+          onClick={() => setSelectedResult(null)}
+        >
+          <div style={{ maxWidth: '90vw', maxHeight: '90vh' }}>
+            <img
+              src={selectedResult.enhancedUrl}
+              alt="结果大图"
+              style={{ maxWidth: '100%', maxHeight: '80vh', borderRadius: '12px' }}
+              onClick={(e) => e.stopPropagation()}
+            />
+            <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'center', gap: '12px' }}>
+              <button
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  const index = results.findIndex(r => r.id === selectedResult.id);
+                  const filename = `vidluxe_${styleNames[selectedResult.style]}_${index + 1}.jpg`;
+                  await downloadImage(selectedResult.enhancedUrl, filename);
+                }}
+                disabled={downloading}
+                style={{
+                  padding: '12px 24px',
+                  borderRadius: '8px',
+                  background: '#D4AF37',
+                  color: '#000',
+                  border: 'none',
+                  fontWeight: 600,
+                  cursor: downloading ? 'wait' : 'pointer',
+                  opacity: downloading ? 0.7 : 1,
+                }}
+              >
+                {downloading ? '下载中...' : '下载图片'}
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedResult(null);
+                }}
+                style={{
+                  padding: '12px 24px',
+                  borderRadius: '8px',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  color: 'white',
+                  border: 'none',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                }}
+              >
+                关闭
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 批量下载按钮 */}
+      {results.length > 1 && (
+        <button
+          onClick={downloadAllAsZip}
+          disabled={downloadingAll}
+          style={{
+            width: '100%',
+            padding: '14px',
+            borderRadius: '12px',
+            border: '1px solid rgba(255, 255, 255, 0.2)',
+            background: 'transparent',
+            color: 'white',
+            fontSize: '15px',
+            fontWeight: 500,
+            cursor: downloadingAll ? 'wait' : 'pointer',
+            marginBottom: '12px',
+            opacity: downloadingAll ? 0.7 : 1,
+          }}
+        >
+          {downloadingAll ? '打包中...' : `下载全部 ZIP (${results.length} 张)`}
+        </button>
+      )}
 
       <button onClick={onReset} style={{ width: '100%', padding: '16px', borderRadius: '12px', border: 'none', background: '#D4AF37', color: '#000', fontSize: '16px', fontWeight: 600, cursor: 'pointer' }}>
         继续使用
