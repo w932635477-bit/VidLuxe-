@@ -21,6 +21,7 @@
     "@vidluxe/core": "workspace:*",
     "@vidluxe/types": "workspace:*",
     "immer": "^11.1.4",
+    "jszip": "^3.10.1",
     "next": "^15.3.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
