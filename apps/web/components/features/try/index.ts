@@ -20,3 +20,4 @@ export { BatchPreviewGrid } from './BatchPreviewGrid';
 export { BatchConfirmModal } from './BatchConfirmModal';
 export { BatchResultGrid } from './BatchResultGrid';
 export { KeyframeMultiSelector } from './KeyframeMultiSelector';
+export { ModeTabs, type FlowMode } from './ModeTabs';
