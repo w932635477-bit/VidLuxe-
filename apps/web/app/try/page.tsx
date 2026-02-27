@@ -33,7 +33,7 @@ export default function TryPage() {
     <div style={{ minHeight: '100vh', background: '#000000' }}>
       <MinimalNav />
       <ModeTabs activeMode={activeMode} onModeChange={setActiveMode} />
-      <div style={{ paddingTop: '110px' }}>
+      <div style={{ paddingTop: '120px' }}>
         {renderFlow()}
       </div>
     </div>

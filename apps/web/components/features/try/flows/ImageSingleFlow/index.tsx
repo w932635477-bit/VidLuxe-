@@ -233,7 +233,7 @@ export function ImageSingleFlow() {
 
       {/* 上传步骤 */}
       {step === 'upload' && (
-        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '130px 24px 80px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
           <div style={{ textAlign: 'center', marginBottom: '48px' }}>
             <h1 style={{ fontSize: '48px', fontWeight: 600, letterSpacing: '-0.03em', marginBottom: '16px' }}>让普通素材变爆款</h1>
             <p style={{ fontSize: '21px', color: 'rgba(255, 255, 255, 0.5)', maxWidth: '400px' }}>光线差、背景乱？一键提升高级感</p>
@@ -273,7 +273,7 @@ export function ImageSingleFlow() {
 
       {/* AI 识别步骤 */}
       {step === 'recognition' && (
-        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '130px 24px 80px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>
           <div style={{ width: '80px', height: '80px', marginBottom: '32px', borderRadius: '50%', border: '3px solid rgba(255,255,255,0.1)', borderTopColor: '#D4AF37', animation: 'spin 1s linear infinite' }} />
           <p style={{ fontSize: '21px', fontWeight: 500, marginBottom: '8px' }}>AI 正在分析图片...</p>
           <p style={{ fontSize: '15px', color: 'rgba(255, 255, 255, 0.5)' }}>识别品类和最佳风格</p>
@@ -282,7 +282,7 @@ export function ImageSingleFlow() {
 
       {/* 风格选择步骤 */}
       {step === 'style' && previewUrl && (
-        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', padding: '130px 24px 40px', maxWidth: '480px', margin: '0 auto' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', padding: '24px', maxWidth: '480px', margin: '0 auto' }}>
           {/* 步骤指示器 */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '32px' }}>
             {['upload', 'style', 'processing', 'result'].map((s, i) => (
@@ -339,7 +339,7 @@ export function ImageSingleFlow() {
 
       {/* 结果步骤 */}
       {step === 'result' && resultData && (
-        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', padding: '130px 24px 40px', maxWidth: '480px', margin: '0 auto' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', padding: '24px', maxWidth: '480px', margin: '0 auto' }}>
           <p style={{ fontSize: '24px', fontWeight: 600, marginBottom: '24px', textAlign: 'center' }}>升级完成！</p>
 
           <div style={{ marginBottom: '24px', borderRadius: '16px', overflow: 'hidden', position: 'relative' }}>
