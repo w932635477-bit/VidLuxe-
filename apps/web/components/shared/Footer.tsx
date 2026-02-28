@@ -64,9 +64,21 @@ export function Footer() {
             </SocialLink>
           </div>
 
-          <p className="text-sm text-content-tertiary">
-            © 2026 VidLuxe. All rights reserved.
-          </p>
+          <div className="flex flex-col items-center md:items-end gap-1">
+            <p className="text-sm text-content-tertiary">
+              © 2026 VidLuxe. All rights reserved.
+            </p>
+            <p className="text-xs text-content-tertiary/60">
+              <a
+                href="https://beian.miit.gov.cn/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-content-tertiary transition-colors"
+              >
+                苏ICP备2026XXXX号
+              </a>
+            </p>
+          </div>
         </div>
       </div>
     </footer>
