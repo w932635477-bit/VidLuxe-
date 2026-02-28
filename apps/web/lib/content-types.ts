@@ -43,7 +43,7 @@ export const CONTENT_TYPES: Record<ContentType, ContentTypeConfig> = {
     suitableStyles: ['magazine', 'soft', 'urban', 'vintage'],
     comparisonImage: {
       before: '/comparisons/fashion-1-original.jpg',
-      after: '/comparisons/fashion-1-enhanced.jpg',
+      after: '/comparisons/outfit-magazine.jpg',
     },
   },
   beauty: {
@@ -56,7 +56,7 @@ export const CONTENT_TYPES: Record<ContentType, ContentTypeConfig> = {
     suitableStyles: ['magazine', 'soft'],
     comparisonImage: {
       before: '/hero/hero-beauty-before.jpg',
-      after: '/hero/hero-beauty-after.jpg',
+      after: '/comparisons/beauty-magazine.jpg',
     },
   },
   cafe: {
@@ -69,7 +69,7 @@ export const CONTENT_TYPES: Record<ContentType, ContentTypeConfig> = {
     suitableStyles: ['soft', 'urban', 'vintage'],
     comparisonImage: {
       before: '/comparisons/cafe-1-original.jpg',
-      after: '/comparisons/cafe-1-enhanced.jpg',
+      after: '/comparisons/cafe-soft.jpg',
     },
   },
   travel: {
@@ -82,7 +82,7 @@ export const CONTENT_TYPES: Record<ContentType, ContentTypeConfig> = {
     suitableStyles: ['soft', 'vintage'],
     comparisonImage: {
       before: '/comparisons/lifestyle-1-original.jpg',
-      after: '/comparisons/lifestyle-1-enhanced.jpg',
+      after: '/comparisons/travel-soft.jpg',
     },
   },
   food: {
@@ -95,7 +95,7 @@ export const CONTENT_TYPES: Record<ContentType, ContentTypeConfig> = {
     suitableStyles: ['soft', 'magazine'],
     comparisonImage: {
       before: '/comparisons/food-1-original.jpg',
-      after: '/comparisons/food-1-enhanced.jpg',
+      after: '/comparisons/food-soft.jpg',
     },
   },
 };

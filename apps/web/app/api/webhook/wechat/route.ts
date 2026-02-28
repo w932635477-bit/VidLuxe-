@@ -1,10 +1,12 @@
 /**
  * 微信支付回调 API
  * POST /api/webhook/wechat
+ *
+ * 处理微信支付结果通知
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { parseNotifyXml, generateNotifyResponse, verifyNotify } from '@/lib/wechat-pay';
-import { purchasePackage } from '@/lib/credits';
+import { markOrderAsPaid } from '@/lib/payment/service';
 
 export async function POST(request: NextRequest) {
   try {
@@ -43,31 +45,12 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // 从订单号解析套餐信息（格式: VL{timestamp}{random}）
-    // 实际生产环境应该从数据库查询订单
-    // TODO: 迁移到 Supabase 后从数据库查询
-
-    // 模拟处理：根据订单金额确定套餐
-    const totalFee = parseInt(params.total_fee || '0', 10);
-    let packageId = 'small';
-
-    if (totalFee === 2900) packageId = 'small';
-    else if (totalFee === 7900) packageId = 'medium';
-    else if (totalFee === 19900) packageId = 'large';
-    else if (totalFee === 49900) packageId = 'xlarge';
-
-    // 获取用户 ID（实际应从订单表获取）
-    // 这里使用一个临时的方案：从回调的附加数据中获取
-    // 实际生产环境必须在创建订单时保存用户 ID
-    const attach = params.attach;
-    const anonymousId = attach || 'temp_user';
-
-    // 使用现有的 credits 系统处理购买
-    const result = purchasePackage(anonymousId, packageId);
+    // 标记订单为已支付并发放积分
+    const result = await markOrderAsPaid(outTradeNo, transactionId || null);
 
     if (!result.success) {
-      console.error('Failed to add credits:', result.error);
-      return new NextResponse(generateNotifyResponse(false, result.error), {
+      console.error('Failed to mark order as paid:', result.error);
+      return new NextResponse(generateNotifyResponse(false, result.error || '处理失败'), {
         headers: { 'Content-Type': 'application/xml' }
       });
     }
@@ -76,8 +59,6 @@ export async function POST(request: NextRequest) {
     console.log('Payment success:', {
       outTradeNo,
       transactionId,
-      packageId,
-      anonymousId,
     });
 
     // 返回成功响应

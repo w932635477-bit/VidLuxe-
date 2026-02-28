@@ -1,28 +1,10 @@
 {
-  "anon_1771810609071_ymmojb7b": {
-    "anonymousId": "anon_1771810609071_ymmojb7b",
-    "usedCount": 6,
-    "totalCount": 10,
-    "resetAt": 1772103779833,
-    "createdAt": 1772017379833,
-    "version": 6,
-    "updatedAt": 1772018846792
-  },
-  "anon_1772020810419_xg54woo9": {
-    "anonymousId": "anon_1772020810419_xg54woo9",
-    "usedCount": 0,
-    "totalCount": 10,
-    "resetAt": 1772107225995,
-    "createdAt": 1772020825995,
-    "version": 6,
-    "updatedAt": 1772020838343
-  },
   "3e48ef9d22e096da": {
     "anonymousId": "3e48ef9d22e096da",
     "usedCount": 0,
     "totalCount": 10,
-    "resetAt": 1772154689734,
-    "createdAt": 1772068289734,
+    "resetAt": 1772285386263,
+    "createdAt": 1772198986263,
     "version": 0
   }
 }

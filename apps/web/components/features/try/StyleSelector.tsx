@@ -42,13 +42,12 @@ export const STYLE_PRESETS: StylePreset[] = [
     gradientTo: '#8B6914',
     thumbnail: {
       before: '/comparisons/fashion-1-original.jpg',
-      after: '/comparisons/fashion-1-enhanced.jpg',
+      after: '/comparisons/outfit-magazine.jpg',
     },
     comparisonImagesByType: {
-      outfit: { before: '/comparisons/fashion-1-original.jpg', after: '/comparisons/fashion-1-enhanced.jpg' },
-      beauty: { before: '/hero/hero-beauty-before.jpg', after: '/hero/hero-beauty-after.jpg' },
-      cafe: { before: '/comparisons/cafe-1-original.jpg', after: '/comparisons/cafe-1-enhanced.jpg' },
-      food: { before: '/comparisons/food-1-original.jpg', after: '/comparisons/food-1-enhanced.jpg' },
+      outfit: { before: '/comparisons/fashion-1-original.jpg', after: '/comparisons/outfit-magazine.jpg' },
+      beauty: { before: '/hero/hero-beauty-before.jpg', after: '/comparisons/beauty-magazine.jpg' },
+      food: { before: '/comparisons/food-1-original.jpg', after: '/comparisons/food-magazine.jpg' },
     },
   },
   {
@@ -62,15 +61,15 @@ export const STYLE_PRESETS: StylePreset[] = [
     gradientFrom: '#D4C5B9',
     gradientTo: '#9A8A7A',
     thumbnail: {
-      before: '/comparisons/lifestyle-1-original.jpg',
-      after: '/comparisons/lifestyle-1-enhanced.jpg',
+      before: '/comparisons/fashion-1-original.jpg',
+      after: '/comparisons/outfit-soft.jpg',
     },
     comparisonImagesByType: {
-      outfit: { before: '/comparisons/portrait-1-original.jpg', after: '/comparisons/portrait-1-enhanced.jpg' },
-      beauty: { before: '/hero/hero-beauty-before.jpg', after: '/hero/hero-beauty-after.jpg' },
-      cafe: { before: '/comparisons/cafe-1-original.jpg', after: '/comparisons/cafe-1-enhanced.jpg' },
-      travel: { before: '/comparisons/lifestyle-1-original.jpg', after: '/comparisons/lifestyle-1-enhanced.jpg' },
-      food: { before: '/comparisons/food-1-original.jpg', after: '/comparisons/food-1-enhanced.jpg' },
+      outfit: { before: '/comparisons/fashion-1-original.jpg', after: '/comparisons/outfit-soft.jpg' },
+      beauty: { before: '/hero/hero-beauty-before.jpg', after: '/comparisons/beauty-soft.jpg' },
+      cafe: { before: '/comparisons/cafe-1-original.jpg', after: '/comparisons/cafe-soft.jpg' },
+      travel: { before: '/comparisons/lifestyle-1-original.jpg', after: '/comparisons/travel-soft.jpg' },
+      food: { before: '/comparisons/food-1-original.jpg', after: '/comparisons/food-soft.jpg' },
     },
   },
   {
@@ -84,12 +83,12 @@ export const STYLE_PRESETS: StylePreset[] = [
     gradientFrom: '#6B8AAD',
     gradientTo: '#3D5A80',
     thumbnail: {
-      before: '/comparisons/cafe-1-original.jpg',
-      after: '/comparisons/cafe-1-enhanced.jpg',
+      before: '/comparisons/fashion-1-original.jpg',
+      after: '/comparisons/outfit-urban.jpg',
     },
     comparisonImagesByType: {
-      outfit: { before: '/comparisons/fashion-1-original.jpg', after: '/comparisons/fashion-1-enhanced.jpg' },
-      cafe: { before: '/comparisons/cafe-1-original.jpg', after: '/comparisons/cafe-1-enhanced.jpg' },
+      outfit: { before: '/comparisons/fashion-1-original.jpg', after: '/comparisons/outfit-urban.jpg' },
+      cafe: { before: '/comparisons/cafe-1-original.jpg', after: '/comparisons/cafe-urban.jpg' },
     },
   },
   {
@@ -103,13 +102,13 @@ export const STYLE_PRESETS: StylePreset[] = [
     gradientFrom: '#D4B896',
     gradientTo: '#8B7355',
     thumbnail: {
-      before: '/comparisons/portrait-1-original.jpg',
-      after: '/comparisons/portrait-1-enhanced.jpg',
+      before: '/comparisons/fashion-1-original.jpg',
+      after: '/comparisons/outfit-vintage.jpg',
     },
     comparisonImagesByType: {
-      outfit: { before: '/comparisons/fashion-1-original.jpg', after: '/comparisons/fashion-1-enhanced.jpg' },
-      travel: { before: '/comparisons/lifestyle-1-original.jpg', after: '/comparisons/lifestyle-1-enhanced.jpg' },
-      cafe: { before: '/comparisons/cafe-1-original.jpg', after: '/comparisons/cafe-1-enhanced.jpg' },
+      outfit: { before: '/comparisons/fashion-1-original.jpg', after: '/comparisons/outfit-vintage.jpg' },
+      cafe: { before: '/comparisons/cafe-1-original.jpg', after: '/comparisons/cafe-vintage.jpg' },
+      travel: { before: '/comparisons/lifestyle-1-original.jpg', after: '/comparisons/travel-vintage.jpg' },
     },
   },
 ];

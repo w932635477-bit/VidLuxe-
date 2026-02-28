@@ -134,6 +134,96 @@ export async function createJSAPIOrder(params: {
 }
 
 /**
+ * 创建 Native 支付订单（扫码支付）
+ * 返回 code_url 用于生成二维码
+ */
+export async function createNativeOrder(params: {
+  outTradeNo: string;
+  totalFee: number; // 分
+  body: string;
+  productId?: string;
+}): Promise<{ outTradeNo: string; codeUrl?: string; prepayId?: string; error?: string }> {
+  const { appId, mchId, apiKey, notifyUrl } = wechatPayConfig;
+
+  // 检查配置
+  if (!isWechatPayConfigured()) {
+    return {
+      outTradeNo: params.outTradeNo,
+      error: '微信支付未配置，请联系管理员',
+    };
+  }
+
+  // 构建订单参数
+  const orderParams: Record<string, string> = {
+    appid: appId,
+    mch_id: mchId,
+    nonce_str: generateNonceStr(),
+    body: params.body,
+    out_trade_no: params.outTradeNo,
+    total_fee: params.totalFee.toString(),
+    spbill_create_ip: '127.0.0.1',
+    notify_url: notifyUrl,
+    trade_type: 'NATIVE',
+    product_id: params.productId || params.outTradeNo,
+  };
+
+  // 生成签名
+  orderParams.sign = generateSign(orderParams, apiKey);
+
+  // 实际生产环境：调用微信支付统一下单 API
+  // POST https://api.mch.weixin.qq.com/pay/unifiedorder
+  // 使用 wechatpay-node-v3 或类似 SDK
+
+  // 模拟返回（开发测试用）
+  // 生产环境需要从微信 API 获取真实的 code_url
+  const mockCodeUrl = `weixin://wxpay/bizpayurl?pr=${params.outTradeNo}`;
+
+  return {
+    outTradeNo: params.outTradeNo,
+    codeUrl: mockCodeUrl,
+    prepayId: `mock_prepay_id_${Date.now()}`,
+  };
+}
+
+/**
+ * 查询订单状态
+ */
+export async function queryOrder(outTradeNo: string): Promise<{
+  tradeState: 'SUCCESS' | 'REFUND' | 'NOTPAY' | 'CLOSED' | 'REVOKED' | 'USERPAYING' | 'PAYERROR';
+  transactionId?: string;
+  totalFee?: number;
+  timeEnd?: string;
+  error?: string;
+}> {
+  const { appId, mchId, apiKey } = wechatPayConfig;
+
+  if (!isWechatPayConfigured()) {
+    return {
+      tradeState: 'PAYERROR',
+      error: '微信支付未配置',
+    };
+  }
+
+  // 构建查询参数
+  const queryParams: Record<string, string> = {
+    appid: appId,
+    mch_id: mchId,
+    out_trade_no: outTradeNo,
+    nonce_str: generateNonceStr(),
+  };
+
+  queryParams.sign = generateSign(queryParams, apiKey);
+
+  // 实际生产环境：调用微信支付订单查询 API
+  // POST https://api.mch.weixin.qq.com/pay/orderquery
+
+  // 模拟返回（开发测试用）
+  return {
+    tradeState: 'NOTPAY',
+  };
+}
+
+/**
  * 验证支付回调签名
  */
 export function verifyNotify(params: Record<string, string>, sign: string): boolean {

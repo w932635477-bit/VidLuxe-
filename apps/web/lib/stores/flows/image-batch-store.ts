@@ -1,18 +1,19 @@
 /**
  * 多图批量流程 Store
  *
- * 管理多图上传、风格选择、批量处理、结果
+ * 管理多图上传、每图风格选择、批量处理、结果
+ * 支持为每张图片单独选择风格
  */
 
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { devtools } from 'zustand/middleware';
-import type { CategoryType, SeedingType } from '@/lib/types/seeding';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { useCreditsStore } from '@/lib/stores/credits-store';
 import type {
-  ImageBatchStep,
-  StyleType,
   BatchFileItem,
   BatchResultItem,
+  StyleType,
 } from '@/lib/types/flow';
 
 // ============================================
@@ -21,23 +22,16 @@ import type {
 
 interface ImageBatchState {
   // 步骤
-  step: ImageBatchStep;
+  step: 'upload' | 'style' | 'progress' | 'result';
 
   // 批量文件
   batchFiles: BatchFileItem[];
 
-  // 处理状态
+  // 通用设置
   isLoading: boolean;
   progress: number;
   currentStage: string;
   error: string | null;
-
-  // 品类（批量模式简化）
-  selectedCategory: CategoryType | null;
-  selectedSeedingType: SeedingType | null;
-
-  // 风格（多选）
-  selectedStyles: StyleType[];
 
   // 批量结果
   batchResults: BatchResultItem[];
@@ -46,11 +40,16 @@ interface ImageBatchState {
   showConfirmModal: boolean;
   showCreditModal: boolean;
   creditRequired: number;
+
+  // 当前处理的文件索引（用于顺序处理）
+  currentProcessingIndex: number;
+  totalTasks: number;
+  completedTasks: number;
 }
 
 interface ImageBatchActions {
   // 步骤操作
-  setStep: (step: ImageBatchStep) => void;
+  setStep: (step: ImageBatchState['step']) => void;
   nextStep: () => void;
   prevStep: () => void;
 
@@ -61,38 +60,32 @@ interface ImageBatchActions {
   removeBatchFile: (id: string) => void;
   clearBatchFiles: () => void;
 
+  // 每图风格操作
+  setFileStyles: (id: string, styles: StyleType[]) => void;
+  toggleFileStyle: (id: string, style: StyleType) => void;
+
   // 处理状态
   setIsLoading: (loading: boolean) => void;
   setProgress: (progress: number) => void;
   setCurrentStage: (stage: string) => void;
   setError: (error: string | null) => void;
 
-  // 品类操作
-  setSelectedCategory: (category: CategoryType | null) => void;
-  setSelectedSeedingType: (type: SeedingType | null) => void;
-
-  // 风格操作
-  setSelectedStyles: (styles: StyleType[]) => void;
-  toggleStyle: (style: StyleType) => void;
-
   // 结果操作
-  setBatchResults: (results: BatchResultItem[]) => void;
   addBatchResult: (result: BatchResultItem) => void;
+  clearResults: () => void;
 
   // 弹窗操作
   setShowConfirmModal: (show: boolean) => void;
   setShowCreditModal: (show: boolean) => void;
   setCreditRequired: (required: number) => void;
 
+  // 处理进度
+  setProcessingProgress: (completed: number, total: number) => void;
+
   // 重置
   reset: () => void;
+  resetToUpload: () => void;
 }
-
-// ============================================
-// 步骤顺序
-// ============================================
-
-const STEP_ORDER: ImageBatchStep[] = ['upload', 'style', 'processing', 'result'];
 
 // ============================================
 // 初始状态
@@ -105,13 +98,13 @@ const initialState: ImageBatchState = {
   progress: 0,
   currentStage: '',
   error: null,
-  selectedCategory: 'fashion',
-  selectedSeedingType: 'product',
-  selectedStyles: ['magazine'],
   batchResults: [],
   showConfirmModal: false,
   showCreditModal: false,
   creditRequired: 0,
+  currentProcessingIndex: 0,
+  totalTasks: 0,
+  completedTasks: 0,
 };
 
 // ============================================
@@ -127,16 +120,18 @@ export const useImageBatchStore = create<ImageBatchState & ImageBatchActions>()(
       setStep: (step) => set({ step }, false, 'setStep'),
       nextStep: () => {
         const currentStep = get().step;
-        const currentIndex = STEP_ORDER.indexOf(currentStep);
-        if (currentIndex < STEP_ORDER.length - 1) {
-          set({ step: STEP_ORDER[currentIndex + 1] }, false, 'nextStep');
+        const steps: ImageBatchState['step'][] = ['upload', 'style', 'progress', 'result'];
+        const currentIndex = steps.indexOf(currentStep);
+        if (currentIndex < steps.length - 1) {
+          set({ step: steps[currentIndex + 1] }, false, 'nextStep');
         }
       },
       prevStep: () => {
         const currentStep = get().step;
-        const currentIndex = STEP_ORDER.indexOf(currentStep);
+        const steps: ImageBatchState['step'][] = ['upload', 'style', 'progress', 'result'];
+        const currentIndex = steps.indexOf(currentStep);
         if (currentIndex > 0) {
-          set({ step: STEP_ORDER[currentIndex - 1] }, false, 'prevStep');
+          set({ step: steps[currentIndex - 1] }, false, 'prevStep');
         }
       },
 
@@ -165,37 +160,48 @@ export const useImageBatchStore = create<ImageBatchState & ImageBatchActions>()(
         state.batchFiles = [];
       }, false, 'clearBatchFiles'),
 
+      // 每图风格操作
+      setFileStyles: (id, styles) => set((state) => {
+        const file = state.batchFiles.find((f) => f.id === id);
+        if (file) {
+          file.selectedStyles = styles;
+        }
+      }, false, 'setFileStyles'),
+      toggleFileStyle: (id, style) => set((state) => {
+        const file = state.batchFiles.find((f) => f.id === id);
+        if (file) {
+          const index = file.selectedStyles.indexOf(style);
+          if (index === -1) {
+            file.selectedStyles.push(style);
+          } else {
+            file.selectedStyles.splice(index, 1);
+          }
+        }
+      }, false, 'toggleFileStyle'),
+
       // 处理状态
       setIsLoading: (isLoading) => set({ isLoading }, false, 'setIsLoading'),
       setProgress: (progress) => set({ progress }, false, 'setProgress'),
       setCurrentStage: (currentStage) => set({ currentStage }, false, 'setCurrentStage'),
       setError: (error) => set({ error }, false, 'setError'),
 
-      // 品类操作
-      setSelectedCategory: (selectedCategory) => set({ selectedCategory }, false, 'setSelectedCategory'),
-      setSelectedSeedingType: (selectedSeedingType) => set({ selectedSeedingType }, false, 'setSelectedSeedingType'),
-
-      // 风格操作
-      setSelectedStyles: (selectedStyles) => set({ selectedStyles }, false, 'setSelectedStyles'),
-      toggleStyle: (style) => set((state) => {
-        const index = state.selectedStyles.indexOf(style);
-        if (index === -1) {
-          state.selectedStyles.push(style);
-        } else {
-          state.selectedStyles.splice(index, 1);
-        }
-      }, false, 'toggleStyle'),
-
       // 结果操作
-      setBatchResults: (batchResults) => set({ batchResults }, false, 'setBatchResults'),
       addBatchResult: (result) => set((state) => {
         state.batchResults.push(result);
       }, false, 'addBatchResult'),
+      clearResults: () => set({ batchResults: [] }, false, 'clearResults'),
 
       // 弹窗操作
       setShowConfirmModal: (showConfirmModal) => set({ showConfirmModal }, false, 'setShowConfirmModal'),
       setShowCreditModal: (showCreditModal) => set({ showCreditModal }, false, 'setShowCreditModal'),
       setCreditRequired: (creditRequired) => set({ creditRequired }, false, 'setCreditRequired'),
+
+      // 处理进度
+      setProcessingProgress: (completed, total) => set({
+        completedTasks: completed,
+        totalTasks: total,
+        progress: Math.round((completed / total) * 100)
+      }, false, 'setProcessingProgress'),
 
       // 重置
       reset: () => {
@@ -205,18 +211,60 @@ export const useImageBatchStore = create<ImageBatchState & ImageBatchActions>()(
         });
         return set(initialState, false, 'reset');
       },
+
+      // 仅重置到上传步骤
+      resetToUpload: () => set((state) => {
+        state.step = 'upload';
+        state.batchResults = [];
+        state.progress = 0;
+        state.currentStage = '';
+        state.error = null;
+        state.showConfirmModal = false;
+        state.showCreditModal = false;
+        state.currentProcessingIndex = 0;
+        state.totalTasks = 0;
+        state.completedTasks = 0;
+      }, false, 'resetToUpload'),
     })),
     { name: 'image-batch-store' }
   )
 );
 
 // ============================================
-// Selectors
+// Selector hooks
 // ============================================
 
-export const selectStep = (state: ImageBatchState) => state.step;
-export const selectBatchFiles = (state: ImageBatchState) => state.batchFiles;
-export const selectSuccessfulFiles = (state: ImageBatchState) =>
-  state.batchFiles.filter((f) => f.status === 'success' && f.uploadedUrl);
-export const selectBatchResults = (state: ImageBatchState) => state.batchResults;
-export const selectSelectedStyles = (state: ImageBatchState) => state.selectedStyles;
+export const useBatchStep = () => useImageBatchStore((state) => state.step);
+export const useBatchFiles = () => useImageBatchStore((state) => state.batchFiles);
+export const useIsBatchLoading = () => useImageBatchStore((state) => state.isLoading);
+export const useBatchProgress = () => useImageBatchStore((state) => ({
+  progress: state.progress,
+  currentStage: state.currentStage,
+  completedTasks: state.completedTasks,
+  total: state.totalTasks,
+}));
+
+// 计算总任务数
+export const useTotalTasks = () => {
+  const batchFiles = useImageBatchStore((state) => state.batchFiles);
+  return batchFiles.reduce((total, file) => total + (file.selectedStyles.length > 0 ? file.selectedStyles.length : 1), 0);
+};
+
+// 计算成功上传的文件
+export const useSuccessfulFiles = () => {
+  const batchFiles = useImageBatchStore((state) => state.batchFiles);
+  return batchFiles.filter((f) => f.status === 'success' && f.uploadedUrl);
+};
+
+// 获取文件的选中风格
+export const useFileStyles = (fileId: string) => {
+  const batchFiles = useImageBatchStore((state) => state.batchFiles);
+  const file = batchFiles.find((f) => f.id === fileId);
+  return file?.selectedStyles || [];
+};
+
+// 检查是否所有文件都已选择风格
+export const useAllFilesHaveStyles = () => {
+  const batchFiles = useImageBatchStore((state) => state.batchFiles);
+  return batchFiles.every((f) => f.selectedStyles.length > 0);
+};

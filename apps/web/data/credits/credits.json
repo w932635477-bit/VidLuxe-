@@ -1317,5 +1317,235 @@
     },
     "createdAt": 1772068363735,
     "updatedAt": 1772068363735
+  },
+  "test123": {
+    "anonymousId": "test123",
+    "balance": 0,
+    "totalEarned": 0,
+    "totalSpent": 0,
+    "packages": [],
+    "inviteCredits": [],
+    "transactions": [],
+    "freeCredits": {
+      "monthlyLimit": 3,
+      "usedThisMonth": 0,
+      "resetAt": 1772294400000
+    },
+    "createdAt": 1772169330542,
+    "updatedAt": 1772169330542
+  },
+  "debug_test_user": {
+    "anonymousId": "debug_test_user",
+    "balance": 100,
+    "totalEarned": 100,
+    "totalSpent": 0,
+    "packages": [],
+    "inviteCredits": [],
+    "freeCredits": {
+      "monthlyLimit": 3,
+      "usedThisMonth": 0,
+      "resetAt": 1772294400000
+    },
+    "createdAt": 1772171539285,
+    "updatedAt": 1772171539285
+  },
+  "anon_1772181565199_fwrb6az5": {
+    "anonymousId": "anon_1772181565199_fwrb6az5",
+    "balance": 0,
+    "totalEarned": 0,
+    "totalSpent": 0,
+    "packages": [],
+    "inviteCredits": [],
+    "transactions": [],
+    "freeCredits": {
+      "monthlyLimit": 3,
+      "usedThisMonth": 0,
+      "resetAt": 1772294400000
+    },
+    "createdAt": 1772181565453,
+    "updatedAt": 1772181565453
+  },
+  "test": {
+    "anonymousId": "test",
+    "balance": 0,
+    "totalEarned": 0,
+    "totalSpent": 0,
+    "packages": [],
+    "inviteCredits": [],
+    "transactions": [],
+    "freeCredits": {
+      "monthlyLimit": 3,
+      "usedThisMonth": 0,
+      "resetAt": 1772294400000
+    },
+    "createdAt": 1772190055058,
+    "updatedAt": 1772190055058
+  },
+  "batch_gen_1772199024": {
+    "anonymousId": "batch_gen_1772199024",
+    "balance": 1,
+    "totalEarned": 1,
+    "totalSpent": 2,
+    "packages": [],
+    "inviteCredits": [],
+    "transactions": [
+      {
+        "id": "txn_1772199024542_jysnw9jq",
+        "amount": -1,
+        "type": "spend",
+        "description": "生成图片",
+        "createdAt": 1772199024542
+      },
+      {
+        "id": "txn_1772199056692_ii3yn6ip",
+        "amount": 1,
+        "type": "refund",
+        "description": "退回额度: 任务失败: Image generation failed",
+        "createdAt": 1772199056692
+      }
+    ],
+    "freeCredits": {
+      "monthlyLimit": 3,
+      "usedThisMonth": 1,
+      "resetAt": 1772294400000
+    },
+    "createdAt": 1772199024540,
+    "updatedAt": 1772199056692
+  },
+  "script_batch_generator": {
+    "anonymousId": "script_batch_generator",
+    "balance": 0,
+    "totalEarned": 11,
+    "totalSpent": 17,
+    "packages": [],
+    "inviteCredits": [],
+    "transactions": [
+      {
+        "id": "txn_1772199446029_3n508tvm",
+        "amount": -1,
+        "type": "spend",
+        "description": "生成图片",
+        "createdAt": 1772199446029
+      },
+      {
+        "id": "txn_1772199515902_ulkucqma",
+        "amount": -1,
+        "type": "spend",
+        "description": "生成图片",
+        "createdAt": 1772199515902
+      },
+      {
+        "id": "txn_1772199589465_jgj17re4",
+        "amount": -1,
+        "type": "spend",
+        "description": "生成图片",
+        "createdAt": 1772199589465
+      },
+      {
+        "id": "txn_1772200411008_mc971jaw",
+        "amount": -1,
+        "type": "spend",
+        "description": "生成图片",
+        "createdAt": 1772200411008
+      },
+      {
+        "id": "txn_1772200493043_nz5cvi5s",
+        "amount": -1,
+        "type": "spend",
+        "description": "生成图片",
+        "createdAt": 1772200493043
+      },
+      {
+        "id": "txn_1772200598870_1oogup95",
+        "amount": -1,
+        "type": "spend",
+        "description": "生成图片",
+        "createdAt": 1772200598870
+      },
+      {
+        "id": "txn_1772200682540_byorxulk",
+        "amount": -1,
+        "type": "spend",
+        "description": "生成图片",
+        "createdAt": 1772200682540
+      },
+      {
+        "id": "txn_1772200754142_hubyjg71",
+        "amount": -1,
+        "type": "spend",
+        "description": "生成图片",
+        "createdAt": 1772200754142
+      },
+      {
+        "id": "txn_1772200875110_qsios55j",
+        "amount": -1,
+        "type": "spend",
+        "description": "生成图片",
+        "createdAt": 1772200875110
+      },
+      {
+        "id": "txn_1772200950722_ufy777ay",
+        "amount": -1,
+        "type": "spend",
+        "description": "生成图片",
+        "createdAt": 1772200950722
+      },
+      {
+        "id": "txn_1772201071693_dwva4y85",
+        "amount": -1,
+        "type": "spend",
+        "description": "生成图片",
+        "createdAt": 1772201071693
+      },
+      {
+        "id": "txn_1772201138580_slgbie0n",
+        "amount": 1,
+        "type": "refund",
+        "description": "退回额度: 任务失败: Task timeout - please try again",
+        "createdAt": 1772201138580
+      },
+      {
+        "id": "txn_1772201141307_5nf0f5rt",
+        "amount": -1,
+        "type": "spend",
+        "description": "生成图片",
+        "createdAt": 1772201141307
+      },
+      {
+        "id": "txn_1772201262270_zydngbkx",
+        "amount": -1,
+        "type": "spend",
+        "description": "生成图片",
+        "createdAt": 1772201262270
+      },
+      {
+        "id": "txn_1772201760491_daxqzesm",
+        "amount": -1,
+        "type": "spend",
+        "description": "生成图片",
+        "createdAt": 1772201760491
+      },
+      {
+        "id": "txn_1772201884521_e5h79t9r",
+        "amount": -1,
+        "type": "spend",
+        "description": "生成图片",
+        "createdAt": 1772201884521
+      },
+      {
+        "id": "txn_1772201966180_xlncqsds",
+        "amount": -1,
+        "type": "spend",
+        "description": "生成图片",
+        "createdAt": 1772201966180
+      }
+    ],
+    "freeCredits": {
+      "monthlyLimit": 20,
+      "usedThisMonth": 2,
+      "resetAt": 1772294400000
+    },
+    "createdAt": 1772199446028,
+    "updatedAt": 1772201966181
   }
 }
