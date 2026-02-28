@@ -62,8 +62,8 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const file = formData.get('file');
 
-    // 验证文件存在
-    if (!file || !(file instanceof File)) {
+    // 验证文件存在（兼容 Node.js 环境，避免使用 instanceof File）
+    if (!file || typeof file !== 'object' || !('arrayBuffer' in file)) {
       return NextResponse.json(
         { success: false, error: 'No file provided' },
         { status: 400 }

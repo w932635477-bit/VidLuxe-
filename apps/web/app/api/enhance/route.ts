@@ -9,6 +9,9 @@ import { getTaskQueue, type Task } from '@/lib/task-queue';
 import { processEnhancement } from '@/lib/workflow';
 import { validateEnhanceRequest, type PresetStyle } from '@/lib/validations';
 import { spendCredits, refundCredits, getAvailableCredits } from '@/lib/credits';
+import { getFileStorage } from '@/lib/file-storage';
+import fs from 'fs';
+import path from 'path';
 
 // 预估处理时间（秒）
 const ESTIMATED_TIME = {
@@ -56,6 +59,19 @@ export async function POST(request: NextRequest) {
         },
         { status: 503 }
       );
+    }
+
+    // 验证文件存在性（本地文件）
+    if (content.url.startsWith('/uploads/')) {
+      const publicDir = path.join(process.cwd(), 'public');
+      const filePath = path.join(publicDir, content.url);
+
+      if (!fs.existsSync(filePath)) {
+        return NextResponse.json(
+          { success: false, error: '文件不存在，请重新上传' },
+          { status: 400 }
+        );
+      }
     }
 
     // 扣除额度（使用新的 credits 系统）

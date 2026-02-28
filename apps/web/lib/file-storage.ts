@@ -376,11 +376,16 @@ export class FileStorage {
     let mimetype: string;
     let filename: string;
 
-    if (file instanceof File) {
-      buffer = Buffer.from(await file.arrayBuffer());
-      filename = file.name;
+    // 检测是否为 File 对象（兼容 Node.js 环境）
+    const isFileObject = typeof File !== 'undefined' && file instanceof File
+      || (file && typeof file === 'object' && 'arrayBuffer' in file && 'name' in file && 'type' in file);
+
+    if (isFileObject) {
+      const fileObj = file as File;
+      buffer = Buffer.from(await fileObj.arrayBuffer());
+      filename = fileObj.name;
       // 尝试通过扩展名或魔数检测真实 MIME 类型
-      mimetype = file.type;
+      mimetype = fileObj.type;
       if (mimetype === 'application/octet-stream') {
         const ext = filename.toLowerCase().slice(filename.lastIndexOf('.'));
         if (EXTENSION_TO_MIME[ext]) {
@@ -388,7 +393,7 @@ export class FileStorage {
         }
       }
     } else {
-      buffer = file;
+      buffer = file as Buffer;
       mimetype = options?.mimetype || 'application/octet-stream';
       filename = options?.filename || `${fileId}`;
     }
