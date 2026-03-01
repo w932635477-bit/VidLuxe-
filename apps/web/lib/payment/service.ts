@@ -132,32 +132,34 @@ export async function createPaymentOrder(params: CreatePaymentOrderParams): Prom
 
     if (payType === 'jsapi') {
       // 小程序支付
-      orderResult = await createJSAPIOrder({
+      const jsapiResult = await createJSAPIOrder({
         outTradeNo,
         totalFee: pkg.price,
         body: `VidLuxe - ${pkg.name} (${pkg.credits}次)`,
         openid: openid!,
       });
 
-      if (orderResult.error) {
-        return { error: orderResult.error };
+      if (jsapiResult.error) {
+        return { error: jsapiResult.error };
       }
 
-      miniProgramPayParams = orderResult.miniProgramPayParams;
+      orderResult = jsapiResult;
+      miniProgramPayParams = jsapiResult.miniProgramPayParams;
     } else {
       // Native 扫码支付
-      orderResult = await createNativeOrder({
+      const nativeResult = await createNativeOrder({
         outTradeNo,
         totalFee: pkg.price,
         body: `VidLuxe - ${pkg.name} (${pkg.credits}次)`,
         productId: pkg.id,
       });
 
-      if (orderResult.error) {
-        return { error: orderResult.error };
+      if (nativeResult.error) {
+        return { error: nativeResult.error };
       }
 
-      codeUrl = orderResult.codeUrl;
+      orderResult = nativeResult;
+      codeUrl = nativeResult.codeUrl;
     }
 
     // 计算过期时间（2小时后）

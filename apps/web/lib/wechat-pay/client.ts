@@ -22,8 +22,9 @@ function getPayClient(): InstanceType<typeof Pay> {
       appid: wechatPayConfig.appId,
       mchid: wechatPayConfig.mchId,
       serial_no: wechatPayConfig.serialNo,
-      privateKey: wechatPayConfig.privateKey,
-      apiv3_private_key: wechatPayConfig.apiV3Key,
+      publicKey: Buffer.from(''), // 平台公钥，暂不需要
+      privateKey: Buffer.from(wechatPayConfig.privateKey),
+      key: wechatPayConfig.apiV3Key,
     });
   }
   return payClient;
@@ -109,11 +110,12 @@ export async function createJSAPIOrder(params: JSAPIOrderParams): Promise<JSAPIO
       console.error('WechatPay JSAPI order error:', result);
       return {
         outTradeNo,
-        error: `创建订单失败: ${result.message || '未知错误'}`,
+        error: `创建订单失败: ${result.error || '未知错误'}`,
       };
     }
 
-    const prepayId = result.prepay_id as string;
+    const data = result.data as Record<string, unknown>;
+    const prepayId = data?.prepay_id as string;
     if (!prepayId) {
       return {
         outTradeNo,
@@ -201,11 +203,12 @@ export async function createNativeOrder(params: NativeOrderParams): Promise<Nati
       console.error('WechatPay Native order error:', result);
       return {
         outTradeNo,
-        error: `创建订单失败: ${result.message || '未知错误'}`,
+        error: `创建订单失败: ${result.error || '未知错误'}`,
       };
     }
 
-    const codeUrl = result.code_url as string;
+    const data = result.data as Record<string, unknown>;
+    const codeUrl = data?.code_url as string;
     if (!codeUrl) {
       return {
         outTradeNo,
@@ -216,7 +219,7 @@ export async function createNativeOrder(params: NativeOrderParams): Promise<Nati
     return {
       outTradeNo,
       codeUrl,
-      prepayId: result.prepay_id as string,
+      prepayId: data?.prepay_id as string,
     };
   } catch (error) {
     console.error('Create Native order error:', error);
@@ -257,23 +260,23 @@ export async function queryOrder(outTradeNo: string): Promise<QueryOrderResult> 
 
     const result = await pay.query({
       out_trade_no: outTradeNo,
-      mchid: wechatPayConfig.mchId,
     });
 
     if (result.status !== 200) {
       return {
         tradeState: 'PAYERROR',
-        error: `查询订单失败: ${result.message || '未知错误'}`,
+        error: `查询订单失败: ${result.error || '未知错误'}`,
       };
     }
 
-    const tradeState = result.trade_state as TradeState;
+    const data = result.data as Record<string, unknown>;
+    const tradeState = data?.trade_state as TradeState;
 
     return {
       tradeState,
-      transactionId: result.transaction_id as string | undefined,
-      totalFee: result.amount?.total as number | undefined,
-      timeEnd: result.success_time as string | undefined,
+      transactionId: data?.transaction_id as string | undefined,
+      totalFee: (data?.amount as Record<string, unknown>)?.total as number | undefined,
+      timeEnd: data?.success_time as string | undefined,
     };
   } catch (error) {
     console.error('Query order error:', error);
@@ -299,10 +302,7 @@ export async function closeOrder(outTradeNo: string): Promise<{ success: boolean
   try {
     const pay = getPayClient();
 
-    const result = await pay.close({
-      out_trade_no: outTradeNo,
-      mchid: wechatPayConfig.mchId,
-    });
+    const result = await pay.close(outTradeNo);
 
     if (result.status === 204 || result.status === 200) {
       return { success: true };
@@ -310,7 +310,7 @@ export async function closeOrder(outTradeNo: string): Promise<{ success: boolean
 
     return {
       success: false,
-      error: `关闭订单失败: ${result.message || '未知错误'}`,
+      error: `关闭订单失败: ${result.error || '未知错误'}`,
     };
   } catch (error) {
     console.error('Close order error:', error);
@@ -386,7 +386,7 @@ export function decryptNotifyResource(resource: {
       wechatPayConfig.apiV3Key
     );
 
-    return JSON.parse(decrypted);
+    return JSON.parse(decrypted as string);
   } catch (error) {
     console.error('Decrypt notify resource error:', error);
     return null;
