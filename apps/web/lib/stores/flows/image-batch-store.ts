@@ -15,6 +15,7 @@ import type {
   BatchResultItem,
   StyleType,
 } from '@/lib/types/flow';
+import type { ContentType } from '@/lib/content-types';
 
 // ============================================
 // 状态接口
@@ -26,6 +27,11 @@ interface ImageBatchState {
 
   // 批量文件
   batchFiles: BatchFileItem[];
+
+  // 效果系统（新）
+  selectedEffectId: string;
+  effectIntensity: number;
+  selectedContentType: ContentType;
 
   // 通用设置
   isLoading: boolean;
@@ -64,6 +70,11 @@ interface ImageBatchActions {
   setFileStyles: (id: string, styles: StyleType[]) => void;
   toggleFileStyle: (id: string, style: StyleType) => void;
 
+  // 效果系统操作（新）
+  setSelectedEffectId: (id: string) => void;
+  setEffectIntensity: (intensity: number) => void;
+  setSelectedContentType: (type: ContentType) => void;
+
   // 处理状态
   setIsLoading: (loading: boolean) => void;
   setProgress: (progress: number) => void;
@@ -94,6 +105,9 @@ interface ImageBatchActions {
 const initialState: ImageBatchState = {
   step: 'upload',
   batchFiles: [],
+  selectedEffectId: 'outfit-magazine',
+  effectIntensity: 100,
+  selectedContentType: 'outfit',
   isLoading: false,
   progress: 0,
   currentStage: '',
@@ -178,6 +192,11 @@ export const useImageBatchStore = create<ImageBatchState & ImageBatchActions>()(
           }
         }
       }, false, 'toggleFileStyle'),
+
+      // 效果系统操作（新）
+      setSelectedEffectId: (selectedEffectId) => set({ selectedEffectId }, false, 'setSelectedEffectId'),
+      setEffectIntensity: (effectIntensity) => set({ effectIntensity }, false, 'setEffectIntensity'),
+      setSelectedContentType: (selectedContentType) => set({ selectedContentType }, false, 'setSelectedContentType'),
 
       // 处理状态
       setIsLoading: (isLoading) => set({ isLoading }, false, 'setIsLoading'),

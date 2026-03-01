@@ -15,6 +15,7 @@ import type {
   KeyFrame,
   ResultData,
 } from '@/lib/types/flow';
+import type { ContentType } from '@/lib/content-types';
 
 // ============================================
 // 状态接口
@@ -49,6 +50,11 @@ interface VideoState {
   selectedPreset: StyleType;
   referenceFile: File | null;
   referenceFileUrl: string | null;
+
+  // 效果系统（新）
+  selectedEffectId: string;
+  effectIntensity: number;
+  selectedContentType: ContentType;
 
   // 调色
   colorGradeExplanation: string;
@@ -98,6 +104,11 @@ interface VideoActions {
   setSelectedPreset: (preset: StyleType) => void;
   setReferenceFile: (file: File | null) => void;
   setReferenceFileUrl: (url: string | null) => void;
+
+  // 效果系统操作（新）
+  setSelectedEffectId: (id: string) => void;
+  setEffectIntensity: (intensity: number) => void;
+  setSelectedContentType: (type: ContentType) => void;
 
   // 调色操作
   setColorGradeExplanation: (explanation: string) => void;
@@ -156,6 +167,9 @@ const initialState: VideoState = {
   selectedPreset: 'magazine',
   referenceFile: null,
   referenceFileUrl: null,
+  selectedEffectId: 'outfit-magazine',
+  effectIntensity: 100,
+  selectedContentType: 'outfit',
   colorGradeExplanation: '',
   gradedVideoUrl: null,
   keyframes: [],
@@ -217,6 +231,11 @@ export const useVideoStore = create<VideoState & VideoActions>()(
       setSelectedPreset: (selectedPreset) => set({ selectedPreset }, false, 'setSelectedPreset'),
       setReferenceFile: (referenceFile) => set({ referenceFile }, false, 'setReferenceFile'),
       setReferenceFileUrl: (referenceFileUrl) => set({ referenceFileUrl }, false, 'setReferenceFileUrl'),
+
+      // 效果系统操作（新）
+      setSelectedEffectId: (selectedEffectId) => set({ selectedEffectId }, false, 'setSelectedEffectId'),
+      setEffectIntensity: (effectIntensity) => set({ effectIntensity }, false, 'setEffectIntensity'),
+      setSelectedContentType: (selectedContentType) => set({ selectedContentType }, false, 'setSelectedContentType'),
 
       // 调色操作
       setColorGradeExplanation: (colorGradeExplanation) => set({ colorGradeExplanation }, false, 'setColorGradeExplanation'),

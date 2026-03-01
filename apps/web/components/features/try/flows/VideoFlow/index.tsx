@@ -12,9 +12,10 @@ import { useVideoStore } from '@/lib/stores/flows';
 import { useCreditsStore } from '@/lib/stores/credits-store';
 import { ProcessingAnimation } from '@/components/features/try/flows/shared/ProcessingAnimation';
 import { KeyframeSelector } from './KeyframeSelector';
-import { StyleFlowSelector } from '@/components/features/try/StyleFlowSelector';
+import { EffectFlowSelector } from '@/components/features/try/EffectFlowSelector';
 import { uploadFile } from '@/lib/actions/upload';
-import type { StyleType, KeyFrame } from '@/lib/types/flow';
+import { getEffectById } from '@/lib/effect-presets';
+import type { KeyFrame } from '@/lib/types/flow';
 import type { ContentType } from '@/lib/content-types';
 
 // 按钮样式 - Apple Premium Style
@@ -137,7 +138,6 @@ function generateAnonymousId(): string {
 
 export function VideoFlow() {
   const [anonymousId, setAnonymousId] = useState<string>('');
-  const [selectedContentType, setSelectedContentType] = useState<ContentType>('outfit');
   const [replaceFrames, setReplaceFrames] = useState<KeyFrame[]>([]);
 
   const {
@@ -148,7 +148,9 @@ export function VideoFlow() {
     progress,
     currentStage,
     error,
-    selectedPreset,
+    selectedEffectId,
+    effectIntensity,
+    selectedContentType,
     keyframes,
     selectedKeyframe,
     enhancedCoverUrl,
@@ -162,7 +164,9 @@ export function VideoFlow() {
     setCurrentStage,
     setError,
     setSelectedCategory,
-    setSelectedPreset,
+    setSelectedEffectId,
+    setEffectIntensity,
+    setSelectedContentType,
     setKeyframes,
     setSelectedKeyframe,
     setEnhancedCoverUrl,
@@ -286,9 +290,13 @@ export function VideoFlow() {
     setStep('processing');
     setProgress(0);
 
+    // 获取效果名称
+    const effect = getEffectById(selectedEffectId);
+    const effectName = effect?.name || '自定义风格';
+
     const stages = [
       '🎨 正在分析视频色彩...',
-      '✨ 正在应用 ' + (selectedPreset === 'magazine' ? '杂志大片' : selectedPreset === 'soft' ? '温柔日系' : selectedPreset === 'urban' ? '都市职场' : '复古胶片') + '风格...',
+      '✨ 正在应用 ' + effectName + '...',
       '🖼️ 正在增强封面帧...',
     ];
 
@@ -311,7 +319,7 @@ export function VideoFlow() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             videoUrl: uploadedFileUrl,
-            style: selectedPreset,
+            effectId: selectedEffectId,
           }),
         });
 
@@ -337,7 +345,8 @@ export function VideoFlow() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           frameUrl: selectedKeyframe.url,
-          style: selectedPreset,
+          effectId: selectedEffectId,
+          intensity: effectIntensity,
           contentType: selectedContentType,
         }),
       });
@@ -366,7 +375,8 @@ export function VideoFlow() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               frameUrl: frame.url,
-              style: selectedPreset,
+              effectId: selectedEffectId,
+              intensity: effectIntensity,
               contentType: selectedContentType,
             }),
           });
@@ -447,7 +457,7 @@ export function VideoFlow() {
       setError(error instanceof Error ? error.message : '处理失败，请重试');
       setStep('keyframe');
     }
-  }, [selectedKeyframe, selectedPreset, uploadedFileUrl, replaceFrames, anonymousId, setStep, setProgress, setCurrentStage, setEnhancedCoverUrl, setResultData, fetchCredits, setError]);
+  }, [selectedKeyframe, selectedEffectId, effectIntensity, selectedContentType, uploadedFileUrl, replaceFrames, anonymousId, setStep, setProgress, setCurrentStage, setEnhancedCoverUrl, setResultData, fetchCredits, setError]);
 
   // 重置
   const handleReset = useCallback(() => {
@@ -513,12 +523,14 @@ export function VideoFlow() {
             <video src={previewUrl} style={{ width: '100%', maxHeight: '60vh', display: 'block', margin: '0 auto' }} muted autoPlay loop playsInline />
           </div>
 
-          {/* 内容类型 + 风格选择 */}
-          <StyleFlowSelector
-            selectedStyle={selectedPreset}
+          {/* 内容类型 + 效果选择 */}
+          <EffectFlowSelector
+            selectedEffectId={selectedEffectId}
             selectedContentType={selectedContentType}
-            onStyleSelect={setSelectedPreset}
+            effectIntensity={effectIntensity}
+            onEffectSelect={setSelectedEffectId}
             onContentTypeSelect={setSelectedContentType}
+            onIntensityChange={setEffectIntensity}
           />
 
           {/* 按钮 */}

@@ -2,7 +2,7 @@
  * ImageBatchFlow - 多图批量流程
  *
  * upload → style → progress → result
- * 支持每张图片独立选择风格
+ * 统一使用效果选择器
  */
 
 'use client';
@@ -11,9 +11,10 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { useImageBatchStore } from '@/lib/stores/flows';
 import { useCreditsStore } from '@/lib/stores/credits-store';
 import { ProcessingAnimation } from '@/components/features/try/flows/shared/ProcessingAnimation';
-import { ContentTypeSelector } from '@/components/features/try/ContentTypeSelector';
+import { EffectFlowSelector } from '@/components/features/try/EffectFlowSelector';
 import { uploadFile } from '@/lib/actions/upload';
-import type { BatchFileItem, StyleType, BatchResultItem } from '@/lib/types/flow';
+import { getEffectById } from '@/lib/effect-presets';
+import type { BatchFileItem, BatchResultItem, StyleType } from '@/lib/types/flow';
 import type { ContentType } from '@/lib/content-types';
 
 // 生成匿名 ID
@@ -30,7 +31,6 @@ function generateAnonymousId(): string {
 
 export function ImageBatchFlow() {
   const [anonymousId, setAnonymousId] = useState<string>('');
-  const [selectedContentType, setSelectedContentType] = useState<ContentType>('outfit');
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const {
@@ -41,6 +41,9 @@ export function ImageBatchFlow() {
     progress,
     currentStage,
     error,
+    selectedEffectId,
+    effectIntensity,
+    selectedContentType,
     setStep,
     setBatchFiles,
     updateBatchFile,
@@ -52,7 +55,9 @@ export function ImageBatchFlow() {
     setError,
     addBatchResult,
     clearResults,
-    toggleFileStyle,
+    setSelectedEffectId,
+    setEffectIntensity,
+    setSelectedContentType,
     reset,
   } = useImageBatchStore();
 
@@ -106,20 +111,13 @@ export function ImageBatchFlow() {
     setStep('style');
   }, [setBatchFiles, updateBatchFile, setStep]);
 
-  // 计算总任务数
+  // 计算总任务数（每个文件一个效果）
   const calculateTotalTasks = useCallback(() => {
-    return batchFiles.reduce((total, file) => {
-      if (file.status === 'success' && file.uploadedUrl) {
-        return total + (file.selectedStyles.length > 0 ? file.selectedStyles.length : 1);
-      }
-      return total;
-    }, 0);
+    return batchFiles.filter((f) => f.status === 'success' && f.uploadedUrl).length;
   }, [batchFiles]);
 
-  // 检查是否所有图片都选择了风格
-  const allFilesHaveStyles = batchFiles
-    .filter((f) => f.status === 'success')
-    .every((f) => f.selectedStyles.length > 0);
+  // 检查是否有可处理的图片
+  const hasFilesToProcess = batchFiles.some((f) => f.status === 'success' && f.uploadedUrl);
 
   // 开始批量处理
   const handleStartProcessing = useCallback(async () => {
@@ -137,7 +135,7 @@ export function ImageBatchFlow() {
     }
 
     await processBatch(successFiles);
-  }, [batchFiles, total, calculateTotalTasks, setError]);
+  }, [batchFiles, total, calculateTotalTasks, setError, selectedEffectId, effectIntensity, selectedContentType]);
 
   // 批量处理
   const processBatch = async (files: BatchFileItem[]) => {
@@ -145,80 +143,77 @@ export function ImageBatchFlow() {
     let completed = 0;
 
     // 计算总任务数
-    const totalTasks = files.reduce((total, file) => {
-      return total + (file.selectedStyles.length > 0 ? file.selectedStyles.length : 1);
-    }, 0);
+    const totalTasks = files.length;
 
     setStep('progress');
     setProgress(0);
     setCurrentStage('准备批量生成...');
     clearResults();
 
+    // 获取效果信息
+    const effect = getEffectById(selectedEffectId);
+    const effectName = effect?.name || '自定义效果';
+
     for (const file of files) {
-      // 使用该图片选择的风格，如果没选择则默认用 magazine
-      const stylesToProcess = file.selectedStyles.length > 0 ? file.selectedStyles : ['magazine' as StyleType];
+      try {
+        setCurrentStage(`处理中... (${completed + 1}/${totalTasks}) - ${effectName}`);
 
-      for (const style of stylesToProcess) {
-        try {
-          setCurrentStage(`处理中... (${completed + 1}/${totalTasks})`);
+        const enhanceResponse = await fetch('/api/enhance', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            content: { type: 'image', url: file.uploadedUrl },
+            styleSource: { type: 'effect', effectId: selectedEffectId, intensity: effectIntensity },
+            contentType: selectedContentType,
+            anonymousId,
+          }),
+        });
 
-          const enhanceResponse = await fetch('/api/enhance', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              content: { type: 'image', url: file.uploadedUrl },
-              styleSource: { type: 'preset', presetStyle: style },
-              contentType: selectedContentType,
-              anonymousId,
-            }),
-          });
+        const enhanceData = await enhanceResponse.json();
 
-          const enhanceData = await enhanceResponse.json();
+        if (enhanceData.success && enhanceData.taskId) {
+          const maxAttempts = 60;
+          let taskCompleted = false;
 
-          if (enhanceData.success && enhanceData.taskId) {
-            const maxAttempts = 60;
-            let taskCompleted = false;
+          for (let i = 0; i < maxAttempts; i++) {
+            await new Promise((resolve) => setTimeout(resolve, 2000));
+            const statusResponse = await fetch(`/api/enhance/${enhanceData.taskId}`);
+            const statusData = await statusResponse.json();
 
-            for (let i = 0; i < maxAttempts; i++) {
-              await new Promise((resolve) => setTimeout(resolve, 2000));
-              const statusResponse = await fetch(`/api/enhance/${enhanceData.taskId}`);
-              const statusData = await statusResponse.json();
-
-              if (statusData.status === 'completed' && statusData.result) {
-                const result: BatchResultItem = {
-                  id: `${file.id}_${style}`,
-                  fileIndex: batchFiles.indexOf(file),
-                  originalUrl: file.uploadedUrl!,
-                  enhancedUrl: statusData.result.enhancedUrl,
-                  style,
-                  status: 'completed',
-                };
-                if (statusData.result.score) {
-                  result.score = statusData.result.score;
-                }
-                results.push(result);
-                addBatchResult(result);
-                taskCompleted = true;
-                break;
+            if (statusData.status === 'completed' && statusData.result) {
+              const result: BatchResultItem = {
+                id: `${file.id}_${selectedEffectId}`,
+                fileIndex: batchFiles.indexOf(file),
+                originalUrl: file.uploadedUrl!,
+                enhancedUrl: statusData.result.enhancedUrl,
+                style: 'magazine' as any, // 兼容旧字段
+                status: 'completed',
+              };
+              if (statusData.result.score) {
+                result.score = statusData.result.score;
               }
-
-              if (statusData.status === 'failed') {
-                console.error(`Task ${enhanceData.taskId} failed:`, statusData.error);
-                break;
-              }
+              results.push(result);
+              addBatchResult(result);
+              taskCompleted = true;
+              break;
             }
 
-            if (!taskCompleted) {
-              console.warn(`Task ${enhanceData.taskId} did not complete in time`);
+            if (statusData.status === 'failed') {
+              console.error(`Task ${enhanceData.taskId} failed:`, statusData.error);
+              break;
             }
           }
-        } catch (err) {
-          console.error('Failed to process:', err);
-        }
 
-        completed++;
-        setProgress(Math.round((completed / totalTasks) * 100));
+          if (!taskCompleted) {
+            console.warn(`Task ${enhanceData.taskId} did not complete in time`);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to process:', err);
       }
+
+      completed++;
+      setProgress(Math.round((completed / totalTasks) * 100));
     }
 
     fetchCredits(anonymousId);
@@ -272,13 +267,16 @@ export function ImageBatchFlow() {
       {step === 'style' && (
         <StyleStep
           batchFiles={batchFiles}
-          onToggleStyle={toggleFileStyle}
           onStartProcessing={handleStartProcessing}
           onBack={() => setStep('upload')}
           credits={{ total, paid: 0, free: total }}
           calculateTotalTasks={calculateTotalTasks}
-          allFilesHaveStyles={allFilesHaveStyles}
+          hasFilesToProcess={hasFilesToProcess}
+          selectedEffectId={selectedEffectId}
+          effectIntensity={effectIntensity}
           selectedContentType={selectedContentType}
+          onEffectSelect={setSelectedEffectId}
+          onIntensityChange={setEffectIntensity}
           onContentTypeSelect={setSelectedContentType}
         />
       )}
@@ -446,24 +444,33 @@ function UploadStep({ batchFiles, isLoading, onFilesChange, onRemove, onClear, c
   );
 }
 
-function StyleStep({ batchFiles, onToggleStyle, onStartProcessing, onBack, credits, calculateTotalTasks, allFilesHaveStyles, selectedContentType, onContentTypeSelect }: {
+function StyleStep({
+  batchFiles,
+  onStartProcessing,
+  onBack,
+  credits,
+  calculateTotalTasks,
+  hasFilesToProcess,
+  selectedEffectId,
+  effectIntensity,
+  selectedContentType,
+  onEffectSelect,
+  onIntensityChange,
+  onContentTypeSelect,
+}: {
   batchFiles: BatchFileItem[];
-  onToggleStyle: (fileId: string, style: StyleType) => void;
   onStartProcessing: () => void;
   onBack: () => void;
   credits: { total: number; paid: number; free: number };
   calculateTotalTasks: () => number;
-  allFilesHaveStyles: boolean;
+  hasFilesToProcess: boolean;
+  selectedEffectId: string;
+  effectIntensity: number;
   selectedContentType: ContentType;
+  onEffectSelect: (id: string) => void;
+  onIntensityChange: (intensity: number) => void;
   onContentTypeSelect: (type: ContentType) => void;
 }) {
-  const styles: { id: StyleType; name: string; desc: string }[] = [
-    { id: 'magazine', name: '杂志大片', desc: '时尚杂志封面质感' },
-    { id: 'soft', name: '温柔日系', desc: '清新温柔文艺感' },
-    { id: 'urban', name: '都市职场', desc: '专业干练可信赖' },
-    { id: 'vintage', name: '复古胶片', desc: '复古怀旧电影感' },
-  ];
-
   const successFiles = batchFiles.filter((f) => f.status === 'success' && f.uploadedUrl);
   const totalCost = calculateTotalTasks();
 
@@ -481,80 +488,69 @@ function StyleStep({ batchFiles, onToggleStyle, onStartProcessing, onBack, credi
 
       {/* 标题 */}
       <div style={{ marginBottom: '24px' }}>
-        <p style={{ fontSize: '21px', fontWeight: 600, marginBottom: '8px' }}>为每张图片选择风格</p>
+        <p style={{ fontSize: '21px', fontWeight: 600, marginBottom: '8px' }}>选择效果风格</p>
         <p style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.5)' }}>
-          点击图片下方的风格标签，为每张图片单独选择 1-4 种风格
+          已上传 {successFiles.length} 张图片，将统一应用所选效果
         </p>
       </div>
 
-      {/* 内容类型选择 */}
-      <ContentTypeSelector
-        selectedType={selectedContentType}
-        onSelect={onContentTypeSelect}
-      />
-
-      {/* 分隔线 */}
-      <div style={{ height: '0.5px', background: 'rgba(255, 255, 255, 0.06)', margin: '24px 0' }} />
-
-      {/* 每张图片的风格选择 */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        {successFiles.map((file, fileIndex) => (
+      {/* 图片预览网格 */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gap: '12px',
+        marginBottom: '24px',
+        padding: '16px',
+        borderRadius: '16px',
+        background: 'rgba(255, 255, 255, 0.03)',
+        border: '1px solid rgba(255, 255, 255, 0.08)',
+      }}>
+        {successFiles.slice(0, 6).map((file, index) => (
           <div
             key={file.id}
             style={{
-              padding: '16px',
-              borderRadius: '16px',
-              background: 'rgba(255, 255, 255, 0.03)',
-              border: '1px solid rgba(255, 255, 255, 0.08)',
+              position: 'relative',
+              aspectRatio: '9/16',
+              borderRadius: '8px',
+              overflow: 'hidden',
             }}
           >
-            {/* 图片预览 */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
-              <div style={{ width: '80px', height: '80px', borderRadius: '12px', overflow: 'hidden', flexShrink: 0 }}>
-                <img src={file.previewUrl} alt="预览" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              </div>
-              <div>
-                <p style={{ fontSize: '15px', fontWeight: 500, marginBottom: '4px' }}>图片 {fileIndex + 1}</p>
-                <p style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.5)' }}>
-                  已选择 {file.selectedStyles.length} 种风格
-                </p>
-              </div>
-            </div>
-
-            {/* 风格选择按钮 */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-              {styles.map((style) => {
-                const isSelected = file.selectedStyles.includes(style.id);
-                return (
-                  <button
-                    key={style.id}
-                    onClick={() => onToggleStyle(file.id, style.id)}
-                    style={{
-                      padding: '8px 16px',
-                      borderRadius: '20px',
-                      border: isSelected ? '2px solid #D4AF37' : '1px solid rgba(255, 255, 255, 0.15)',
-                      background: isSelected ? 'rgba(212, 175, 55, 0.15)' : 'rgba(255, 255, 255, 0.03)',
-                      color: isSelected ? '#D4AF37' : 'rgba(255, 255, 255, 0.7)',
-                      fontSize: '14px',
-                      fontWeight: 500,
-                      cursor: 'pointer',
-                      transition: 'all 0.2s ease',
-                    }}
-                  >
-                    {style.name}
-                  </button>
-                );
-              })}
-            </div>
+            <img src={file.previewUrl} alt={`图片 ${index + 1}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
         ))}
+        {successFiles.length > 6 && (
+          <div
+            style={{
+              aspectRatio: '9/16',
+              borderRadius: '8px',
+              background: 'rgba(255, 255, 255, 0.05)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'rgba(255, 255, 255, 0.5)',
+              fontSize: '14px',
+            }}
+          >
+            +{successFiles.length - 6}
+          </div>
+        )}
       </div>
 
+      {/* 效果选择器 */}
+      <EffectFlowSelector
+        selectedEffectId={selectedEffectId}
+        selectedContentType={selectedContentType}
+        effectIntensity={effectIntensity}
+        onEffectSelect={onEffectSelect}
+        onContentTypeSelect={onContentTypeSelect}
+        onIntensityChange={onIntensityChange}
+      />
+
       {/* 费用信息 */}
-      <div style={{ padding: '12px 16px', borderRadius: '12px', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.06)', marginBottom: '12px', marginTop: '20px' }}>
+      <div style={{ padding: '12px 16px', borderRadius: '12px', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.06)', marginBottom: '12px', marginTop: '24px' }}>
         <p style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.5)', marginBottom: '4px' }}>批量生成</p>
         <p style={{ fontSize: '15px', fontWeight: 500, color: '#D4AF37' }}>
-          共 {totalCost} 个任务 = 消耗 {totalCost} 个额度
+          共 {totalCost} 张图片 = 消耗 {totalCost} 个额度
         </p>
       </div>
 
@@ -575,20 +571,20 @@ function StyleStep({ batchFiles, onToggleStyle, onStartProcessing, onBack, credi
         </button>
         <button
           onClick={onStartProcessing}
-          disabled={!allFilesHaveStyles || credits.total < totalCost}
+          disabled={!hasFilesToProcess || credits.total < totalCost}
           style={{
             flex: 2,
             padding: '16px',
             borderRadius: '12px',
             border: 'none',
-            background: allFilesHaveStyles && credits.total >= totalCost ? '#D4AF37' : 'rgba(255, 255, 255, 0.1)',
-            color: allFilesHaveStyles && credits.total >= totalCost ? '#000' : 'rgba(255, 255, 255, 0.3)',
+            background: hasFilesToProcess && credits.total >= totalCost ? '#D4AF37' : 'rgba(255, 255, 255, 0.1)',
+            color: hasFilesToProcess && credits.total >= totalCost ? '#000' : 'rgba(255, 255, 255, 0.3)',
             fontSize: '16px',
             fontWeight: 600,
-            cursor: allFilesHaveStyles && credits.total >= totalCost ? 'pointer' : 'not-allowed',
+            cursor: hasFilesToProcess && credits.total >= totalCost ? 'pointer' : 'not-allowed',
           }}
         >
-          {allFilesHaveStyles ? '开始升级' : '请为每张图片选择风格'}
+          开始升级
         </button>
       </div>
     </div>
