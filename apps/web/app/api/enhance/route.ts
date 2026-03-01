@@ -2,6 +2,10 @@
  * 升级任务 API
  *
  * POST /api/enhance - 创建升级任务
+ *
+ * 支持两种模式：
+ * 1. 新效果系统：effectId + effectIntensity（推荐）
+ * 2. 旧风格系统：styleSource.type='preset' + styleSource.presetStyle（向后兼容）
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -10,6 +14,8 @@ import { processEnhancement } from '@/lib/workflow';
 import { validateEnhanceRequest, type PresetStyle } from '@/lib/validations';
 import { spendCredits, refundCredits, getAvailableCredits } from '@/lib/credits';
 import { getFileStorage } from '@/lib/file-storage';
+import { getEffectById, getEffectPrompt, convertStyleToEffect } from '@/lib/effect-presets';
+import type { ContentType } from '@/lib/content-types';
 import fs from 'fs';
 import path from 'path';
 
@@ -23,7 +29,30 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
-    // 使用 Zod 验证输入
+    // 支持新效果系统参数（可选）
+    const effectId = body.effectId as string | undefined;
+    const effectIntensity = body.effectIntensity as number | undefined;
+    const contentType = body.contentType as ContentType | undefined;
+
+    // 验证 effectId（如果提供）
+    if (effectId) {
+      const effect = getEffectById(effectId);
+      if (!effect) {
+        return NextResponse.json(
+          { success: false, error: `Invalid effectId: ${effectId}` },
+          { status: 400 }
+        );
+      }
+      // 验证 effectIntensity 范围
+      if (effectIntensity !== undefined && (effectIntensity < 0 || effectIntensity > 100)) {
+        return NextResponse.json(
+          { success: false, error: 'effectIntensity must be between 0 and 100' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // 使用 Zod 验证输入（兼容旧 API）
     const validation = validateEnhanceRequest(body);
     if (!validation.success) {
       const errorResult = validation as { success: false; error: string };
@@ -92,15 +121,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 创建任务
-    const task = taskQueue.create({
+    // 创建任务 - 支持新效果系统和旧风格系统
+    const taskInput: Task['input'] = {
       contentType: content.type,
       contentUrl: content.url,
       styleSourceType: styleSource.type,
       presetStyle: styleSource.type === 'preset' ? styleSource.presetStyle : undefined,
       referenceUrl: styleSource.type === 'reference' ? styleSource.referenceUrl : undefined,
       anonymousId,
-    });
+      // 新效果系统参数
+      effectId,
+      effectIntensity: effectIntensity ?? 100,
+    };
+
+    const task = taskQueue.create(taskInput);
 
     // 异步执行任务（带错误捕获和额度退回）
     executeTaskAsync(task).catch((error) => {
@@ -152,14 +186,38 @@ async function executeTaskAsync(task: Task): Promise<void> {
     }
     console.log(`[Enhance API] Task ${task.id} marked as processing`);
 
+    // 获取效果配置
+    let presetStyle: PresetStyle = 'magazine'; // 默认值
+
+    // 优先使用新的效果系统
+    if (task.input.effectId) {
+      const effect = getEffectById(task.input.effectId);
+      if (effect) {
+        // 从 effectId 提取 presetStyle（兼容旧系统）
+        // 例如 'outfit-magazine' -> 'magazine'
+        const styleMatch = task.input.effectId.match(/-(magazine|soft|urban|vintage)$/);
+        if (styleMatch) {
+          presetStyle = styleMatch[1] as PresetStyle;
+        }
+        console.log(`[Enhance API] Using effect system: ${task.input.effectId} (intensity: ${task.input.effectIntensity || 100}%), mapped to style: ${presetStyle}`);
+      }
+    } else if (task.input.presetStyle) {
+      // 使用旧的风格系统
+      presetStyle = task.input.presetStyle as PresetStyle;
+      console.log(`[Enhance API] Using legacy style system: ${presetStyle}`);
+    }
+
     // 执行升级工作流
     console.log(`[Enhance API] Executing enhancement workflow for task ${task.id}`);
     const result = await processEnhancement({
       contentType: task.input.contentType,
       contentUrl: task.input.contentUrl,
       styleSourceType: task.input.styleSourceType,
-      presetStyle: task.input.presetStyle as PresetStyle,
+      presetStyle,
       referenceUrl: task.input.referenceUrl,
+      // 传递新效果系统参数
+      effectId: task.input.effectId,
+      effectIntensity: task.input.effectIntensity ?? 100,
       onProgress: (progress, stage) => {
         taskQueue.updateProgress(task.id, progress, stage);
       },

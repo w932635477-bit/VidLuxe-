@@ -218,8 +218,11 @@ export async function processImageEnhancement(params: {
   presetStyle?: PresetStyle;
   referenceUrl?: string;
   onProgress?: ProgressCallback;
+  // 新效果系统参数
+  effectId?: string;
+  effectIntensity?: number;
 }): Promise<TaskResult> {
-  const { imageUrl, styleSourceType, presetStyle, referenceUrl, onProgress } = params;
+  const { imageUrl, styleSourceType, presetStyle, referenceUrl, onProgress, effectId, effectIntensity } = params;
 
   // Stage 1: 获取风格 Profile (0-10%)
   onProgress?.(0, '获取风格特征');
@@ -322,6 +325,9 @@ export async function processVideoEnhancement(params: {
   onProgress?: ProgressCallback;
   /** 是否启用人物抠像（默认 false，MVP 阶段可选） */
   enableBackgroundRemoval?: boolean;
+  // 新效果系统参数
+  effectId?: string;
+  effectIntensity?: number;
 }): Promise<TaskResult> {
   const {
     videoUrl,
@@ -330,6 +336,8 @@ export async function processVideoEnhancement(params: {
     referenceUrl,
     onProgress,
     enableBackgroundRemoval = false,
+    effectId,
+    effectIntensity,
   } = params;
 
   // 导入视频生成器
@@ -487,7 +495,19 @@ export async function processEnhancement(params: {
   presetStyle?: PresetStyle;
   referenceUrl?: string;
   onProgress?: ProgressCallback;
+  // 新效果系统参数
+  effectId?: string;
+  effectIntensity?: number;
 }): Promise<TaskResult> {
+  // 如果提供了 effectId，使用新效果系统的 Prompt
+  if (params.effectId) {
+    const { getEffectPrompt } = await import('./effect-presets');
+    const effectPrompt = getEffectPrompt(params.effectId, params.effectIntensity ?? 100);
+    console.log('[Workflow] Using effect prompt from new effect system:', params.effectId);
+    // 可以在这里覆盖 styleProfile 的 prompt
+    // 目前先使用 effectId 映射到 presetStyle 的方式
+  }
+
   if (params.contentType === 'image') {
     return processImageEnhancement({
       imageUrl: params.contentUrl,
@@ -495,6 +515,8 @@ export async function processEnhancement(params: {
       presetStyle: params.presetStyle,
       referenceUrl: params.referenceUrl,
       onProgress: params.onProgress,
+      effectId: params.effectId,
+      effectIntensity: params.effectIntensity,
     });
   } else {
     return processVideoEnhancement({
@@ -503,6 +525,8 @@ export async function processEnhancement(params: {
       presetStyle: params.presetStyle,
       referenceUrl: params.referenceUrl,
       onProgress: params.onProgress,
+      effectId: params.effectId,
+      effectIntensity: params.effectIntensity,
     });
   }
 }

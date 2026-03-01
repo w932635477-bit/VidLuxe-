@@ -91,12 +91,25 @@ export function getStyleProfileFromPreset(style: PresetStyle): StyleProfile {
 
 /**
  * 获取风格 Profile（统一入口）
+ *
+ * 支持两种模式：
+ * 1. 新效果系统：effectId + effectIntensity
+ * 2. 旧风格系统：presetStyle（向后兼容）
  */
 export async function getStyleProfile(params: {
   sourceType: 'reference' | 'preset';
   referenceUrl?: string;
   presetStyle?: PresetStyle;
+  // 新效果系统参数
+  effectId?: string;
+  effectIntensity?: number;
 }): Promise<StyleProfile> {
+  // 优先使用新效果系统
+  if (params.effectId) {
+    return getStyleProfileFromEffect(params.effectId, params.effectIntensity ?? 100);
+  }
+
+  // 向后兼容旧系统
   if (params.sourceType === 'reference' && params.referenceUrl) {
     return extractStyleFromReference(params.referenceUrl);
   } else if (params.sourceType === 'preset' && params.presetStyle) {
@@ -105,6 +118,35 @@ export async function getStyleProfile(params: {
 
   // 默认返回 soft 风格
   return getStyleProfileFromPreset('soft');
+}
+
+/**
+ * 从效果 ID 获取风格 Profile（新效果系统）
+ */
+export function getStyleProfileFromEffect(effectId: string, intensity: number = 100): StyleProfile {
+  // 动态导入避免循环依赖
+  const { getEffectById, getEffectPrompt } = require('./effect-presets');
+
+  const effect = getEffectById(effectId);
+  if (!effect) {
+    console.warn(`[StyleProfile] Effect not found: ${effectId}, falling back to default`);
+    return getStyleProfileFromPreset('magazine');
+  }
+
+  const prompt = getEffectPrompt(effectId, intensity);
+  const features = parsePromptToFeatures(prompt);
+
+  // 从 effectId 提取预设风格（用于兼容旧系统）
+  const styleMatch = effectId.match(/-(magazine|soft|urban|vintage)$/);
+  const presetStyle = styleMatch ? styleMatch[1] as PresetStyle : 'magazine';
+
+  return {
+    id: `style_effect_${effectId}`,
+    source: 'preset',
+    features,
+    prompt,
+    presetStyle,
+  };
 }
 
 /**

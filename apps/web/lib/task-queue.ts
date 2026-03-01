@@ -53,6 +53,9 @@ export interface Task {
     presetStyle?: string;
     referenceUrl?: string;
     anonymousId: string;
+    // 新效果系统参数（可选）
+    effectId?: string;
+    effectIntensity?: number; // 0-100
   };
 }
 
