@@ -4,6 +4,8 @@
  * POST /api/upload
  * 支持图片和视频上传
  *
+ * 使用 Next.js 原生 formData() API
+ *
  * 安全特性：
  * - 文件魔数验证
  * - 文件大小限制
@@ -11,7 +13,10 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { getFileStorage } from '@/lib/file-storage';
+import { detectFileType } from '@/lib/file-storage';
+import crypto from 'crypto';
+import path from 'path';
+import fs from 'fs';
 
 // 文件大小限制
 const FILE_SIZE_LIMITS = {
@@ -22,7 +27,7 @@ const FILE_SIZE_LIMITS = {
 // 允许的 MIME 类型
 const ALLOWED_MIME_TYPES = {
   image: ['image/jpeg', 'image/png', 'image/webp'],
-  video: ['video/mp4', 'video/quicktime', 'video/webm', 'application/octet-stream'],
+  video: ['video/mp4', 'video/quicktime', 'video/webm'],
 } as const;
 
 // 文件扩展名到 MIME 类型的映射
@@ -37,21 +42,29 @@ const EXTENSION_TO_MIME: Record<string, string> = {
 };
 
 // 通过文件扩展名检测 MIME 类型
-function detectMimeType(filename: string, declaredType: string): string {
-  // 如果声明的类型不是 octet-stream，直接使用
-  if (declaredType !== 'application/octet-stream') {
-    return declaredType;
-  }
-
-  // 通过扩展名判断
+function detectMimeTypeFromExt(filename: string): string | null {
   const ext = filename.toLowerCase().slice(filename.lastIndexOf('.'));
-  return EXTENSION_TO_MIME[ext] || declaredType;
+  return EXTENSION_TO_MIME[ext] || null;
+}
+
+// 判断 MIME 类型是否为图片或视频
+function getFileType(mimetype: string): 'image' | 'video' | null {
+  if (ALLOWED_MIME_TYPES.image.includes(mimetype as any)) return 'image';
+  if (ALLOWED_MIME_TYPES.video.includes(mimetype as any)) return 'video';
+  if (mimetype.startsWith('image/')) return 'image';
+  if (mimetype.startsWith('video/')) return 'video';
+  return null;
+}
+
+// 生成唯一文件 ID
+function generateFileId(): string {
+  return `file_${Date.now()}_${crypto.randomBytes(6).toString('hex')}`;
 }
 
 export async function POST(request: NextRequest) {
   try {
-    // 检查 Content-Type
     const contentType = request.headers.get('content-type') || '';
+
     if (!contentType.includes('multipart/form-data')) {
       return NextResponse.json(
         { success: false, error: 'Content-Type must be multipart/form-data' },
@@ -59,33 +72,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 使用 Next.js 原生的 formData() API
     const formData = await request.formData();
-    const file = formData.get('file');
+    const file = formData.get('file') as File | null;
 
-    // 验证文件存在（兼容 Node.js 环境，避免使用 instanceof File）
-    if (!file || typeof file !== 'object' || !('arrayBuffer' in file)) {
+    if (!file) {
       return NextResponse.json(
         { success: false, error: 'No file provided' },
         { status: 400 }
       );
     }
 
-    // 检测真实 MIME 类型（处理 curl 发送 application/octet-stream 的情况）
-    const mimeType = detectMimeType(file.name, file.type);
+    // 检测 MIME 类型
+    let mimetype = file.type;
+    if (mimetype === 'application/octet-stream') {
+      const detected = detectMimeTypeFromExt(file.name);
+      if (detected) mimetype = detected;
+    }
 
     // 判断文件类型
-    const isImage = ALLOWED_MIME_TYPES.image.includes(mimeType as any);
-    const isVideo = mimeType.startsWith('video/') || ALLOWED_MIME_TYPES.video.includes(mimeType as any);
-
-    if (!isImage && !isVideo) {
+    const fileType = getFileType(mimetype);
+    if (!fileType) {
       return NextResponse.json(
-        { success: false, error: `Unsupported file type: ${mimeType}` },
+        { success: false, error: `Unsupported file type: ${mimetype}` },
         { status: 400 }
       );
     }
 
     // 检查文件大小
-    const fileType = isImage ? 'image' : 'video';
     const maxSize = FILE_SIZE_LIMITS[fileType];
     if (file.size > maxSize) {
       return NextResponse.json(
@@ -94,41 +108,53 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 保存文件（包含魔数验证）
-    const storage = getFileStorage();
-    const uploadedFile = await storage.saveFile(file);
+    // 读取文件内容
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    // 验证文件魔数
+    const headerBuffer = buffer.slice(0, 16);
+    const { fileType: verifiedType, detectedMime } = detectFileType(mimetype, headerBuffer, file.name);
+
+    if (!verifiedType) {
+      return NextResponse.json(
+        { success: false, error: `Unsupported or invalid file type: ${mimetype}` },
+        { status: 400 }
+      );
+    }
+
+    // 保存文件
+    const finalFileId = generateFileId();
+    const ext = Object.entries(EXTENSION_TO_MIME).find(([, mime]) => mime === detectedMime)?.[0] || '';
+    const subDir = verifiedType === 'image' ? 'images' : 'videos';
+    const finalDir = path.join(process.cwd(), 'public', 'uploads', subDir);
+    if (!fs.existsSync(finalDir)) {
+      fs.mkdirSync(finalDir, { recursive: true });
+    }
+    const finalFilename = `${finalFileId}${ext}`;
+    const finalPath = path.join(finalDir, finalFilename);
+    fs.writeFileSync(finalPath, buffer);
 
     return NextResponse.json({
       success: true,
       file: {
-        id: uploadedFile.id,
-        url: uploadedFile.url,
-        type: uploadedFile.type,
-        filename: uploadedFile.filename,
-        size: uploadedFile.size,
+        id: finalFileId,
+        url: `/uploads/${subDir}/${finalFilename}`,
+        type: verifiedType,
+        filename: file.name,
+        size: file.size,
       },
     });
   } catch (error) {
     console.error('[Upload API] Error:', error);
-
-    // 返回用户友好的错误信息
-    const errorMessage = error instanceof Error
-      ? error.message
-      : 'Failed to upload file';
-
-    // 判断是否为客户端错误
-    const isClientError = errorMessage.includes('Unsupported') ||
-                          errorMessage.includes('too large') ||
-                          errorMessage.includes('Invalid');
-
+    const errorMessage = error instanceof Error ? error.message : 'Failed to upload file';
     return NextResponse.json(
-      { success: false, error: isClientError ? errorMessage : 'Failed to upload file' },
-      { status: isClientError ? 400 : 500 }
+      { success: false, error: errorMessage },
+      { status: 500 }
     );
   }
 }
 
-// 配置 Next.js 路由 - 增加请求体大小限制
-// Note: App Router 使用 route segment config
+// 配置 Next.js 路由
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
