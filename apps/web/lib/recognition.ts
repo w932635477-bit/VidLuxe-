@@ -176,16 +176,123 @@ export async function recognizeImage(
 /**
  * 使用 AI Vision API 进行识别（生产环境）
  *
- * 预留接口，后续可接入：
- * - OpenAI GPT-4 Vision
- * - 百度图像识别
- * - 阿里云视觉智能
+ * 使用 EvoLink Chat API (GPT-4o Image) 进行图像识别
  */
-export async function recognizeImageWithAI(imageUrl: string): Promise<RecognitionResult> {
-  // TODO: 接入 AI Vision API
-  // 目前回退到规则匹配
-  console.log('[Recognition] AI Vision API not yet implemented, using rule-based recognition');
-  return recognizeImage(imageUrl);
+export async function recognizeImageWithAI(
+  imageUrl: string,
+  options?: {
+    filename?: string;
+    userHint?: string;
+  }
+): Promise<RecognitionResult> {
+  const apiKey = process.env.NANO_BANANA_API_KEY;
+
+  if (!apiKey) {
+    console.log('[Recognition] No API key configured, using rule-based recognition');
+    return recognizeImage(imageUrl, options);
+  }
+
+  try {
+    console.log('[Recognition] Using AI Vision API for:', imageUrl);
+
+    const response = await fetch('https://api.evolink.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-image',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: `分析这张图片，识别以下信息（用 JSON 格式返回）：
+
+1. category: 品类类型，必须是以下之一：
+   - fashion (穿搭/服装)
+   - beauty (美妆/化妆)
+   - food (美食/餐饮)
+   - cafe (咖啡/探店)
+   - home (家居/生活)
+   - travel (旅行/风景)
+   - tech (数码/科技)
+   - fitness (健身/运动)
+
+2. categoryConfidence: 品类识别置信度 (0-1)
+
+3. seedingType: 种草类型，必须是以下之一：
+   - product (产品推荐)
+   - location (地点打卡)
+   - lifestyle (生活方式)
+
+4. seedingTypeConfidence: 种草类型置信度 (0-1)
+
+5. suggestedStyles: 推荐的风格数组，从以下选择 2 个：
+   - magazine (杂志大片)
+   - soft (温柔日系)
+   - urban (都市职场)
+   - vintage (复古胶片)
+
+${options?.userHint ? `用户提示：${options.userHint}` : ''}
+
+只返回 JSON，不要其他解释。`,
+              },
+              {
+                type: 'image_url',
+                image_url: {
+                  url: imageUrl,
+                },
+              },
+            ],
+          },
+        ],
+        max_tokens: 500,
+        temperature: 0.3,
+      }),
+    });
+
+    if (!response.ok) {
+      console.error('[Recognition] API error:', response.status);
+      return recognizeImage(imageUrl, options);
+    }
+
+    const data = await response.json();
+    const content = data.choices?.[0]?.message?.content || '';
+
+    // 解析 JSON 响应
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      console.error('[Recognition] No JSON found in response:', content);
+      return recognizeImage(imageUrl, options);
+    }
+
+    const parsed = JSON.parse(jsonMatch[0]);
+
+    // 验证并返回结果
+    const validCategories: CategoryType[] = ['fashion', 'beauty', 'food', 'cafe', 'home', 'travel', 'tech', 'fitness'];
+    const validSeedingTypes: SeedingType[] = ['product', 'location', 'lifestyle'];
+    const validStyles = ['magazine', 'soft', 'urban', 'vintage'];
+
+    const category = validCategories.includes(parsed.category) ? parsed.category : 'beauty';
+    const seedingType = validSeedingTypes.includes(parsed.seedingType) ? parsed.seedingType : 'product';
+
+    return {
+      category,
+      categoryConfidence: Math.min(1, Math.max(0, parsed.categoryConfidence || 0.8)),
+      seedingType,
+      seedingTypeConfidence: Math.min(1, Math.max(0, parsed.seedingTypeConfidence || 0.8)),
+      suggestedStyles: (parsed.suggestedStyles || ['magazine', 'soft'])
+        .filter((s: string) => validStyles.includes(s))
+        .slice(0, 2),
+    };
+  } catch (error) {
+    console.error('[Recognition] AI Vision error:', error);
+    // 回退到规则匹配
+    return recognizeImage(imageUrl, options);
+  }
 }
 
 /**

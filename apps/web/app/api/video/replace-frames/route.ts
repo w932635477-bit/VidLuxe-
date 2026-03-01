@@ -302,7 +302,9 @@ export async function POST(
     // 清理临时文件
     try {
       await fs.rm(tempDir, { recursive: true, force: true });
-    } catch {}
+    } catch (cleanupError) {
+      console.warn('[ReplaceFrames] Error cleanup failed:', cleanupError);
+    }
 
     return NextResponse.json(
       {

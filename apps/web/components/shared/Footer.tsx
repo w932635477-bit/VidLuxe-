@@ -75,7 +75,7 @@ export function Footer() {
                 rel="noopener noreferrer"
                 className="hover:text-content-tertiary transition-colors"
               >
-                苏ICP备2026XXXX号
+                蒙ICP备2026001535号
               </a>
             </p>
           </div>

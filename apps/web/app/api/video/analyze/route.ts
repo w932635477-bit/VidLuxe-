@@ -60,12 +60,48 @@ export async function POST(request: NextRequest): Promise<NextResponse<AnalyzeRe
       }
       console.log('[VideoAnalyze] File exists, size:', fs.statSync(localPath).size);
     } else if (videoUrl.startsWith('http')) {
-      // 远程 URL - 需要先下载
-      // TODO: 实现远程视频下载
-      return NextResponse.json(
-        { success: false, error: 'Remote video URL not supported yet' },
-        { status: 400 }
-      );
+      // 远程 URL - 下载到本地临时目录
+      console.log('[VideoAnalyze] Downloading remote video...');
+
+      const path = await import('path');
+      const fs = await import('fs/promises');
+      const crypto = await import('crypto');
+
+      // 创建临时目录
+      const tempDir = './tmp/video-downloads';
+      await fs.mkdir(tempDir, { recursive: true }).catch(() => {});
+
+      // 生成唯一文件名
+      const sessionId = crypto.randomBytes(8).toString('hex');
+      const tempPath = path.join(tempDir, `video_${sessionId}.mp4`);
+
+      try {
+        const response = await fetch(videoUrl, {
+          headers: {
+            'User-Agent': 'VidLuxe/1.0',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`Failed to download video: ${response.status}`);
+        }
+
+        const arrayBuffer = await response.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+        await fs.writeFile(tempPath, buffer);
+
+        localPath = tempPath;
+        console.log('[VideoAnalyze] Remote video downloaded, size:', buffer.length);
+
+        // 标记需要清理临时文件
+        const shouldCleanup = true;
+      } catch (downloadError) {
+        console.error('[VideoAnalyze] Download failed:', downloadError);
+        return NextResponse.json(
+          { success: false, error: `Failed to download video: ${downloadError instanceof Error ? downloadError.message : 'Unknown error'}` },
+          { status: 400 }
+        );
+      }
     } else {
       return NextResponse.json(
         { success: false, error: 'Invalid videoUrl' },
