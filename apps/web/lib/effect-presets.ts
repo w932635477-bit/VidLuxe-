@@ -340,6 +340,16 @@ export function getEffectsByContentType(contentType: ContentType): EffectPreset[
 }
 
 /**
+ * 获取指定内容类型的默认效果 ID
+ */
+export function getDefaultEffectId(contentType: ContentType): string {
+  const effects = getEffectsByContentType(contentType);
+  // 优先返回热门效果，否则返回第一个
+  const hotEffect = effects.find(e => e.isHot);
+  return hotEffect ? hotEffect.id : (effects[0]?.id || 'outfit-magazine');
+}
+
+/**
  * 获取热门效果（用于推荐）
  */
 export function getHotEffects(contentType: ContentType): EffectPreset[] {
