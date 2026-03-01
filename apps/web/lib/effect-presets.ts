@@ -71,8 +71,8 @@ export const OUTFIT_EFFECTS: EffectPreset[] = [
     shortName: '韩系高级',
     contentType: 'outfit',
     preview: {
-      before: '/comparisons/fashion-1-original.jpg',
-      after: '/comparisons/outfit-soft.jpg',
+      before: '/comparisons/outfit-korean-before.jpg',
+      after: '/comparisons/outfit-soft.jpg', // 临时使用，待生成专属图
     },
     promptTemplate: 'Korean fashion photography, premium aesthetic, soft beige and milk tea tones, elegant and sophisticated, clean minimal background, natural lighting, high-end editorial, modern Korean style, subtle warmth',
     negativePrompt: 'harsh, oversaturated, cluttered, amateur, low quality',
@@ -116,8 +116,8 @@ export const OUTFIT_EFFECTS: EffectPreset[] = [
     shortName: '街头酷感',
     contentType: 'outfit',
     preview: {
-      before: '/comparisons/fashion-1-original.jpg',
-      after: '/comparisons/outfit-magazine.jpg',
+      before: '/comparisons/outfit-street-before.jpg',
+      after: '/comparisons/outfit-street-after.jpg',
     },
     promptTemplate: 'Street photography style, high contrast, urban cool aesthetic, bold shadows, editorial street fashion, gritty texture, dynamic composition, modern edge, fashion-forward',
     negativePrompt: 'soft, pastel, gentle, traditional, boring',
@@ -131,8 +131,8 @@ export const OUTFIT_EFFECTS: EffectPreset[] = [
     shortName: '极简纯净',
     contentType: 'outfit',
     preview: {
-      before: '/comparisons/fashion-1-original.jpg',
-      after: '/comparisons/outfit-urban.jpg',
+      before: '/comparisons/outfit-minimal-before.jpg',
+      after: '/comparisons/outfit-minimal-after.jpg',
     },
     promptTemplate: 'Minimalist aesthetic, clean lines, neutral gray tones, Scandinavian style, pure and simple, high-key lighting, white space, elegant simplicity, modern editorial',
     negativePrompt: 'cluttered, colorful, busy, chaotic, dark',
@@ -146,8 +146,8 @@ export const OUTFIT_EFFECTS: EffectPreset[] = [
     shortName: '温暖惬意',
     contentType: 'outfit',
     preview: {
-      before: '/comparisons/fashion-1-original.jpg',
-      after: '/comparisons/outfit-vintage.jpg',
+      before: '/comparisons/outfit-korean-before.jpg', // 临时使用
+      after: '/comparisons/outfit-vintage.jpg', // 临时使用
     },
     promptTemplate: 'Warm autumn atmosphere, cozy feeling, golden hour lighting, earthy tones, brown and amber colors, comfortable and inviting, lifestyle photography, natural warmth',
     negativePrompt: 'cold, blue, harsh, artificial, sterile',
