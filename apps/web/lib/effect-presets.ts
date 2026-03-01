@@ -41,8 +41,8 @@ export const OUTFIT_EFFECTS: EffectPreset[] = [
     shortName: '杂志大片',
     contentType: 'outfit',
     preview: {
-      before: '/comparisons/fashion-1-original.jpg',
-      after: '/comparisons/outfit-magazine.jpg',
+      before: '/hero/hero-new-before.jpg',
+      after: '/hero/hero-new-after.jpg',
     },
     promptTemplate: 'Vogue magazine editorial style, luxury fashion aesthetic, warm golden lighting, sophisticated and elegant, professional model photography, high-end beauty editorial, warm beige and champagne tones, cinematic background, soft studio lighting, premium quality, editorial composition',
     negativePrompt: 'amateur, low quality, blurry, distorted, ugly, bad anatomy, bad proportions, watermark, signature',
@@ -72,7 +72,7 @@ export const OUTFIT_EFFECTS: EffectPreset[] = [
     contentType: 'outfit',
     preview: {
       before: '/comparisons/fashion-1-original.jpg',
-      after: '/comparisons/outfit-korean.jpg',
+      after: '/comparisons/outfit-soft.jpg',
     },
     promptTemplate: 'Korean fashion photography, premium aesthetic, soft beige and milk tea tones, elegant and sophisticated, clean minimal background, natural lighting, high-end editorial, modern Korean style, subtle warmth',
     negativePrompt: 'harsh, oversaturated, cluttered, amateur, low quality',
@@ -117,7 +117,7 @@ export const OUTFIT_EFFECTS: EffectPreset[] = [
     contentType: 'outfit',
     preview: {
       before: '/comparisons/fashion-1-original.jpg',
-      after: '/comparisons/outfit-street.jpg',
+      after: '/comparisons/outfit-magazine.jpg',
     },
     promptTemplate: 'Street photography style, high contrast, urban cool aesthetic, bold shadows, editorial street fashion, gritty texture, dynamic composition, modern edge, fashion-forward',
     negativePrompt: 'soft, pastel, gentle, traditional, boring',
@@ -132,7 +132,7 @@ export const OUTFIT_EFFECTS: EffectPreset[] = [
     contentType: 'outfit',
     preview: {
       before: '/comparisons/fashion-1-original.jpg',
-      after: '/comparisons/outfit-minimal.jpg',
+      after: '/comparisons/outfit-urban.jpg',
     },
     promptTemplate: 'Minimalist aesthetic, clean lines, neutral gray tones, Scandinavian style, pure and simple, high-key lighting, white space, elegant simplicity, modern editorial',
     negativePrompt: 'cluttered, colorful, busy, chaotic, dark',
@@ -147,7 +147,7 @@ export const OUTFIT_EFFECTS: EffectPreset[] = [
     contentType: 'outfit',
     preview: {
       before: '/comparisons/fashion-1-original.jpg',
-      after: '/comparisons/outfit-warm.jpg',
+      after: '/comparisons/outfit-vintage.jpg',
     },
     promptTemplate: 'Warm autumn atmosphere, cozy feeling, golden hour lighting, earthy tones, brown and amber colors, comfortable and inviting, lifestyle photography, natural warmth',
     negativePrompt: 'cold, blue, harsh, artificial, sterile',
