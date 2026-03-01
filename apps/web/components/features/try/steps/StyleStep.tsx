@@ -7,15 +7,17 @@
 'use client';
 
 import { useCallback, useEffect } from 'react';
-import { useTryStore, type MultiStyleType } from '@/lib/stores/try-store';
+import { useTryStore, type MultiStyleType, type EffectSourceType } from '@/lib/stores/try-store';
 import { useCreditsStore } from '@/lib/stores/credits-store';
 import {
-  StyleSourceSelector,
+  EffectSourceSelector,
   StyleMultiSelector,
   BatchPreviewGrid,
   StepIndicator,
 } from '@/components/features/try';
 import { getRecommendedStyles } from '@/lib/category-modifiers';
+import { getEffectById } from '@/lib/effect-presets';
+import type { ContentType } from '@/lib/content-types';
 import type { StyleType, CategoryType } from '@/lib/stores/try-store';
 
 // 品类中文名称映射
@@ -30,6 +32,18 @@ const CATEGORY_LABELS: Record<CategoryType, string> = {
   fitness: '健身',
 };
 
+// 品类类型到内容类型的映射
+const CATEGORY_TO_CONTENT_TYPE: Record<CategoryType, ContentType> = {
+  fashion: 'outfit',
+  beauty: 'beauty',
+  food: 'food',
+  cafe: 'cafe',
+  home: 'outfit', // home 暂时映射到 outfit
+  travel: 'travel',
+  tech: 'outfit', // tech 暂时映射到 outfit
+  fitness: 'outfit', // fitness 暂时映射到 outfit
+};
+
 interface StyleStepProps {
   onStartProcessing: () => void;
   onBack: () => void;
@@ -42,8 +56,9 @@ export function StyleStep({ onStartProcessing, onBack }: StyleStepProps) {
     uploadMode,
     batchFiles,
     selectedStyles,
-    styleSourceType,
-    selectedPreset,
+    effectSourceType,
+    selectedEffectId,
+    effectIntensity,
     referenceFile,
     referenceFileUrl,
     showConfirmModal,
@@ -53,8 +68,9 @@ export function StyleStep({ onStartProcessing, onBack }: StyleStepProps) {
     selectedCategory,
     setStep,
     setSelectedStyles,
-    setStyleSourceType,
-    setSelectedPreset,
+    setEffectSourceType,
+    setSelectedEffectId,
+    setEffectIntensity,
     setReferenceFile,
     setReferenceFileUrl,
     removeBatchFile,
@@ -69,18 +85,19 @@ export function StyleStep({ onStartProcessing, onBack }: StyleStepProps) {
   const recommendedStyles = selectedCategory ? getRecommendedStyles(selectedCategory) : [];
   const categoryLabel = selectedCategory ? CATEGORY_LABELS[selectedCategory] : undefined;
 
+  // 获取效果选择器使用的内容类型（将品类映射到内容类型）
+  const effectContentType: ContentType = selectedCategory
+    ? CATEGORY_TO_CONTENT_TYPE[selectedCategory]
+    : 'outfit';
+
   // 获取风格描述
   const getStyleDescription = () => {
-    if (styleSourceType === 'reference' && referenceFile) {
+    if (effectSourceType === 'reference' && referenceFile) {
       return '自定义风格（AI 学习）';
     }
-    const presetNames: Record<StyleType, string> = {
-      magazine: '杂志大片',
-      soft: '温柔日系',
-      urban: '都市职场',
-      vintage: '复古胶片',
-    };
-    return presetNames[selectedPreset] || selectedPreset;
+    // 从效果预设中获取名称
+    const effect = getEffectById(selectedEffectId);
+    return effect?.name || '效果库选择';
   };
 
   // 计算消耗
@@ -196,13 +213,16 @@ export function StyleStep({ onStartProcessing, onBack }: StyleStepProps) {
             categoryLabel={categoryLabel}
           />
         ) : (
-          <StyleSourceSelector
-            sourceType={styleSourceType}
-            onSourceTypeChange={setStyleSourceType}
+          <EffectSourceSelector
+            sourceType={effectSourceType}
+            onSourceTypeChange={setEffectSourceType}
             referenceFile={referenceFile}
             onReferenceFileChange={setReferenceFile}
-            selectedPreset={selectedPreset}
-            onPresetChange={setSelectedPreset}
+            selectedEffectId={selectedEffectId}
+            onEffectChange={setSelectedEffectId}
+            effectIntensity={effectIntensity}
+            onIntensityChange={setEffectIntensity}
+            contentType={effectContentType}
           />
         )}
       </div>
