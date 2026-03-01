@@ -1,47 +1,97 @@
 /**
- * 微信支付回调 API
+ * 微信支付回调 API (V3)
  * POST /api/webhook/wechat
  *
  * 处理微信支付结果通知
  */
 import { NextRequest, NextResponse } from 'next/server';
-import { parseNotifyXml, generateNotifyResponse, verifyNotify } from '@/lib/wechat-pay';
+import {
+  decryptNotifyResource,
+  generateNotifySuccessResponse,
+  generateNotifyFailResponse,
+} from '@/lib/wechat-pay';
 import { markOrderAsPaid } from '@/lib/payment/service';
 
 export async function POST(request: NextRequest) {
   try {
     // 读取回调数据
     const body = await request.text();
+    const data = JSON.parse(body);
 
-    // 解析 XML
-    const params = parseNotifyXml(body);
+    // V3 API 回调格式
+    // {
+    //   "id": "...",
+    //   "create_time": "...",
+    //   "resource_type": "encrypt-resource",
+    //   "event_type": "TRANSACTION.SUCCESS",
+    //   "resource": {
+    //     "algorithm": "AEAD_AES_256_GCM",
+    //     "ciphertext": "...",
+    //     "associated_data": "",
+    //     "nonce": "..."
+    //   }
+    // }
 
-    // 验证签名
-    const sign = params.sign || '';
-    if (!verifyNotify(params, sign)) {
-      console.error('Invalid signature');
-      return new NextResponse(generateNotifyResponse(false, '签名验证失败'), {
-        headers: { 'Content-Type': 'application/xml' }
+    // 验证事件类型
+    if (data.event_type !== 'TRANSACTION.SUCCESS') {
+      console.log('Ignoring non-success event:', data.event_type);
+      return new NextResponse(generateNotifySuccessResponse(), {
+        headers: { 'Content-Type': 'application/json' },
       });
     }
 
-    // 检查支付结果
-    const returnCode = params.return_code;
-    const resultCode = params.result_code;
-
-    if (returnCode !== 'SUCCESS' || resultCode !== 'SUCCESS') {
-      console.error('Payment failed:', params);
-      return new NextResponse(generateNotifyResponse(false, '支付失败'), {
-        headers: { 'Content-Type': 'application/xml' }
+    // 解密回调数据
+    const resource = data.resource;
+    if (!resource || !resource.ciphertext) {
+      console.error('Missing resource in notify');
+      return new NextResponse(generateNotifyFailResponse('缺少资源数据'), {
+        headers: { 'Content-Type': 'application/json' },
       });
     }
 
-    const outTradeNo = params.out_trade_no;
-    const transactionId = params.transaction_id;
+    const decryptedData = decryptNotifyResource({
+      ciphertext: resource.ciphertext,
+      associated_data: resource.associated_data || '',
+      nonce: resource.nonce,
+    });
+
+    if (!decryptedData) {
+      console.error('Failed to decrypt notify resource');
+      return new NextResponse(generateNotifyFailResponse('解密失败'), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    console.log('Decrypted notify data:', decryptedData);
+
+    // 解密后的数据格式
+    // {
+    //   "mchid": "...",
+    //   "appid": "...",
+    //   "out_trade_no": "...",
+    //   "transaction_id": "...",
+    //   "trade_type": "JSAPI/NATIVE",
+    //   "trade_state": "SUCCESS",
+    //   "success_time": "...",
+    //   "amount": { "total": 100, "currency": "CNY" },
+    //   "payer": { "openid": "..." }
+    // }
+
+    const outTradeNo = decryptedData.out_trade_no as string;
+    const transactionId = decryptedData.transaction_id as string;
+    const tradeState = decryptedData.trade_state as string;
 
     if (!outTradeNo) {
-      return new NextResponse(generateNotifyResponse(false, '缺少订单号'), {
-        headers: { 'Content-Type': 'application/xml' }
+      return new NextResponse(generateNotifyFailResponse('缺少订单号'), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // 检查支付状态
+    if (tradeState !== 'SUCCESS') {
+      console.log('Trade state is not success:', tradeState);
+      return new NextResponse(generateNotifySuccessResponse(), {
+        headers: { 'Content-Type': 'application/json' },
       });
     }
 
@@ -50,8 +100,8 @@ export async function POST(request: NextRequest) {
 
     if (!result.success) {
       console.error('Failed to mark order as paid:', result.error);
-      return new NextResponse(generateNotifyResponse(false, result.error || '处理失败'), {
-        headers: { 'Content-Type': 'application/xml' }
+      return new NextResponse(generateNotifyFailResponse(result.error || '处理失败'), {
+        headers: { 'Content-Type': 'application/json' },
       });
     }
 
@@ -59,16 +109,17 @@ export async function POST(request: NextRequest) {
     console.log('Payment success:', {
       outTradeNo,
       transactionId,
+      tradeType: decryptedData.trade_type,
     });
 
     // 返回成功响应
-    return new NextResponse(generateNotifyResponse(true), {
-      headers: { 'Content-Type': 'application/xml' }
+    return new NextResponse(generateNotifySuccessResponse(), {
+      headers: { 'Content-Type': 'application/json' },
     });
   } catch (error) {
     console.error('Webhook error:', error);
-    return new NextResponse(generateNotifyResponse(false, '服务器错误'), {
-      headers: { 'Content-Type': 'application/xml' }
+    return new NextResponse(generateNotifyFailResponse('服务器错误'), {
+      headers: { 'Content-Type': 'application/json' },
     });
   }
 }
@@ -76,7 +127,7 @@ export async function POST(request: NextRequest) {
 // GET 请求用于验证 URL 有效性
 export async function GET(request: NextRequest) {
   return NextResponse.json({
-    message: 'WeChat Pay Webhook Endpoint',
-    status: 'active'
+    message: 'WeChat Pay Webhook Endpoint (V3)',
+    status: 'active',
   });
 }

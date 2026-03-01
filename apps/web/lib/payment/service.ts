@@ -1,12 +1,22 @@
 /**
  * 支付服务 - 与 Supabase 交互的支付订单管理
+ * 支持 JSAPI（小程序）和 Native（扫码）支付
  */
 import { createClient } from '@/lib/supabase/server';
-import { createNativeOrder, queryOrder as queryWechatOrder, generateOutTradeNo } from '@/lib/wechat-pay';
+import {
+  createJSAPIOrder,
+  createNativeOrder,
+  queryOrder as queryWechatOrder,
+  generateOutTradeNo,
+  type JSAPIOrderResult,
+  type NativeOrderResult,
+} from '@/lib/wechat-pay';
 
 // ============================================
 // 类型定义
 // ============================================
+
+export type PayType = 'jsapi' | 'native';
 
 export interface CreditPackage {
   id: string;
@@ -29,6 +39,7 @@ export interface PaymentOrder {
   transaction_id: string | null;
   paid_at: string | null;
   created_at: string;
+  pay_type?: PayType;
 }
 
 // ============================================
@@ -74,14 +85,27 @@ export function getPackageById(packageId: string): CreditPackage | undefined {
 // 订单管理
 // ============================================
 
+export interface CreatePaymentOrderParams {
+  userId: string;
+  packageId: string;
+  payType?: PayType; // 默认 native
+  openid?: string; // JSAPI 支付需要 openid
+}
+
+export interface CreatePaymentOrderResult {
+  order?: PaymentOrder;
+  codeUrl?: string; // Native 支付的二维码链接
+  miniProgramPayParams?: JSAPIOrderResult['miniProgramPayParams']; // 小程序支付参数
+  error?: string;
+}
+
 /**
  * 创建支付订单
  */
-export async function createPaymentOrder(params: {
-  userId: string;
-  packageId: string;
-}): Promise<{ order?: PaymentOrder; codeUrl?: string; error?: string }> {
-  const pkg = getPackageById(params.packageId);
+export async function createPaymentOrder(params: CreatePaymentOrderParams): Promise<CreatePaymentOrderResult> {
+  const { userId, packageId, payType = 'native', openid } = params;
+
+  const pkg = getPackageById(packageId);
   if (!pkg) {
     return { error: '套餐不存在' };
   }
@@ -90,22 +114,50 @@ export async function createPaymentOrder(params: {
     return { error: '免费套餐无需购买' };
   }
 
+  // JSAPI 支付需要 openid
+  if (payType === 'jsapi' && !openid) {
+    return { error: 'JSAPI 支付需要用户 openid' };
+  }
+
   try {
     const supabase = await createClient();
 
     // 生成订单号
     const outTradeNo = generateOutTradeNo();
 
-    // 调用微信支付创建 Native 订单
-    const orderResult = await createNativeOrder({
-      outTradeNo,
-      totalFee: pkg.price,
-      body: `VidLuxe - ${pkg.name} (${pkg.credits}次)`,
-      productId: pkg.id,
-    });
+    // 调用微信支付创建订单
+    let orderResult: JSAPIOrderResult | NativeOrderResult;
+    let codeUrl: string | undefined;
+    let miniProgramPayParams: JSAPIOrderResult['miniProgramPayParams'] | undefined;
 
-    if (orderResult.error) {
-      return { error: orderResult.error };
+    if (payType === 'jsapi') {
+      // 小程序支付
+      orderResult = await createJSAPIOrder({
+        outTradeNo,
+        totalFee: pkg.price,
+        body: `VidLuxe - ${pkg.name} (${pkg.credits}次)`,
+        openid: openid!,
+      });
+
+      if (orderResult.error) {
+        return { error: orderResult.error };
+      }
+
+      miniProgramPayParams = orderResult.miniProgramPayParams;
+    } else {
+      // Native 扫码支付
+      orderResult = await createNativeOrder({
+        outTradeNo,
+        totalFee: pkg.price,
+        body: `VidLuxe - ${pkg.name} (${pkg.credits}次)`,
+        productId: pkg.id,
+      });
+
+      if (orderResult.error) {
+        return { error: orderResult.error };
+      }
+
+      codeUrl = orderResult.codeUrl;
     }
 
     // 计算过期时间（2小时后）
@@ -116,12 +168,13 @@ export async function createPaymentOrder(params: {
       .from('payment_orders')
       .insert({
         out_trade_no: outTradeNo,
-        user_id: params.userId,
-        package_id: params.packageId,
+        user_id: userId,
+        package_id: packageId,
         amount: pkg.price,
         credits: pkg.credits,
         status: 'pending',
-        code_url: orderResult.codeUrl,
+        code_url: codeUrl || null,
+        pay_type: payType,
         expired_at: expiredAt,
       })
       .select()
@@ -134,7 +187,8 @@ export async function createPaymentOrder(params: {
 
     return {
       order: order as PaymentOrder,
-      codeUrl: orderResult.codeUrl,
+      codeUrl,
+      miniProgramPayParams,
     };
   } catch (error) {
     console.error('Create payment order error:', error);
