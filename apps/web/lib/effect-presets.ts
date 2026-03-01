@@ -86,8 +86,8 @@ export const OUTFIT_EFFECTS: EffectPreset[] = [
     shortName: '复古胶片',
     contentType: 'outfit',
     preview: {
-      before: '/comparisons/fashion-1-original.jpg',
-      after: '/comparisons/outfit-vintage.jpg',
+      before: '/comparisons/outfit-vintage-before.jpg',
+      after: '/comparisons/outfit-vintage-after.jpg',
     },
     promptTemplate: 'Kodak Portra 400 film look, vintage aesthetic, warm film grain, cinematic color grading, nostalgic atmosphere, retro style, artistic, soft highlights, subtle vignette, analog photography feel',
     negativePrompt: 'digital, sharp, clean, modern, sterile, oversaturated, HDR, artificial lighting',
@@ -101,8 +101,8 @@ export const OUTFIT_EFFECTS: EffectPreset[] = [
     shortName: '都市职场',
     contentType: 'outfit',
     preview: {
-      before: '/comparisons/fashion-1-original.jpg',
-      after: '/comparisons/outfit-urban.jpg',
+      before: '/comparisons/outfit-urban-before.jpg',
+      after: '/comparisons/outfit-urban-after.jpg',
     },
     promptTemplate: 'Apple keynote style, clean professional background, cool blue-gray tones, corporate executive aesthetic, modern minimalist, trustworthy and authoritative, soft diffused lighting, sharp details, premium corporate style',
     negativePrompt: 'casual, messy, warm tones, rustic, vintage, playful, informal, cluttered',
