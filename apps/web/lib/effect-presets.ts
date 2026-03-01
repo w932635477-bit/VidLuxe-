@@ -72,7 +72,7 @@ export const OUTFIT_EFFECTS: EffectPreset[] = [
     contentType: 'outfit',
     preview: {
       before: '/comparisons/outfit-korean-before.jpg',
-      after: '/comparisons/outfit-soft.jpg', // 临时使用，待生成专属图
+      after: '/comparisons/outfit-korean-after.jpg',
     },
     promptTemplate: 'Korean fashion photography, premium aesthetic, soft beige and milk tea tones, elegant and sophisticated, clean minimal background, natural lighting, high-end editorial, modern Korean style, subtle warmth',
     negativePrompt: 'harsh, oversaturated, cluttered, amateur, low quality',
@@ -146,8 +146,8 @@ export const OUTFIT_EFFECTS: EffectPreset[] = [
     shortName: '温暖惬意',
     contentType: 'outfit',
     preview: {
-      before: '/comparisons/outfit-korean-before.jpg', // 临时使用
-      after: '/comparisons/outfit-vintage.jpg', // 临时使用
+      before: '/comparisons/outfit-warm-before.jpg',
+      after: '/comparisons/outfit-warm-after.jpg',
     },
     promptTemplate: 'Warm autumn atmosphere, cozy feeling, golden hour lighting, earthy tones, brown and amber colors, comfortable and inviting, lifestyle photography, natural warmth',
     negativePrompt: 'cold, blue, harsh, artificial, sterile',
