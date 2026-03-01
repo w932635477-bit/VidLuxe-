@@ -30,5 +30,7 @@ export type { ContentType } from '@/lib/content-types';
 // 效果选择器相关
 export { BeforeAfterSlider } from './BeforeAfterSlider';
 export { EffectSelector } from './EffectSelector';
+export { EffectSourceSelector } from './EffectSourceSelector';
+export type { EffectSourceType } from './EffectSourceSelector';
 export type { EffectPreset } from '@/lib/effect-presets';
 export { getEffectsByContentType, getEffectById, getDefaultEffectId } from '@/lib/effect-presets';

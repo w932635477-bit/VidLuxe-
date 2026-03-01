@@ -20,6 +20,7 @@ import { immer } from 'zustand/middleware/immer';
 import { devtools } from 'zustand/middleware';
 import type { CategoryType, SeedingType } from '@/lib/types/seeding';
 import type { KeyFrame as KeyFrameBase } from '@/lib/types/try-page';
+import type { EffectPreset } from '@/lib/effect-presets';
 
 // ============================================
 // 类型定义
@@ -40,6 +41,9 @@ export type StyleSourceType = 'preset' | 'reference';
 
 export type StyleType = 'magazine' | 'soft' | 'urban' | 'vintage';
 export type MultiStyleType = 'magazine' | 'soft' | 'urban' | 'vintage';
+
+// 效果来源类型
+export type EffectSourceType = 'reference' | 'effect';
 
 // 重新导出 seeding 类型，方便使用
 export type { CategoryType, SeedingType } from '@/lib/types/seeding';
@@ -147,6 +151,11 @@ interface TryState {
   inviteCodeInput: string;
   inviteApplied: boolean;
   inviteError: string | null;
+
+  // 新增：效果系统
+  selectedEffectId: string;
+  effectIntensity: number;
+  effectSourceType: EffectSourceType;
 }
 
 interface TryActions {
@@ -211,6 +220,11 @@ interface TryActions {
   setInviteCodeInput: (input: string) => void;
   setInviteApplied: (applied: boolean) => void;
   setInviteError: (error: string | null) => void;
+
+  // 新增：效果系统
+  setSelectedEffectId: (id: string) => void;
+  setEffectIntensity: (intensity: number) => void;
+  setEffectSourceType: (type: EffectSourceType) => void;
 
   // 重置
   reset: () => void;
@@ -282,6 +296,11 @@ const initialState: TryState = {
   inviteCodeInput: '',
   inviteApplied: false,
   inviteError: null,
+
+  // 新增：效果系统
+  selectedEffectId: '',
+  effectIntensity: 100,
+  effectSourceType: 'effect',
 };
 
 // ============================================
@@ -367,6 +386,11 @@ export const useTryStore = create<TryState & TryActions>()(
       setInviteApplied: (inviteApplied) => set({ inviteApplied }, false, 'setInviteApplied'),
       setInviteError: (inviteError) => set({ inviteError }, false, 'setInviteError'),
 
+      // 新增：效果系统
+      setSelectedEffectId: (selectedEffectId) => set({ selectedEffectId }, false, 'setSelectedEffectId'),
+      setEffectIntensity: (effectIntensity) => set({ effectIntensity }, false, 'setEffectIntensity'),
+      setEffectSourceType: (effectSourceType) => set({ effectSourceType }, false, 'setEffectSourceType'),
+
       // 重置
       reset: () => set(initialState, false, 'reset'),
       resetToUpload: () =>
@@ -395,3 +419,8 @@ export const selectBatchResults = (state: TryState) => state.batchResults;
 export const selectBatchFiles = (state: TryState) => state.batchFiles;
 export const selectShowCreditModal = (state: TryState) => state.showCreditModal;
 export const selectCreditRequired = (state: TryState) => state.creditRequired;
+
+// 效果系统 selectors
+export const selectSelectedEffectId = (state: TryState) => state.selectedEffectId;
+export const selectEffectIntensity = (state: TryState) => state.effectIntensity;
+export const selectEffectSourceType = (state: TryState) => state.effectSourceType;
