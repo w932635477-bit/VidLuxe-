@@ -26,3 +26,9 @@ export { ModeTabs, type FlowMode } from './ModeTabs';
 export { ContentTypeSelector } from './ContentTypeSelector';
 export { StyleFlowSelector } from './StyleFlowSelector';
 export type { ContentType } from '@/lib/content-types';
+
+// 效果选择器相关
+export { BeforeAfterSlider } from './BeforeAfterSlider';
+export { EffectSelector } from './EffectSelector';
+export type { EffectPreset } from '@/lib/effect-presets';
+export { getEffectsByContentType, getEffectById, getDefaultEffectId } from '@/lib/effect-presets';
