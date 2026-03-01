@@ -10,6 +10,7 @@ import { useCallback, useState } from 'react';
 import { useTryStore } from '@/lib/stores/try-store';
 import { useCreditsStore } from '@/lib/stores/credits-store';
 import { UploadSection, BatchPreviewGrid } from '@/components/features/try';
+import { uploadFile } from '@/lib/actions/upload';
 
 interface UploadStepProps {
   onUploadComplete: () => void;
@@ -51,17 +52,12 @@ export function UploadStep({ onUploadComplete }: UploadStepProps) {
     setPreviewUrl(preview);
     setUploadedFile(file);
 
-    // 上传文件
+    // 上传文件（使用 Server Action）
     const formData = new FormData();
     formData.append('file', file);
 
     try {
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await response.json();
+      const data = await uploadFile(formData);
 
       if (data.success && data.file) {
         setUploadedFileUrl(data.file.url);
@@ -77,6 +73,8 @@ export function UploadStep({ onUploadComplete }: UploadStepProps) {
           setSelectedSeedingType('product');
           onUploadComplete();
         }, 1000);
+      } else {
+        console.error('Upload failed:', data.error);
       }
     } catch (error) {
       console.error('Upload failed:', error);
@@ -97,7 +95,7 @@ export function UploadStep({ onUploadComplete }: UploadStepProps) {
     setContentType('image');
     setUploadMode('batch'); // 设置批量模式
 
-    // 并发上传所有文件
+    // 并发上传所有文件（使用 Server Action）
     await Promise.all(
       newItems.map(async (item) => {
         updateBatchFile(item.id, { status: 'uploading' });
@@ -106,12 +104,7 @@ export function UploadStep({ onUploadComplete }: UploadStepProps) {
           const formData = new FormData();
           formData.append('file', item.file);
 
-          const response = await fetch('/api/upload', {
-            method: 'POST',
-            body: formData,
-          });
-
-          const data = await response.json();
+          const data = await uploadFile(formData);
 
           if (data.success && data.file) {
             updateBatchFile(item.id, {
@@ -353,14 +346,13 @@ export function UploadStep({ onUploadComplete }: UploadStepProps) {
                       }));
                       setBatchFiles([...batchFiles, ...additionalItems]);
 
-                      // 上传新文件
+                      // 上传新文件（使用 Server Action）
                       for (const item of additionalItems) {
                         updateBatchFile(item.id, { status: 'uploading' });
                         try {
                           const formData = new FormData();
                           formData.append('file', item.file);
-                          const response = await fetch('/api/upload', { method: 'POST', body: formData });
-                          const data = await response.json();
+                          const data = await uploadFile(formData);
                           if (data.success && data.file) {
                             updateBatchFile(item.id, { status: 'success', uploadedUrl: data.file.url });
                           } else {

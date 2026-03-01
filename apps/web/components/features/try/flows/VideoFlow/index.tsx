@@ -13,6 +13,7 @@ import { useCreditsStore } from '@/lib/stores/credits-store';
 import { ProcessingAnimation } from '@/components/features/try/flows/shared/ProcessingAnimation';
 import { KeyframeSelector } from './KeyframeSelector';
 import { StyleFlowSelector } from '@/components/features/try/StyleFlowSelector';
+import { uploadFile } from '@/lib/actions/upload';
 import type { StyleType, KeyFrame } from '@/lib/types/flow';
 import type { ContentType } from '@/lib/content-types';
 
@@ -205,13 +206,12 @@ export function VideoFlow() {
     setPreviewUrl(preview);
     setUploadedFile(file);
 
-    // 上传文件
+    // 上传文件（使用 Server Action）
     setIsLoading(true);
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const response = await fetch('/api/upload', { method: 'POST', body: formData });
-      const data = await response.json();
+      const data = await uploadFile(formData);
 
       if (data.success && data.file) {
         setUploadedFileUrl(data.file.url);

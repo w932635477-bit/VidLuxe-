@@ -12,6 +12,7 @@ import { useImageBatchStore } from '@/lib/stores/flows';
 import { useCreditsStore } from '@/lib/stores/credits-store';
 import { ProcessingAnimation } from '@/components/features/try/flows/shared/ProcessingAnimation';
 import { ContentTypeSelector } from '@/components/features/try/ContentTypeSelector';
+import { uploadFile } from '@/lib/actions/upload';
 import type { BatchFileItem, StyleType, BatchResultItem } from '@/lib/types/flow';
 import type { ContentType } from '@/lib/content-types';
 
@@ -82,15 +83,14 @@ export function ImageBatchFlow() {
 
     setBatchFiles(newItems);
 
-    // 并发上传所有文件
+    // 并发上传所有文件（使用 Server Action）
     await Promise.all(
       newItems.map(async (item) => {
         updateBatchFile(item.id, { status: 'uploading' });
         try {
           const formData = new FormData();
           formData.append('file', item.file);
-          const response = await fetch('/api/upload', { method: 'POST', body: formData });
-          const data = await response.json();
+          const data = await uploadFile(formData);
           if (data.success && data.file) {
             updateBatchFile(item.id, { status: 'success', uploadedUrl: data.file.url });
           } else {

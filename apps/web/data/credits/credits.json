@@ -793,9 +793,9 @@
   },
   "anon_1771986206477_ezpa4jkb": {
     "anonymousId": "anon_1771986206477_ezpa4jkb",
-    "balance": 0,
-    "totalEarned": 0,
-    "totalSpent": 3,
+    "balance": 1,
+    "totalEarned": 1,
+    "totalSpent": 5,
     "packages": [],
     "inviteCredits": [],
     "transactions": [
@@ -819,15 +819,29 @@
         "type": "spend",
         "description": "生成图片",
         "createdAt": 1772025929465
+      },
+      {
+        "id": "txn_1772344346096_cd2nrxj6",
+        "amount": -1,
+        "type": "spend",
+        "description": "生成图片",
+        "createdAt": 1772344346096
+      },
+      {
+        "id": "txn_1772344472318_nakt0uok",
+        "amount": 1,
+        "type": "refund",
+        "description": "退回额度: 任务失败: Task timeout - please try again",
+        "createdAt": 1772344472318
       }
     ],
     "freeCredits": {
       "monthlyLimit": 3,
-      "usedThisMonth": 3,
-      "resetAt": 1772294400000
+      "usedThisMonth": 1,
+      "resetAt": 1774972800000
     },
     "createdAt": 1771986206571,
-    "updatedAt": 1772025929465
+    "updatedAt": 1772344472319
   },
   "anon_1771994688388_om03ubo5": {
     "anonymousId": "anon_1771994688388_om03ubo5",
@@ -1306,17 +1320,25 @@
     "anonymousId": "test-user-123",
     "balance": 0,
     "totalEarned": 0,
-    "totalSpent": 0,
+    "totalSpent": 1,
     "packages": [],
     "inviteCredits": [],
-    "transactions": [],
+    "transactions": [
+      {
+        "id": "txn_1772343975982_3cvr68cz",
+        "amount": -1,
+        "type": "spend",
+        "description": "生成图片",
+        "createdAt": 1772343975982
+      }
+    ],
     "freeCredits": {
       "monthlyLimit": 3,
-      "usedThisMonth": 0,
-      "resetAt": 1772294400000
+      "usedThisMonth": 1,
+      "resetAt": 1774972800000
     },
     "createdAt": 1772068363735,
-    "updatedAt": 1772068363735
+    "updatedAt": 1772343975982
   },
   "test123": {
     "anonymousId": "test123",
@@ -1547,5 +1569,189 @@
     },
     "createdAt": 1772199446028,
     "updatedAt": 1772201966181
+  },
+  "test-user-456": {
+    "anonymousId": "test-user-456",
+    "balance": 0,
+    "totalEarned": 0,
+    "totalSpent": 1,
+    "packages": [],
+    "inviteCredits": [],
+    "transactions": [
+      {
+        "id": "txn_1772344005058_vz53fc8w",
+        "amount": -1,
+        "type": "spend",
+        "description": "生成图片",
+        "createdAt": 1772344005058
+      }
+    ],
+    "freeCredits": {
+      "monthlyLimit": 3,
+      "usedThisMonth": 1,
+      "resetAt": 1774972800000
+    },
+    "createdAt": 1772344005057,
+    "updatedAt": 1772344005058
+  },
+  "test-effect-outfit-magazine": {
+    "anonymousId": "test-effect-outfit-magazine",
+    "balance": 0,
+    "totalEarned": 0,
+    "totalSpent": 1,
+    "packages": [],
+    "inviteCredits": [],
+    "transactions": [
+      {
+        "id": "txn_1772344036577_9owyra4v",
+        "amount": -1,
+        "type": "spend",
+        "description": "生成图片",
+        "createdAt": 1772344036577
+      }
+    ],
+    "freeCredits": {
+      "monthlyLimit": 3,
+      "usedThisMonth": 1,
+      "resetAt": 1774972800000
+    },
+    "createdAt": 1772344036576,
+    "updatedAt": 1772344036578
+  },
+  "test-effect-outfit-soft": {
+    "anonymousId": "test-effect-outfit-soft",
+    "balance": 0,
+    "totalEarned": 0,
+    "totalSpent": 1,
+    "packages": [],
+    "inviteCredits": [],
+    "transactions": [
+      {
+        "id": "txn_1772344036605_v2ubqmaj",
+        "amount": -1,
+        "type": "spend",
+        "description": "生成图片",
+        "createdAt": 1772344036605
+      }
+    ],
+    "freeCredits": {
+      "monthlyLimit": 3,
+      "usedThisMonth": 1,
+      "resetAt": 1774972800000
+    },
+    "createdAt": 1772344036604,
+    "updatedAt": 1772344036605
+  },
+  "test-effect-outfit-korean-premium": {
+    "anonymousId": "test-effect-outfit-korean-premium",
+    "balance": 0,
+    "totalEarned": 0,
+    "totalSpent": 1,
+    "packages": [],
+    "inviteCredits": [],
+    "transactions": [
+      {
+        "id": "txn_1772344036622_4t4rf35v",
+        "amount": -1,
+        "type": "spend",
+        "description": "生成图片",
+        "createdAt": 1772344036622
+      }
+    ],
+    "freeCredits": {
+      "monthlyLimit": 3,
+      "usedThisMonth": 1,
+      "resetAt": 1774972800000
+    },
+    "createdAt": 1772344036621,
+    "updatedAt": 1772344036622
+  },
+  "test-effect-outfit-vintage": {
+    "anonymousId": "test-effect-outfit-vintage",
+    "balance": 0,
+    "totalEarned": 0,
+    "totalSpent": 1,
+    "packages": [],
+    "inviteCredits": [],
+    "transactions": [
+      {
+        "id": "txn_1772344036640_m06w1nwe",
+        "amount": -1,
+        "type": "spend",
+        "description": "生成图片",
+        "createdAt": 1772344036640
+      }
+    ],
+    "freeCredits": {
+      "monthlyLimit": 3,
+      "usedThisMonth": 1,
+      "resetAt": 1774972800000
+    },
+    "createdAt": 1772344036639,
+    "updatedAt": 1772344036640
+  },
+  "test-effect-outfit-urban": {
+    "anonymousId": "test-effect-outfit-urban",
+    "balance": 0,
+    "totalEarned": 0,
+    "totalSpent": 0,
+    "packages": [],
+    "inviteCredits": [],
+    "transactions": [],
+    "freeCredits": {
+      "monthlyLimit": 3,
+      "usedThisMonth": 0,
+      "resetAt": 1774972800000
+    },
+    "createdAt": 1772344036655,
+    "updatedAt": 1772344036655
+  },
+  "test-effect-outfit-street-cool": {
+    "anonymousId": "test-effect-outfit-street-cool",
+    "balance": 0,
+    "totalEarned": 0,
+    "totalSpent": 0,
+    "packages": [],
+    "inviteCredits": [],
+    "transactions": [],
+    "freeCredits": {
+      "monthlyLimit": 3,
+      "usedThisMonth": 0,
+      "resetAt": 1774972800000
+    },
+    "createdAt": 1772344036669,
+    "updatedAt": 1772344036669
+  },
+  "test-effect-outfit-minimal-clean": {
+    "anonymousId": "test-effect-outfit-minimal-clean",
+    "balance": 0,
+    "totalEarned": 0,
+    "totalSpent": 0,
+    "packages": [],
+    "inviteCredits": [],
+    "transactions": [],
+    "freeCredits": {
+      "monthlyLimit": 3,
+      "usedThisMonth": 0,
+      "resetAt": 1774972800000
+    },
+    "createdAt": 1772344036683,
+    "updatedAt": 1772344036683
+  },
+  "test-effect-outfit-warm-cozy": {
+    "anonymousId": "test-effect-outfit-warm-cozy",
+    "balance": 0,
+    "totalEarned": 0,
+    "totalSpent": 0,
+    "packages": [],
+    "inviteCredits": [],
+    "transactions": [],
+    "freeCredits": {
+      "monthlyLimit": 3,
+      "usedThisMonth": 0,
+      "resetAt": 1774972800000
+    },
+    "createdAt": 1772344036698,
+    "updatedAt": 1772344036698
   }
 }

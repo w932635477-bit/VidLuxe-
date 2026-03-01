@@ -1,6 +1,6 @@
 # VidLuxe 腾讯云部署进度记录
 
-**更新时间**: 2026-02-27 08:30
+**更新时间**: 2026-02-28 09:45
 
 ---
 
@@ -11,7 +11,8 @@
 | IP 地址 | 146.56.193.40 |
 | 操作系统 | TencentOS Server 4 |
 | 配置 | 2核 4GB 1Mbps → 已升级带宽 |
-| 域名 | 已购买，备案审核中 |
+| 域名 | vidluxe.com.cn (备案已通过) |
+| SSL 证书 | ✅ Let's Encrypt (有效期至 2026-05-29) |
 
 ---
 
@@ -66,27 +67,34 @@ NEXT_PUBLIC_SUPABASE_URL=https://<项目>.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<已配置>
 SUPABASE_SERVICE_ROLE_KEY=<已配置>
 STORAGE_USE_LOCAL=true
-NEXT_PUBLIC_APP_URL=http://146.56.193.40
+NEXT_PUBLIC_APP_URL=https://vidluxe.com.cn
 ```
+
+### ✅ 9. 域名和 SSL 配置（2026-02-28）
+- 域名: vidluxe.com.cn
+- DNS 解析: @ → 146.56.193.40, www → 146.56.193.40
+- Nginx 反向代理: ✅ 已配置
+- SSL 证书: ✅ Let's Encrypt (有效期至 2026-05-29)
+- HTTPS 重定向: ✅ 已配置
+- 自动续期: ✅ 每天凌晨 3 点检查
 
 ---
 
 ## 当前访问地址
 
-- **首页**: http://146.56.193.40:3000
-- **试试页**: http://146.56.193.40:3000/try
-- **健康检查**: http://146.56.193.40:3000/api/health
+- **首页**: https://vidluxe.com.cn
+- **试试页**: https://vidluxe.com.cn/try
+- **健康检查**: https://vidluxe.com.cn/api/health
+- **IP 访问**: http://146.56.193.40:3000 (备用)
 
 ---
 
 ## 待完成
 
-### 🔄 1. 域名配置（备案通过后）
-- [ ] 配置域名解析到服务器 IP
-- [ ] 配置 Nginx 反向代理
-- [ ] 申请并配置 SSL 证书（HTTPS）
-- [ ] 更新环境变量 NEXT_PUBLIC_APP_URL
-- [ ] 配置腾讯云 CDN 加速静态资源
+### 🔄 1. CDN 配置
+- [ ] 在腾讯云 CDN 控制台添加域名 vidluxe.com.cn
+- [ ] 配置缓存规则
+- [ ] 更新 DNS CNAME 记录
 
 ### 🔄 2. 页面完善
 - [ ] 创建 /about 页面 (当前 404)

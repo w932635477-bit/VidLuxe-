@@ -1,1 +1,271 @@
-{}
+{
+  "task_1772343975983_b7f5831b": {
+    "id": "task_1772343975983_b7f5831b",
+    "status": "completed",
+    "progress": 100,
+    "createdAt": 1772343975983,
+    "updatedAt": 1772344010880,
+    "input": {
+      "contentType": "image",
+      "contentUrl": "/uploads/images/file_1772343962017_df8b438ce6da.jpg",
+      "styleSourceType": "preset",
+      "presetStyle": "magazine",
+      "anonymousId": "test-user-123",
+      "effectId": "outfit-magazine",
+      "effectIntensity": 80
+    },
+    "currentStage": "完成",
+    "result": {
+      "type": "image",
+      "enhancedUrl": "https://media.evolink.ai/aHR0cHM6Ly93ZWJzdGF0aWMuYWlwcm94eS52aXAvb3V0cHV0LzIwMjYwMzAxL2ZmMjdhNWZlLTZlYmYtNDhiMy04NDU0LTMxYTZhYzY4OTA2OS5qcGc=",
+      "originalUrl": "/uploads/images/file_1772343962017_df8b438ce6da.jpg",
+      "score": {
+        "overall": 65,
+        "grade": "B",
+        "dimensions": {
+          "visualAttraction": 60,
+          "contentMatch": 75,
+          "authenticity": 66,
+          "emotionalImpact": 57,
+          "actionGuidance": 72
+        },
+        "feedback": [
+          "👍 种草力不错，继续优化可以更好",
+          "建议优化穿搭的视觉呈现，突出搭配亮点"
+        ],
+        "improvementSuggestions": [
+          "💡 尝试改善色彩搭配，让第一眼更吸引人",
+          "📷 使用自然光或柔和的环形灯拍摄"
+        ],
+        "analysisMethod": "fallback"
+      }
+    }
+  },
+  "task_1772344005059_fa8ad5a8": {
+    "id": "task_1772344005059_fa8ad5a8",
+    "status": "completed",
+    "progress": 100,
+    "createdAt": 1772344005059,
+    "updatedAt": 1772344079084,
+    "input": {
+      "contentType": "image",
+      "contentUrl": "/uploads/images/file_1772343962017_df8b438ce6da.jpg",
+      "styleSourceType": "preset",
+      "presetStyle": "soft",
+      "anonymousId": "test-user-456",
+      "effectId": "outfit-soft",
+      "effectIntensity": 100
+    },
+    "currentStage": "完成",
+    "result": {
+      "type": "image",
+      "enhancedUrl": "https://media.evolink.ai/aHR0cHM6Ly93ZWJzdGF0aWMuYWlwcm94eS52aXAvb3V0cHV0LzIwMjYwMzAxLzZjNTkzOWM3LWQ5OGEtNGVlZC1iODVlLTg0ODhiNTM3N2ZmYy5qcGc=",
+      "originalUrl": "/uploads/images/file_1772343962017_df8b438ce6da.jpg",
+      "score": {
+        "overall": 60,
+        "grade": "C",
+        "dimensions": {
+          "visualAttraction": 47,
+          "contentMatch": 71,
+          "authenticity": 68,
+          "emotionalImpact": 59,
+          "actionGuidance": 68
+        },
+        "feedback": [
+          "📈 还有提升空间，参考建议进行优化",
+          "建议优化穿搭的视觉呈现，突出搭配亮点"
+        ],
+        "improvementSuggestions": [
+          "💡 尝试改善色彩搭配，让第一眼更吸引人",
+          "📷 使用自然光或柔和的环形灯拍摄"
+        ],
+        "analysisMethod": "fallback"
+      }
+    }
+  },
+  "task_1772344036579_f10f5483": {
+    "id": "task_1772344036579_f10f5483",
+    "status": "completed",
+    "progress": 100,
+    "createdAt": 1772344036579,
+    "updatedAt": 1772344151381,
+    "input": {
+      "contentType": "image",
+      "contentUrl": "/uploads/images/file_1772343962017_df8b438ce6da.jpg",
+      "styleSourceType": "preset",
+      "presetStyle": "magazine",
+      "anonymousId": "test-effect-outfit-magazine",
+      "effectId": "outfit-magazine",
+      "effectIntensity": 50
+    },
+    "currentStage": "完成",
+    "result": {
+      "type": "image",
+      "enhancedUrl": "https://media.evolink.ai/aHR0cHM6Ly93ZWJzdGF0aWMuYWlwcm94eS52aXAvb3V0cHV0LzIwMjYwMzAxL2YyOGI3ZTYwLTQ0YjUtNDY1Yi04M2Q2LWRiZjQwZWI1YTYxOS5qcGc=",
+      "originalUrl": "/uploads/images/file_1772343962017_df8b438ce6da.jpg",
+      "score": {
+        "overall": 62,
+        "grade": "C",
+        "dimensions": {
+          "visualAttraction": 54,
+          "contentMatch": 68,
+          "authenticity": 72,
+          "emotionalImpact": 62,
+          "actionGuidance": 60
+        },
+        "feedback": [
+          "📈 还有提升空间，参考建议进行优化",
+          "建议优化穿搭的视觉呈现，突出搭配亮点"
+        ],
+        "improvementSuggestions": [
+          "💡 尝试改善色彩搭配，让第一眼更吸引人",
+          "📷 使用自然光或柔和的环形灯拍摄"
+        ],
+        "analysisMethod": "fallback"
+      }
+    }
+  },
+  "task_1772344036605_fb0cd0a1": {
+    "id": "task_1772344036605_fb0cd0a1",
+    "status": "completed",
+    "progress": 100,
+    "createdAt": 1772344036606,
+    "updatedAt": 1772344120756,
+    "input": {
+      "contentType": "image",
+      "contentUrl": "/uploads/images/file_1772343962017_df8b438ce6da.jpg",
+      "styleSourceType": "preset",
+      "presetStyle": "magazine",
+      "anonymousId": "test-effect-outfit-soft",
+      "effectId": "outfit-soft",
+      "effectIntensity": 50
+    },
+    "currentStage": "完成",
+    "result": {
+      "type": "image",
+      "enhancedUrl": "https://media.evolink.ai/aHR0cHM6Ly93ZWJzdGF0aWMuYWlwcm94eS52aXAvb3V0cHV0LzIwMjYwMzAxL2I0Mzk0NDE2LTYxZTItNDhiYS1iNDcwLWFmM2JkYmNhM2YwOS5qcGc=",
+      "originalUrl": "/uploads/images/file_1772343962017_df8b438ce6da.jpg",
+      "score": {
+        "overall": 64,
+        "grade": "C",
+        "dimensions": {
+          "visualAttraction": 58,
+          "contentMatch": 74,
+          "authenticity": 64,
+          "emotionalImpact": 54,
+          "actionGuidance": 70
+        },
+        "feedback": [
+          "📈 还有提升空间，参考建议进行优化",
+          "建议优化穿搭的视觉呈现，突出搭配亮点"
+        ],
+        "improvementSuggestions": [
+          "💡 尝试改善色彩搭配，让第一眼更吸引人",
+          "📷 使用自然光或柔和的环形灯拍摄"
+        ],
+        "analysisMethod": "fallback"
+      }
+    }
+  },
+  "task_1772344036623_c6f1b53e": {
+    "id": "task_1772344036623_c6f1b53e",
+    "status": "completed",
+    "progress": 100,
+    "createdAt": 1772344036623,
+    "updatedAt": 1772344152683,
+    "input": {
+      "contentType": "image",
+      "contentUrl": "/uploads/images/file_1772343962017_df8b438ce6da.jpg",
+      "styleSourceType": "preset",
+      "presetStyle": "magazine",
+      "anonymousId": "test-effect-outfit-korean-premium",
+      "effectId": "outfit-korean-premium",
+      "effectIntensity": 50
+    },
+    "currentStage": "完成",
+    "result": {
+      "type": "image",
+      "enhancedUrl": "https://media.evolink.ai/aHR0cHM6Ly93ZWJzdGF0aWMuYWlwcm94eS52aXAvb3V0cHV0LzIwMjYwMzAxL2NiNDk2NDU2LWViYWEtNDRkNC05MDI1LTQ1MzY3NDM1OTExZC5qcGc=",
+      "originalUrl": "/uploads/images/file_1772343962017_df8b438ce6da.jpg",
+      "score": {
+        "overall": 65,
+        "grade": "B",
+        "dimensions": {
+          "visualAttraction": 51,
+          "contentMatch": 81,
+          "authenticity": 74,
+          "emotionalImpact": 64,
+          "actionGuidance": 58
+        },
+        "feedback": [
+          "👍 种草力不错，继续优化可以更好",
+          "建议优化穿搭的视觉呈现，突出搭配亮点"
+        ],
+        "improvementSuggestions": [
+          "💡 尝试改善色彩搭配，让第一眼更吸引人",
+          "📷 使用自然光或柔和的环形灯拍摄"
+        ],
+        "analysisMethod": "fallback"
+      }
+    }
+  },
+  "task_1772344036640_5d937880": {
+    "id": "task_1772344036640_5d937880",
+    "status": "completed",
+    "progress": 100,
+    "createdAt": 1772344036641,
+    "updatedAt": 1772344153049,
+    "input": {
+      "contentType": "image",
+      "contentUrl": "/uploads/images/file_1772343962017_df8b438ce6da.jpg",
+      "styleSourceType": "preset",
+      "presetStyle": "magazine",
+      "anonymousId": "test-effect-outfit-vintage",
+      "effectId": "outfit-vintage",
+      "effectIntensity": 50
+    },
+    "currentStage": "完成",
+    "result": {
+      "type": "image",
+      "enhancedUrl": "https://media.evolink.ai/aHR0cHM6Ly93ZWJzdGF0aWMuYWlwcm94eS52aXAvb3V0cHV0LzIwMjYwMzAxL2M3MWI2ZTkzLTYwM2EtNDBkZi1hM2ZkLTZkYWIwZGQ1MjUyNC5qcGc=",
+      "originalUrl": "/uploads/images/file_1772343962017_df8b438ce6da.jpg",
+      "score": {
+        "overall": 63,
+        "grade": "C",
+        "dimensions": {
+          "visualAttraction": 47,
+          "contentMatch": 83,
+          "authenticity": 73,
+          "emotionalImpact": 57,
+          "actionGuidance": 67
+        },
+        "feedback": [
+          "📈 还有提升空间，参考建议进行优化",
+          "建议优化穿搭的视觉呈现，突出搭配亮点"
+        ],
+        "improvementSuggestions": [
+          "💡 尝试改善色彩搭配，让第一眼更吸引人",
+          "📷 使用自然光或柔和的环形灯拍摄"
+        ],
+        "analysisMethod": "fallback"
+      }
+    }
+  },
+  "task_1772344346098_889c4bc4": {
+    "id": "task_1772344346098_889c4bc4",
+    "status": "failed",
+    "progress": 52.5,
+    "createdAt": 1772344346098,
+    "updatedAt": 1772344472316,
+    "input": {
+      "contentType": "image",
+      "contentUrl": "/uploads/images/file_1772344323682_ae1555947f47.png",
+      "styleSourceType": "preset",
+      "presetStyle": "soft",
+      "anonymousId": "anon_1771986206477_ezpa4jkb",
+      "effectIntensity": 100
+    },
+    "currentStage": "AI 正在升级图片",
+    "error": "Task timeout - please try again"
+  }
+}

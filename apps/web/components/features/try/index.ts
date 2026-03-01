@@ -31,6 +31,7 @@ export type { ContentType } from '@/lib/content-types';
 export { BeforeAfterSlider } from './BeforeAfterSlider';
 export { EffectSelector } from './EffectSelector';
 export { EffectSourceSelector } from './EffectSourceSelector';
+export { EffectFlowSelector } from './EffectFlowSelector';
 export type { EffectSourceType } from './EffectSourceSelector';
 export type { EffectPreset } from '@/lib/effect-presets';
 export { getEffectsByContentType, getEffectById, getDefaultEffectId } from '@/lib/effect-presets';

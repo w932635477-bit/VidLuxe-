@@ -43,3 +43,10 @@ tmp/
 
 # User uploads (should not be committed)
 **/uploads/
+
+# Backup files (防止混淆)
+*.backup
+*.bak
+*.old
+.backup/
+**/.backup/

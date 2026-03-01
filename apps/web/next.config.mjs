@@ -2,6 +2,12 @@
 const nextConfig = {
   // Docker 部署需要 standalone 输出
   output: 'standalone',
+  // API 请求体大小限制（用于大文件上传）
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '500mb',
+    },
+  },
   images: {
     remotePatterns: [
       {

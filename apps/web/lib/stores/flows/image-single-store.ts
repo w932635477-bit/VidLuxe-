@@ -14,6 +14,7 @@ import type {
   StyleSourceType,
   ResultData,
 } from '@/lib/types/flow';
+import type { ContentType } from '@/lib/content-types';
 
 // ============================================
 // 状态接口
@@ -47,6 +48,11 @@ interface ImageSingleState {
   selectedPreset: StyleType;
   referenceFile: File | null;
   referenceFileUrl: string | null;
+
+  // 效果系统（新增）
+  selectedEffectId: string;
+  effectIntensity: number;
+  selectedContentType: ContentType;
 
   // 结果
   resultData: ResultData | null;
@@ -83,6 +89,11 @@ interface ImageSingleActions {
   setSelectedPreset: (preset: StyleType) => void;
   setReferenceFile: (file: File | null) => void;
   setReferenceFileUrl: (url: string | null) => void;
+
+  // 效果系统操作（新增）
+  setSelectedEffectId: (id: string) => void;
+  setEffectIntensity: (intensity: number) => void;
+  setSelectedContentType: (type: ContentType) => void;
 
   // 结果操作
   setResultData: (data: ResultData | null) => void;
@@ -127,6 +138,10 @@ const initialState: ImageSingleState = {
   selectedPreset: 'magazine',
   referenceFile: null,
   referenceFileUrl: null,
+  // 效果系统（新增）
+  selectedEffectId: 'outfit-magazine',
+  effectIntensity: 100,
+  selectedContentType: 'outfit',
   resultData: null,
   showCreditModal: false,
   creditRequired: 0,
@@ -179,6 +194,11 @@ export const useImageSingleStore = create<ImageSingleState & ImageSingleActions>
       setSelectedPreset: (selectedPreset) => set({ selectedPreset }, false, 'setSelectedPreset'),
       setReferenceFile: (referenceFile) => set({ referenceFile }, false, 'setReferenceFile'),
       setReferenceFileUrl: (referenceFileUrl) => set({ referenceFileUrl }, false, 'setReferenceFileUrl'),
+
+      // 效果系统操作（新增）
+      setSelectedEffectId: (selectedEffectId) => set({ selectedEffectId }, false, 'setSelectedEffectId'),
+      setEffectIntensity: (effectIntensity) => set({ effectIntensity }, false, 'setEffectIntensity'),
+      setSelectedContentType: (selectedContentType) => set({ selectedContentType }, false, 'setSelectedContentType'),
 
       // 结果操作
       setResultData: (resultData) => set({ resultData }, false, 'setResultData'),

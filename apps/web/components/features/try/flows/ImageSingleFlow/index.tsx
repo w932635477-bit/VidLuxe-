@@ -10,7 +10,8 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import { useImageSingleStore } from '@/lib/stores/flows';
 import { useCreditsStore } from '@/lib/stores/credits-store';
 import { ProcessingAnimation } from '@/components/features/try/flows/shared/ProcessingAnimation';
-import { StyleFlowSelector } from '@/components/features/try/StyleFlowSelector';
+import { EffectFlowSelector } from '@/components/features/try/EffectFlowSelector';
+import { uploadFile } from '@/lib/actions/upload';
 import type { StyleType, StyleSourceType, ResultData } from '@/lib/types/flow';
 import type { ContentType } from '@/lib/content-types';
 
@@ -28,7 +29,6 @@ function generateAnonymousId(): string {
 
 export function ImageSingleFlow() {
   const [anonymousId, setAnonymousId] = useState<string>('');
-  const [selectedContentType, setSelectedContentType] = useState<ContentType>('outfit');
 
   const {
     step,
@@ -45,6 +45,10 @@ export function ImageSingleFlow() {
     referenceFile,
     referenceFileUrl,
     resultData,
+    // 效果系统状态
+    selectedEffectId,
+    effectIntensity,
+    selectedContentType,
     setStep,
     setUploadedFile,
     setUploadedFileUrl,
@@ -59,6 +63,10 @@ export function ImageSingleFlow() {
     setReferenceFile,
     setReferenceFileUrl,
     setResultData,
+    // 效果系统操作
+    setSelectedEffectId,
+    setEffectIntensity,
+    setSelectedContentType,
     reset,
   } = useImageSingleStore();
 
@@ -89,13 +97,12 @@ export function ImageSingleFlow() {
     setPreviewUrl(preview);
     setUploadedFile(file);
 
-    // 上传文件
+    // 上传文件（使用 Server Action）
     setIsLoading(true);
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const response = await fetch('/api/upload', { method: 'POST', body: formData });
-      const data = await response.json();
+      const data = await uploadFile(formData);
 
       if (data.success && data.file) {
         setUploadedFileUrl(data.file.url);
@@ -190,14 +197,13 @@ export function ImageSingleFlow() {
     }
   }, [uploadedFileUrl, total, styleSourceType, selectedPreset, referenceFileUrl, anonymousId, setStep, setProgress, setCurrentStage, setResultData, setError, fetchCredits]);
 
-  // 处理参考图上传
+  // 处理参考图上传（使用 Server Action）
   const handleReferenceUpload = useCallback(async (file: File) => {
     setIsLoading(true);
     try {
       const formData = new FormData();
       formData.append('file', file);
-      const response = await fetch('/api/upload', { method: 'POST', body: formData });
-      const data = await response.json();
+      const data = await uploadFile(formData);
 
       if (data.success && data.file) {
         setReferenceFile(file);
@@ -296,11 +302,13 @@ export function ImageSingleFlow() {
           </div>
 
           {/* 内容类型 + 风格选择 */}
-          <StyleFlowSelector
-            selectedStyle={selectedPreset}
+          <EffectFlowSelector
+            selectedEffectId={selectedEffectId}
             selectedContentType={selectedContentType}
-            onStyleSelect={setSelectedPreset}
+            effectIntensity={effectIntensity}
+            onEffectSelect={setSelectedEffectId}
             onContentTypeSelect={setSelectedContentType}
+            onIntensityChange={setEffectIntensity}
           />
 
           {/* 按钮 */}
