@@ -1,14 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 
 type AuthMode = 'login' | 'register';
 
-export default function AuthPage() {
+function AuthContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get('redirect') || '/dashboard';
+
   const [mode, setMode] = useState<AuthMode>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -47,8 +50,8 @@ export default function AuthPage() {
         return;
       }
 
-      // 登录成功
-      router.push('/dashboard');
+      // 登录成功，跳转到 redirect 参数指定的页面
+      router.push(redirect);
     } catch (err) {
       setError('登录失败，请重试');
       setLoading(false);
@@ -324,5 +327,19 @@ export default function AuthPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense fallback={
+      <main style={{ minHeight: '100vh', background: '#000000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center', color: '#fff' }}>
+          <p>加载中...</p>
+        </div>
+      </main>
+    }>
+      <AuthContent />
+    </Suspense>
   );
 }
