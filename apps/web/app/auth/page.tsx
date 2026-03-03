@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
@@ -10,17 +10,33 @@ type AuthMode = 'login' | 'register';
 function AuthContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const redirect = searchParams.get('redirect') || '/dashboard';
+  // 默认跳转到 /try（功能页面），而不是 /dashboard
+  const redirect = searchParams.get('redirect') || '/try';
 
   const [mode, setMode] = useState<AuthMode>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [checkingAuth, setCheckingAuth] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
   const supabase = createClient();
+
+  // 检查用户是否已登录
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        // 已登录，直接跳转
+        router.push(redirect);
+      } else {
+        setCheckingAuth(false);
+      }
+    };
+    checkAuth();
+  }, [supabase.auth, router, redirect]);
 
   // 登录
   const handleLogin = async () => {
@@ -114,6 +130,17 @@ function AuthContent() {
       handleRegister();
     }
   };
+
+  // 检查登录状态中
+  if (checkingAuth) {
+    return (
+      <main style={{ minHeight: '100vh', background: '#000000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center', color: '#fff' }}>
+          <p>检查登录状态...</p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main style={{ minHeight: '100vh', background: '#000000', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px' }}>

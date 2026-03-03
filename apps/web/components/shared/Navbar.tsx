@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 interface NavbarProps {
   transparent?: boolean;
@@ -10,6 +11,7 @@ interface NavbarProps {
 
 export function Navbar({ transparent = false, showAuth = true }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
 
   return (
     <nav
@@ -51,7 +53,7 @@ export function Navbar({ transparent = false, showAuth = true }: NavbarProps) {
         {showAuth && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             <Link
-              href="/auth"
+              href={`/auth?redirect=${pathname}`}
               style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.6)' }}
             >
               登录
@@ -107,7 +109,7 @@ export function Navbar({ transparent = false, showAuth = true }: NavbarProps) {
           <Link href="/pricing" style={{ display: 'block', padding: '12px 0', color: 'rgba(255, 255, 255, 0.9)' }}>
             定价
           </Link>
-          <Link href="/auth" style={{ display: 'block', padding: '12px 0', color: 'rgba(255, 255, 255, 0.6)' }}>
+          <Link href={`/auth?redirect=${pathname}`} style={{ display: 'block', padding: '12px 0', color: 'rgba(255, 255, 255, 0.6)' }}>
             登录
           </Link>
         </div>

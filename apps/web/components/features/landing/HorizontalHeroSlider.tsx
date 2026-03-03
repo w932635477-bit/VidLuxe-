@@ -3,6 +3,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 interface HorizontalHeroSliderProps {
   originalImage: string;
@@ -13,6 +14,7 @@ export function HorizontalHeroSlider({ originalImage, enhancedImage }: Horizonta
   const [sliderPosition, setSliderPosition] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
 
   const handleMove = useCallback((clientX: number) => {
     if (!containerRef.current) return;
@@ -90,7 +92,7 @@ export function HorizontalHeroSlider({ originalImage, enhancedImage }: Horizonta
             </Link>
           </div>
           <div className="flex items-center gap-4">
-            <Link href="/auth" className="text-secondary hover:text-primary transition-colors" style={{ fontSize: '13px' }}>
+            <Link href={`/auth?redirect=${pathname}`} className="text-secondary hover:text-primary transition-colors" style={{ fontSize: '13px' }}>
               登录
             </Link>
             <Link
