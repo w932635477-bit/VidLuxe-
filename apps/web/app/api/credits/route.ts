@@ -18,10 +18,15 @@ export async function GET(request: NextRequest) {
     const { searchParams } = request.nextUrl;
     const anonymousId = searchParams.get('anonymousId');
 
-    // 调试：打印所有 cookies
+    // 调试：打印所有 cookies（包括详细信息）
     const cookieStore = await cookies();
     const allCookies = cookieStore.getAll();
-    console.log('[Credits API] Cookies:', allCookies.map(c => c.name).join(', '));
+    console.log('[Credits API] Cookie count:', allCookies.length);
+    allCookies.forEach(c => {
+      // 只打印前20个字符，避免日志过长
+      const valuePreview = c.value.substring(0, 20) + (c.value.length > 20 ? '...' : '');
+      console.log(`[Credits API] Cookie: ${c.name} = ${valuePreview}`);
+    });
 
     // 尝试获取登录用户
     const supabase = await createClient();
