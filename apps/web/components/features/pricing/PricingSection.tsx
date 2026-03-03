@@ -268,6 +268,8 @@ export function PricingSection({ showTitle = true, compact = false }: PricingSec
   const [showContactModal, setShowContactModal] = useState(false);
   const [selectedPackage, setSelectedPackage] = useState<typeof PLANS[0] | null>(null);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [pendingPackageId, setPendingPackageId] = useState<string | null>(null);
 
   const handlePurchase = async (packageId: string, simulate = false) => {
     // 等待认证加载完成
@@ -276,13 +278,10 @@ export function PricingSection({ showTitle = true, compact = false }: PricingSec
     }
 
     if (!user) {
-      // 保存购买意图到 sessionStorage
-      sessionStorage.setItem('purchaseIntent', JSON.stringify({
-        packageId,
-        timestamp: Date.now()
-      }));
-      // 跳转到登录，带完整参数
-      router.push(`/auth?redirect=/checkout?package=${packageId}`);
+      // 显示登录提示弹窗
+      setPendingPackageId(packageId);
+      setSelectedPackage(PLANS.find(p => p.id === packageId) || null);
+      setShowLoginModal(true);
       return;
     }
 
@@ -348,6 +347,19 @@ export function PricingSection({ showTitle = true, compact = false }: PricingSec
     await handlePurchase(selectedPackage.id, true);
   };
 
+  // 确认登录并跳转
+  const handleConfirmLogin = () => {
+    if (!pendingPackageId) return;
+    // 保存购买意图到 sessionStorage
+    sessionStorage.setItem('purchaseIntent', JSON.stringify({
+      packageId: pendingPackageId,
+      timestamp: Date.now()
+    }));
+    setShowLoginModal(false);
+    // 跳转到登录，带完整参数
+    router.push(`/auth?redirect=/checkout?package=${pendingPackageId}`);
+  };
+
   return (
     <section
       style={{
@@ -387,6 +399,98 @@ export function PricingSection({ showTitle = true, compact = false }: PricingSec
             </div>
             <div style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.6)', marginTop: '8px' }}>
               额度已发放到您的账户
+            </div>
+          </div>
+        )}
+
+        {/* 登录提示弹窗 */}
+        {showLoginModal && selectedPackage && (
+          <div
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'rgba(0, 0, 0, 0.8)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000,
+              padding: '24px',
+            }}
+            onClick={() => setShowLoginModal(false)}
+          >
+            <div
+              style={{
+                background: '#111',
+                borderRadius: '20px',
+                padding: '32px',
+                maxWidth: '400px',
+                width: '100%',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
+                textAlign: 'center',
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div style={{
+                width: '64px',
+                height: '64px',
+                margin: '0 auto 20px',
+                borderRadius: '50%',
+                background: 'rgba(212, 175, 55, 0.15)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}>
+                <span style={{ fontSize: '28px' }}>👤</span>
+              </div>
+
+              <h3 style={{ fontSize: '22px', fontWeight: 600, marginBottom: '12px' }}>
+                请先登录
+              </h3>
+
+              <p style={{ color: 'rgba(255, 255, 255, 0.6)', marginBottom: '8px', fontSize: '15px' }}>
+                购买 <span style={{ color: '#D4AF37', fontWeight: 500 }}>{selectedPackage.name}</span> (¥{selectedPackage.price})
+              </p>
+
+              <p style={{ color: 'rgba(255, 255, 255, 0.4)', marginBottom: '28px', fontSize: '14px' }}>
+                登录后即可完成购买
+              </p>
+
+              <button
+                onClick={handleConfirmLogin}
+                style={{
+                  width: '100%',
+                  padding: '14px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  background: '#D4AF37',
+                  color: '#000',
+                  fontSize: '16px',
+                  fontWeight: 500,
+                  cursor: 'pointer',
+                  marginBottom: '12px',
+                }}
+              >
+                去登录
+              </button>
+
+              <button
+                onClick={() => setShowLoginModal(false)}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                }}
+              >
+                取消
+              </button>
             </div>
           </div>
         )}
