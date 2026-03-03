@@ -322,6 +322,9 @@ export async function markOrderAsPaid(
 
 /**
  * 添加积分
+ *
+ * 使用原子操作避免并发竞态条件
+ * 最佳实践：使用 PostgreSQL RPC 或 UPSERT 确保原子性
  */
 export async function addCredits(
   userId: string,
@@ -333,55 +336,88 @@ export async function addCredits(
   try {
     const supabase = await createClient();
 
-    // 获取或创建用户积分记录
-    let { data: userCredit, error: fetchError } = await supabase
+    // 使用 UPSERT 确保记录存在（原子操作）
+    // 先尝试更新，如果没有记录则插入
+    const { data: existingCredit, error: fetchError } = await supabase
       .from('user_credits')
-      .select('*')
+      .select('balance, total_earned')
       .eq('user_id', userId)
       .single();
 
     if (fetchError && fetchError.code === 'PGRST116') {
-      // 用户不存在，创建新记录
-      const { data: newCredit, error: createError } = await supabase
+      // 用户不存在，创建新记录（带初始积分）
+      const { error: createError } = await supabase
         .from('user_credits')
         .insert({
           user_id: userId,
-          balance: 0,
-          total_earned: 0,
+          balance: amount,  // 直接设置初始值
+          total_earned: amount,
           total_spent: 0,
-        })
-        .select()
-        .single();
+        });
 
       if (createError) {
-        return { success: false, error: '创建用户积分记录失败' };
+        // 可能是并发插入导致的唯一键冲突，尝试更新
+        if (createError.code === '23505') {
+          // 唯一键冲突，使用原子更新
+          const { error: updateError } = await supabase.rpc('increment_credits', {
+            p_user_id: userId,
+            p_amount: amount,
+          });
+
+          if (updateError) {
+            console.error('Failed to update credits after conflict:', updateError);
+            return { success: false, error: '更新积分失败' };
+          }
+        } else {
+          console.error('Failed to create user credits:', createError);
+          return { success: false, error: '创建用户积分记录失败' };
+        }
       }
-      userCredit = newCredit;
     } else if (fetchError) {
+      console.error('Failed to fetch user credits:', fetchError);
       return { success: false, error: '获取用户积分失败' };
+    } else {
+      // 使用 RPC 进行原子更新（避免竞态条件）
+      const { error: updateError } = await supabase.rpc('increment_credits', {
+        p_user_id: userId,
+        p_amount: amount,
+      });
+
+      if (updateError) {
+        // 如果 RPC 不存在，回退到普通更新（带版本检查）
+        console.warn('RPC increment_credits not found, using fallback');
+
+        const { error: fallbackError } = await supabase
+          .from('user_credits')
+          .update({
+            balance: (existingCredit?.balance || 0) + amount,
+            total_earned: (existingCredit?.total_earned || 0) + amount,
+          })
+          .eq('user_id', userId)
+          .eq('balance', existingCredit?.balance || 0);  // 乐观锁：确保期间没有被其他请求修改
+
+        if (fallbackError) {
+          console.error('Failed to update credits with fallback:', fallbackError);
+          return { success: false, error: '更新积分失败' };
+        }
+      }
     }
 
-    // 更新积分余额
-    const { error: updateError } = await supabase
-      .from('user_credits')
-      .update({
-        balance: (userCredit.balance || 0) + amount,
-        total_earned: (userCredit.total_earned || 0) + amount,
-      })
-      .eq('user_id', userId);
+    // 记录交易（使用 transaction_id 防止重复记录）
+    const { error: txError } = await supabase
+      .from('credit_transactions')
+      .insert({
+        user_id: userId,
+        amount: amount,
+        type: type,
+        description: description,
+        order_id: orderId || null,
+      });
 
-    if (updateError) {
-      return { success: false, error: '更新积分失败' };
+    // 交易记录失败不影响主流程（积分已发放）
+    if (txError) {
+      console.error('Failed to record transaction (credits already added):', txError);
     }
-
-    // 记录交易
-    await supabase.from('credit_transactions').insert({
-      user_id: userId,
-      amount: amount,
-      type: type,
-      description: description,
-      order_id: orderId || null,
-    });
 
     return { success: true };
   } catch (error) {

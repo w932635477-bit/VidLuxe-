@@ -37,11 +37,11 @@ export function UploadStep({ onUploadComplete }: UploadStepProps) {
   const { total, paid, free, hasUsedInviteCode, fetchCredits } = useCreditsStore();
 
   // 获取用户额度信息（包括 hasUsedInviteCode）
+  // 登录用户通过 cookie 认证，不需要 anonymousId
   useEffect(() => {
     const anonymousId = localStorage.getItem('vidluxe_anonymous_id');
-    if (anonymousId) {
-      fetchCredits(anonymousId);
-    }
+    // 总是调用 fetchCredits，API 会通过 cookie 检测登录用户
+    fetchCredits(anonymousId || undefined);
   }, [fetchCredits]);
 
   // 邀请码状态

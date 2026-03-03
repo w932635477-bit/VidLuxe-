@@ -73,14 +73,17 @@ export const useCreditsStore = create<CreditsState & CreditsActions>()(
 
       // 获取额度
       fetchCredits: async (anonymousId?: string) => {
-        // 如果没有传入 anonymousId，尝试从 localStorage 获取
-        const id = anonymousId || (typeof window !== 'undefined' ? localStorage.getItem('vidluxe_anonymous_id') : null);
-        if (!id) return;
-
         set({ isLoading: true, error: null }, false, 'fetchCredits/start');
 
         try {
-          const response = await fetch(`/api/credits?anonymousId=${id}`);
+          // 如果没有传入 anonymousId，尝试从 localStorage 获取
+          const id = anonymousId || (typeof window !== 'undefined' ? localStorage.getItem('vidluxe_anonymous_id') : null);
+
+          // 构建请求 URL：即使没有 anonymousId 也发起请求
+          // API 会通过 cookie 检测登录用户，从 Supabase 获取额度
+          const url = id ? `/api/credits?anonymousId=${id}` : '/api/credits';
+
+          const response = await fetch(url);
           const data = await response.json();
 
           if (response.ok && data.success) {
