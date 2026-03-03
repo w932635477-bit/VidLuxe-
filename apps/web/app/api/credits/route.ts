@@ -7,6 +7,7 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { cookies } from 'next/headers';
 import { getAvailableCredits, getOrCreateUserCredits } from '@/lib/credits';
 import { createClient } from '@/lib/supabase/server';
 
@@ -17,9 +18,21 @@ export async function GET(request: NextRequest) {
     const { searchParams } = request.nextUrl;
     const anonymousId = searchParams.get('anonymousId');
 
+    // 调试：打印所有 cookies
+    const cookieStore = await cookies();
+    const allCookies = cookieStore.getAll();
+    console.log('[Credits API] Cookies:', allCookies.map(c => c.name).join(', '));
+
     // 尝试获取登录用户
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+    console.log('[Credits API] Auth result:', {
+      userId: user?.id,
+      email: user?.email,
+      error: userError?.message,
+      anonymousId
+    });
 
     // 如果用户已登录，从 Supabase 获取额度
     if (user) {
@@ -36,6 +49,8 @@ export async function GET(request: NextRequest) {
         console.error('[Credits API] Error fetching user credits:', error);
       }
 
+      console.log('[Credits API] User credit data:', userCredit);
+
       const balance = userCredit?.balance || 0;
       const totalEarned = userCredit?.total_earned || 0;
       const totalSpent = userCredit?.total_spent || 0;
@@ -51,6 +66,12 @@ export async function GET(request: NextRequest) {
 
       const hasUsedInviteCode = !!inviteTransaction;
       const freeCredits = 8;
+
+      console.log('[Credits API] Returning logged-in user credits:', {
+        balance,
+        freeCredits,
+        total: balance + freeCredits
+      });
 
       return NextResponse.json({
         success: true,
@@ -74,6 +95,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    console.log('[Credits API] Anonymous user, fetching from file system');
     const available = getAvailableCredits(anonymousId);
     const userCredits = getOrCreateUserCredits(anonymousId);
 
