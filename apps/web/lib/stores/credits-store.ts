@@ -19,11 +19,12 @@ interface CreditsState {
   free: number;
   isLoading: boolean;
   error: string | null;
+  hasUsedInviteCode: boolean; // 是否已使用过邀请码
 }
 
 interface CreditsActions {
   // 操作
-  setCredits: (credits: { total: number; paid: number; free: number }) => void;
+  setCredits: (credits: { total: number; paid: number; free: number; hasUsedInviteCode?: boolean }) => void;
   setIsLoading: (loading: boolean) => void;
   setError: (error: string | null) => void;
 
@@ -42,6 +43,7 @@ const initialState: CreditsState = {
   free: 0,
   isLoading: false,
   error: null,
+  hasUsedInviteCode: false,
 };
 
 // ============================================
@@ -60,6 +62,7 @@ export const useCreditsStore = create<CreditsState & CreditsActions>()(
             total: credits.total,
             paid: credits.paid,
             free: credits.free,
+            hasUsedInviteCode: credits.hasUsedInviteCode ?? get().hasUsedInviteCode,
           },
           false,
           'setCredits'
@@ -86,6 +89,7 @@ export const useCreditsStore = create<CreditsState & CreditsActions>()(
                 total: data.data.total,
                 paid: data.data.paid,
                 free: data.data.free,
+                hasUsedInviteCode: data.data.hasUsedInviteCode || false,
                 isLoading: false,
               },
               false,

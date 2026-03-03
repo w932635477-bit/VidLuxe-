@@ -44,7 +44,6 @@ export function Navbar({ transparent = false, showAuth = true }: NavbarProps) {
         {/* Desktop Navigation */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
           <NavLink href="/try">体验</NavLink>
-          <NavLink href="/dashboard">Dashboard</NavLink>
           <NavLink href="/pricing">定价</NavLink>
         </div>
 
@@ -104,9 +103,6 @@ export function Navbar({ transparent = false, showAuth = true }: NavbarProps) {
         }}>
           <Link href="/try" style={{ display: 'block', padding: '12px 0', color: 'rgba(255, 255, 255, 0.9)' }}>
             体验
-          </Link>
-          <Link href="/dashboard" style={{ display: 'block', padding: '12px 0', color: 'rgba(255, 255, 255, 0.9)' }}>
-            Dashboard
           </Link>
           <Link href="/pricing" style={{ display: 'block', padding: '12px 0', color: 'rgba(255, 255, 255, 0.9)' }}>
             定价

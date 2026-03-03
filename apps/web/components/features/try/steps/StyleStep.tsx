@@ -123,6 +123,12 @@ export function StyleStep({ onStartProcessing, onBack }: StyleStepProps) {
 
   // 开始处理
   const handleStartClick = useCallback(() => {
+    // 额度不足时直接跳转到收费页面
+    if (creditsTotal < 1) {
+      window.location.href = '/pricing';
+      return;
+    }
+
     if (costInfo.total > creditsTotal) {
       setCreditRequired(costInfo.total);
       setShowCreditModal(true);
@@ -304,23 +310,23 @@ export function StyleStep({ onStartProcessing, onBack }: StyleStepProps) {
         </button>
         <button
           onClick={handleStartClick}
-          disabled={isLoading || creditsTotal < 1}
+          disabled={isLoading}
           style={{
             flex: 1,
             padding: '14px 32px',
             borderRadius: '12px',
             border: 'none',
             background:
-              isLoading || creditsTotal < 1
+              isLoading
                 ? 'rgba(255, 255, 255, 0.1)'
                 : 'linear-gradient(135deg, #CA8A04, #EAB308)',
-            color: isLoading || creditsTotal < 1 ? 'rgba(255, 255, 255, 0.3)' : 'white',
+            color: isLoading ? 'rgba(255, 255, 255, 0.3)' : 'white',
             fontSize: '15px',
             fontWeight: 500,
-            cursor: isLoading || creditsTotal < 1 ? 'not-allowed' : 'pointer',
+            cursor: isLoading ? 'not-allowed' : 'pointer',
           }}
         >
-          {isLoading ? '处理中...' : creditsTotal < 1 ? '额度不足' : '开始升级'}
+          {isLoading ? '处理中...' : creditsTotal < 1 ? '获取额度' : '开始升级'}
         </button>
       </div>
 

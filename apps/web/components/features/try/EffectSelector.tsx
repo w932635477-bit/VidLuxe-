@@ -2,6 +2,7 @@
  * EffectSelector - 效果选择器
  *
  * 横向滑动选择效果，带大图预览和 Before/After 对比
+ * 杂志风格自动叠加 VOGUE 文字效果
  */
 
 'use client';
@@ -20,6 +21,75 @@ interface EffectSelectorProps {
   onSelect: (effectId: string) => void;
   effectIntensity?: number;
   onIntensityChange?: (intensity: number) => void;
+}
+
+// 杂志文字叠加组件
+function MagazineOverlay({ compact = false }: { compact?: boolean }) {
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        inset: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        padding: compact ? '4% 6%' : '5% 8%',
+        pointerEvents: 'none',
+      }}
+    >
+      {/* 顶部区域 */}
+      <div style={{ textAlign: 'center', width: '100%' }}>
+        <h1
+          style={{
+            fontFamily: 'Georgia, "Times New Roman", serif',
+            fontSize: compact ? 'clamp(12px, 5vw, 20px)' : 'clamp(18px, 6vw, 36px)',
+            fontWeight: 700,
+            letterSpacing: '0.15em',
+            color: '#FFFFFF',
+            textShadow: '0 2px 8px rgba(0,0,0,0.4)',
+            margin: 0,
+            lineHeight: 1,
+          }}
+        >
+          VOGUE
+        </h1>
+        {!compact && (
+          <p
+            style={{
+              fontFamily: 'Georgia, "Times New Roman", serif',
+              fontSize: 'clamp(8px, 2vw, 12px)',
+              fontWeight: 400,
+              letterSpacing: '0.2em',
+              color: 'rgba(255,255,255,0.85)',
+              marginTop: '6px',
+              textShadow: '0 1px 4px rgba(0,0,0,0.3)',
+            }}
+          >
+            FALL ESSENTIALS
+          </p>
+        )}
+      </div>
+
+      {/* 底部主题 */}
+      {!compact && (
+        <h2
+          style={{
+            fontFamily: 'Georgia, "Times New Roman", serif',
+            fontSize: 'clamp(10px, 3.5vw, 20px)',
+            fontWeight: 600,
+            letterSpacing: '0.08em',
+            color: '#FFFFFF',
+            textShadow: '0 2px 8px rgba(0,0,0,0.4)',
+            margin: 0,
+            textAlign: 'center',
+          }}
+        >
+          THE NEW CLASSICS
+        </h2>
+      )}
+    </div>
+  );
 }
 
 export function EffectSelector({
@@ -186,6 +256,8 @@ export function EffectSelector({
             }}
             draggable={false}
           />
+          {/* 杂志风格文字叠加 */}
+          {selectedEffectId.includes('magazine') && <MagazineOverlay />}
           {/* 效果标签 */}
           <div
             style={{
@@ -194,6 +266,7 @@ export function EffectSelector({
               left: '12px',
               opacity: isHovered || isDragging ? 1 : 0.6,
               transition: 'opacity 0.3s',
+              zIndex: 10,
             }}
           >
             <span
@@ -359,6 +432,7 @@ export function EffectSelector({
                 borderRadius: '10px',
                 overflow: 'hidden',
                 background: 'rgba(0, 0, 0, 0.3)',
+                position: 'relative',
               }}
             >
               <img
@@ -370,6 +444,8 @@ export function EffectSelector({
                   objectFit: 'cover',
                 }}
               />
+              {/* 杂志风格缩略图文字叠加 */}
+              {effect.id.includes('magazine') && <MagazineOverlay compact />}
             </div>
             {/* 名称 */}
             <div

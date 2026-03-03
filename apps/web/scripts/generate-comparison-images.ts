@@ -34,7 +34,7 @@ const CONTENT_TYPES = {
 
 // 风格 Prompt 映射
 const STYLE_PROMPTS: Record<string, string> = {
-  magazine: 'Vogue magazine editorial style, luxury fashion aesthetic, warm golden lighting, sophisticated and elegant, professional photography, premium quality',
+  magazine: 'Vogue magazine cover style with elegant English text overlay, "VOGUE" masthead at top in bold sans-serif typography, "FALL ESSENTIALS" subtitle text, "THE NEW CLASSICS" headline at bottom, luxury fashion aesthetic, warm golden lighting, sophisticated and elegant, professional photography, premium quality, magazine cover typography design',
   soft: 'Japanese lifestyle magazine style, soft natural lighting, muted pastel colors, Kinfolk aesthetic, dreamy atmosphere, gentle and warm, editorial quality',
   urban: 'Apple keynote style, clean professional background, cool blue-gray tones, modern minimalist, trustworthy and authoritative, premium corporate style',
   vintage: 'Kodak Portra 400 film look, vintage aesthetic, warm film grain, cinematic color grading, nostalgic atmosphere, retro style, analog photography feel',

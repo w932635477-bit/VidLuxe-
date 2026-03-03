@@ -23,29 +23,13 @@ function generateId(): string {
   return `txn_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
 }
 
-// 检查并重置免费额度
-function checkAndResetFreeCredits(credits: UserCredits): UserCredits {
-  const now = Date.now();
-  if (now >= credits.freeCredits.resetAt) {
-    // 计算下一个重置时间
-    const nextReset = new Date(credits.freeCredits.resetAt);
-    nextReset.setMonth(nextReset.getMonth() + 1);
-
-    credits.freeCredits.usedThisMonth = 0;
-    credits.freeCredits.resetAt = nextReset.getTime();
-    credits.updatedAt = now;
-    saveUserCredits(credits);
-  }
-  return credits;
-}
-
 // 获取或创建用户额度
 export function getOrCreateUserCredits(anonymousId: string): UserCredits {
   let credits = getUserCredits(anonymousId);
   if (!credits) {
     credits = createUserCredits(anonymousId);
   }
-  return checkAndResetFreeCredits(credits);
+  return credits;
 }
 
 // 获取用户可用额度（包含付费额度 + 免费额度）
@@ -66,9 +50,10 @@ export function getAvailableCredits(anonymousId: string): {
   // 有效余额 = 总余额 - 过期的邀请额度
   const validBalance = Math.max(0, credits.balance - expiredInviteAmount);
 
+  // 计算剩余免费额度（一次性）
   const freeRemaining = Math.max(
     0,
-    credits.freeCredits.monthlyLimit - credits.freeCredits.usedThisMonth
+    credits.freeCredits.totalLimit - credits.freeCredits.usedTotal
   );
 
   return {
@@ -114,7 +99,7 @@ export function spendCredits(request: SpendCreditsRequest): SpendCreditsResult {
 
   // 消耗免费额度
   if (remaining > 0) {
-    credits.freeCredits.usedThisMonth += remaining;
+    credits.freeCredits.usedTotal += remaining;
   }
 
   // 记录交易
@@ -208,43 +193,17 @@ export function purchasePackage(
   };
 }
 
-// 处理邀请奖励
+// 处理邀请奖励（由 storage.ts 的 applyInviteCode 调用，验证已在调用前完成）
 export function processInviteReward(
   referrerId: string,
   inviteeId: string
 ): { success: boolean; error?: string } {
-  // 不能邀请自己
+  // 不能邀请自己（双重检查）
   if (referrerId === inviteeId) {
     return { success: false, error: '不能邀请自己' };
   }
 
-  const referrerCredits = getOrCreateUserCredits(referrerId);
-  const inviteeCredits = getOrCreateUserCredits(inviteeId);
-
-  // 检查是否已被邀请过
-  const alreadyInvited = inviteeCredits.inviteCredits.some(
-    c => c.type === 'invite_bonus' && c.inviteCode === referrerId
-  );
-  if (alreadyInvited) {
-    return { success: false, error: '该用户已被邀请' };
-  }
-
   const now = Date.now();
-
-  // 检查本月邀请次数限制
-  const monthStart = new Date();
-  monthStart.setDate(1);
-  monthStart.setHours(0, 0, 0, 0);
-  const monthStartTime = monthStart.getTime();
-
-  const invitesThisMonth = referrerCredits.inviteCredits.filter(
-    c => c.type === 'invite_earned' && c.createdAt >= monthStartTime
-  ).length;
-
-  if (invitesThisMonth >= INVITE_CONFIG.maxInvitesPerMonth) {
-    return { success: false, error: '本月邀请次数已达上限' };
-  }
-
   const expiresAt = now + INVITE_CONFIG.inviteCreditExpiresInDays * 24 * 60 * 60 * 1000;
 
   // 给邀请人加额度

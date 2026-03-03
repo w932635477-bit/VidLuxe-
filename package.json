@@ -13,7 +13,11 @@
     "lint": "turbo run lint",
     "web": "turbo run dev --filter=@vidluxe/web",
     "remotion": "turbo run dev --filter=@vidluxe/remotion",
-    "render": "turbo run render --filter=@vidluxe/remotion"
+    "render": "turbo run render --filter=@vidluxe/remotion",
+    "deploy": "./scripts/deploy.sh",
+    "deploy:quick": "./scripts/deploy.sh --skip-build",
+    "deploy:restart": "./scripts/deploy.sh --skip-build --skip-sync",
+    "deploy:dry": "./scripts/deploy.sh --dry-run"
   },
   "devDependencies": {
     "turbo": "^2.0.0",

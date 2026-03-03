@@ -175,11 +175,14 @@ export type StyleType = 'magazine' | 'soft' | 'urban' | 'vintage';
 export function getStylePrompt(style: StyleType): string {
   const prompts: Record<StyleType, string> = {
     magazine: `
-      Vogue magazine editorial style, luxury fashion aesthetic,
-      warm golden lighting, sophisticated and elegant,
+      Vogue magazine cover style with elegant English text overlay,
+      "VOGUE" masthead at top in bold sans-serif typography,
+      "FALL ESSENTIALS" subtitle text, "THE NEW CLASSICS" headline at bottom,
+      luxury fashion aesthetic, warm golden lighting, sophisticated and elegant,
       professional model photography, high-end beauty editorial,
       warm beige and champagne tones, cinematic background,
-      soft studio lighting, premium quality, editorial composition
+      soft studio lighting, premium quality, editorial composition,
+      magazine cover typography design, fashion editorial text layout
     `,
     soft: `
       Japanese lifestyle magazine style, soft natural lighting,

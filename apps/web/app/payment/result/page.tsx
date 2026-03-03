@@ -91,7 +91,7 @@ function PaymentResultContent() {
               立即使用
             </Link>
             <Link
-              href="/dashboard"
+              href="/try"
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -105,7 +105,7 @@ function PaymentResultContent() {
                 textDecoration: 'none',
               }}
             >
-              查看订单
+              返回首页
             </Link>
           </div>
         </div>

@@ -31,21 +31,21 @@ describe('Credits System', () => {
   });
 
   describe('getAvailableCredits', () => {
-    it('should return 3 free credits for new user', async () => {
+    it('should return 8 free credits for new user', async () => {
       const userId = generateTestId();
       const result = getAvailableCredits(userId);
 
       expect(result).toBeDefined();
-      expect(result.free).toBe(3);
-      expect(result.freeRemaining).toBe(3);
+      expect(result.free).toBe(8);
+      expect(result.freeRemaining).toBe(8);
       expect(result.paid).toBe(0);
-      expect(result.total).toBe(3);
+      expect(result.total).toBe(8);
     });
 
     it('should calculate total credits correctly', async () => {
       const userId = generateTestId();
 
-      // First, get the user created (which gives them 3 free credits)
+      // First, get the user created (which gives them 8 free credits)
       getAvailableCredits(userId);
 
       // Add 10 paid credits via transaction
@@ -61,9 +61,9 @@ describe('Credits System', () => {
 
       expect(result).toBeDefined();
       expect(result.paid).toBe(10);
-      expect(result.free).toBe(3);
-      expect(result.freeRemaining).toBe(3);
-      expect(result.total).toBe(13); // 10 paid + 3 free
+      expect(result.free).toBe(8);
+      expect(result.freeRemaining).toBe(8);
+      expect(result.total).toBe(18); // 10 paid + 8 free
     });
   });
 
@@ -71,16 +71,16 @@ describe('Credits System', () => {
     it('should fail when insufficient credits', async () => {
       const userId = generateTestId();
 
-      // New user has only 3 free credits
+      // New user has only 8 free credits
       const result = spendCredits({
         anonymousId: userId,
-        amount: 5, // Try to spend 5 credits
+        amount: 10, // Try to spend 10 credits
         description: 'Test task',
       });
 
       expect(result.success).toBe(false);
       expect(result.error).toBe('额度不足');
-      expect(result.newBalance).toBe(3); // Still has 3 credits available
+      expect(result.newBalance).toBe(8); // Still has 8 credits available
     });
 
     it('should deduct from paid credits first', async () => {
@@ -97,11 +97,11 @@ describe('Credits System', () => {
         createdAt: Date.now(),
       });
 
-      // User now has 5 paid + 3 free = 8 total
+      // User now has 5 paid + 8 free = 13 total
       const initialAvailable = getAvailableCredits(userId);
-      expect(initialAvailable.total).toBe(8);
+      expect(initialAvailable.total).toBe(13);
       expect(initialAvailable.paid).toBe(5);
-      expect(initialAvailable.free).toBe(3);
+      expect(initialAvailable.free).toBe(8);
 
       // Spend 3 credits - should deduct from paid credits first
       const result = spendCredits({
@@ -113,11 +113,11 @@ describe('Credits System', () => {
       expect(result.success).toBe(true);
       expect(result.transactionId).toBeDefined();
 
-      // Verify balance: paid should be 2 (5-3), free should still be 3
+      // Verify balance: paid should be 2 (5-3), free should still be 8
       const afterSpend = getAvailableCredits(userId);
       expect(afterSpend.paid).toBe(2); // 5 - 3 = 2
-      expect(afterSpend.free).toBe(3); // Free credits untouched
-      expect(afterSpend.total).toBe(5); // 2 paid + 3 free
+      expect(afterSpend.free).toBe(8); // Free credits untouched
+      expect(afterSpend.total).toBe(10); // 2 paid + 8 free
     });
   });
 
@@ -130,8 +130,8 @@ describe('Credits System', () => {
       const referrerBefore = getAvailableCredits(referrerId);
       const inviteeBefore = getAvailableCredits(inviteeId);
 
-      expect(referrerBefore.total).toBe(3); // New user default
-      expect(inviteeBefore.total).toBe(3); // New user default
+      expect(referrerBefore.total).toBe(8); // New user default
+      expect(inviteeBefore.total).toBe(8); // New user default
 
       // Process invite
       const result = processInviteReward(referrerId, inviteeId);
@@ -141,12 +141,12 @@ describe('Credits System', () => {
       // Check referrer got bonus
       const referrerAfter = getAvailableCredits(referrerId);
       expect(referrerAfter.paid).toBe(INVITE_CONFIG.referrerBonus); // 5 credits
-      expect(referrerAfter.total).toBe(3 + INVITE_CONFIG.referrerBonus); // 3 free + 5 bonus
+      expect(referrerAfter.total).toBe(8 + INVITE_CONFIG.referrerBonus); // 8 free + 5 bonus
 
       // Check invitee got bonus
       const inviteeAfter = getAvailableCredits(inviteeId);
       expect(inviteeAfter.paid).toBe(INVITE_CONFIG.inviteeBonus); // 5 credits
-      expect(inviteeAfter.total).toBe(3 + INVITE_CONFIG.inviteeBonus); // 3 free + 5 bonus
+      expect(inviteeAfter.total).toBe(8 + INVITE_CONFIG.inviteeBonus); // 8 free + 5 bonus
     });
 
     it('should fail when inviting self', async () => {

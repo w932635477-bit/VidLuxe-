@@ -11,6 +11,7 @@ import { useImageSingleStore } from '@/lib/stores/flows';
 import { useCreditsStore } from '@/lib/stores/credits-store';
 import { ProcessingAnimation } from '@/components/features/try/flows/shared/ProcessingAnimation';
 import { EffectFlowSelector } from '@/components/features/try/EffectFlowSelector';
+import { MagazineTextOverlay } from '@/components/features/try/MagazineTextOverlay';
 import { uploadFile } from '@/lib/actions/upload';
 import type { StyleType, StyleSourceType, ResultData } from '@/lib/types/flow';
 import type { ContentType } from '@/lib/content-types';
@@ -70,7 +71,46 @@ export function ImageSingleFlow() {
     reset,
   } = useImageSingleStore();
 
-  const { total, fetchCredits } = useCreditsStore();
+  const { total, fetchCredits, hasUsedInviteCode } = useCreditsStore();
+
+  // 邀请码状态
+  const [inviteCodeInput, setInviteCodeInput] = useState('');
+  const [inviteApplied, setInviteApplied] = useState(false);
+  const [inviteError, setInviteError] = useState<string | null>(null);
+  const [inviteLoading, setInviteLoading] = useState(false);
+
+  // 是否显示邀请码输入框
+  const showInviteInput = !hasUsedInviteCode && !inviteApplied;
+
+  // 处理邀请码兑换
+  const handleApplyInviteCode = useCallback(async () => {
+    if (!inviteCodeInput || inviteCodeInput.length !== 6 || inviteLoading || !anonymousId) return;
+
+    setInviteLoading(true);
+    setInviteError(null);
+
+    try {
+      const response = await fetch(`/api/invite/${inviteCodeInput.toUpperCase()}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ anonymousId }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setInviteApplied(true);
+        fetchCredits(anonymousId);
+      } else {
+        setInviteError(data.error || '邀请码兑换失败');
+      }
+    } catch (error) {
+      console.error('Apply invite code error:', error);
+      setInviteError('网络错误，请重试');
+    } finally {
+      setInviteLoading(false);
+    }
+  }, [inviteCodeInput, inviteLoading, anonymousId, fetchCredits]);
 
   // 初始化
   useEffect(() => {
@@ -152,6 +192,9 @@ export function ImageSingleFlow() {
           },
           contentType: selectedContentType,
           anonymousId,
+          // 新效果系统参数
+          effectId: selectedEffectId,
+          effectIntensity: effectIntensity,
         }),
       });
 
@@ -195,7 +238,7 @@ export function ImageSingleFlow() {
       setError('网络错误');
       setStep('style');
     }
-  }, [uploadedFileUrl, total, styleSourceType, selectedPreset, referenceFileUrl, anonymousId, setStep, setProgress, setCurrentStage, setResultData, setError, fetchCredits]);
+  }, [uploadedFileUrl, total, styleSourceType, selectedPreset, referenceFileUrl, anonymousId, selectedEffectId, effectIntensity, selectedContentType, setStep, setProgress, setCurrentStage, setResultData, setError, fetchCredits]);
 
   // 处理参考图上传（使用 Server Action）
   const handleReferenceUpload = useCallback(async (file: File) => {
@@ -311,6 +354,65 @@ export function ImageSingleFlow() {
             onIntensityChange={setEffectIntensity}
           />
 
+          {/* 邀请码输入框 - 在风格选择步骤显示 */}
+          {showInviteInput && (
+            <div style={{ marginTop: '20px', padding: '16px', borderRadius: '12px', background: 'rgba(52, 199, 89, 0.06)', border: '1px solid rgba(52, 199, 89, 0.12)' }}>
+              <p style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.6)', marginBottom: '12px' }}>
+                🎁 <span style={{ color: '#34C759' }}>输入邀请码，双方各得 5 个额度</span>
+              </p>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <input
+                  type="text"
+                  value={inviteCodeInput}
+                  onChange={(e) => setInviteCodeInput(e.target.value.toUpperCase())}
+                  placeholder="输入6位邀请码"
+                  maxLength={6}
+                  style={{
+                    flex: 1,
+                    padding: '12px 16px',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    background: 'rgba(255, 255, 255, 0.05)',
+                    color: 'white',
+                    fontSize: '14px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.1em',
+                  }}
+                />
+                <button
+                  onClick={handleApplyInviteCode}
+                  disabled={!inviteCodeInput || inviteCodeInput.length !== 6 || inviteLoading}
+                  style={{
+                    padding: '12px 20px',
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: inviteLoading ? 'rgba(255, 255, 255, 0.1)' : inviteCodeInput?.length === 6 ? '#34C759' : 'rgba(255, 255, 255, 0.1)',
+                    color: inviteLoading ? 'rgba(255, 255, 255, 0.5)' : inviteCodeInput?.length === 6 ? '#000' : 'rgba(255, 255, 255, 0.3)',
+                    fontSize: '14px',
+                    fontWeight: 600,
+                    cursor: inviteLoading ? 'wait' : inviteCodeInput?.length === 6 ? 'pointer' : 'not-allowed',
+                  }}
+                >
+                  {inviteLoading ? '兑换中...' : '兑换'}
+                </button>
+              </div>
+              {inviteError && (
+                <p style={{ fontSize: '12px', color: '#FF3B30', marginTop: '8px' }}>
+                  {inviteError}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* 邀请码应用成功提示 */}
+          {inviteApplied && (
+            <div style={{ marginTop: '20px', padding: '12px 16px', borderRadius: '12px', background: 'rgba(52, 199, 89, 0.1)', border: '1px solid rgba(52, 199, 89, 0.2)', textAlign: 'center' }}>
+              <p style={{ fontSize: '14px', color: '#34C759' }}>
+                ✅ 邀请码已使用，您已获得 5 个额度！
+              </p>
+            </div>
+          )}
+
           {/* 按钮 */}
           <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
             <button onClick={() => setStep('upload')} style={{ flex: 1, padding: '16px', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.1)', background: 'transparent', color: 'white', fontSize: '16px', fontWeight: 500, cursor: 'pointer' }}>返回</button>
@@ -333,45 +435,55 @@ export function ImageSingleFlow() {
         <div style={{ display: 'flex', flexDirection: 'column', padding: '24px', maxWidth: '480px', margin: '0 auto' }}>
           <p style={{ fontSize: '24px', fontWeight: 600, marginBottom: '24px', textAlign: 'center' }}>升级完成！</p>
 
-          <div style={{ marginBottom: '24px', borderRadius: '16px', overflow: 'hidden', position: 'relative' }}>
-            <img src={resultData.enhancedUrl} alt="结果" style={{ width: '100%', aspectRatio: '9/16', objectFit: 'cover' }} />
-            {/* 下载按钮 */}
-            <button
-              onClick={async () => {
-                try {
-                  const response = await fetch(resultData.enhancedUrl);
-                  const blob = await response.blob();
-                  const blobUrl = URL.createObjectURL(blob);
-                  const link = document.createElement('a');
-                  link.href = blobUrl;
-                  link.download = 'vidluxe_enhanced.jpg';
-                  document.body.appendChild(link);
-                  link.click();
-                  document.body.removeChild(link);
-                  URL.revokeObjectURL(blobUrl);
-                } catch {
-                  alert('下载失败，请重试');
-                }
-              }}
-              style={{
-                position: 'absolute',
-                top: '12px',
-                right: '12px',
-                width: '40px',
-                height: '40px',
-                borderRadius: '10px',
-                background: 'rgba(0, 0, 0, 0.6)',
-                border: 'none',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
-              </svg>
-            </button>
+          <div style={{ marginBottom: '24px', borderRadius: '16px', overflow: 'hidden' }}>
+            {/* 如果是杂志风格，显示带文字叠加的效果 */}
+            {selectedEffectId?.includes('magazine') ? (
+              <MagazineTextOverlay
+                imageUrl={resultData.enhancedUrl}
+                showDownloadButton={true}
+              />
+            ) : (
+              <div style={{ position: 'relative' }}>
+                <img src={resultData.enhancedUrl} alt="结果" style={{ width: '100%', aspectRatio: '9/16', objectFit: 'cover', display: 'block', borderRadius: '16px' }} />
+                {/* 下载按钮 */}
+                <button
+                  onClick={async () => {
+                    try {
+                      const response = await fetch(resultData.enhancedUrl);
+                      const blob = await response.blob();
+                      const blobUrl = URL.createObjectURL(blob);
+                      const link = document.createElement('a');
+                      link.href = blobUrl;
+                      link.download = 'vidluxe_enhanced.jpg';
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                      URL.revokeObjectURL(blobUrl);
+                    } catch {
+                      alert('下载失败，请重试');
+                    }
+                  }}
+                  style={{
+                    position: 'absolute',
+                    top: '12px',
+                    right: '12px',
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '10px',
+                    background: 'rgba(0, 0, 0, 0.6)',
+                    border: 'none',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
+                  </svg>
+                </button>
+              </div>
+            )}
           </div>
 
           {resultData.score && (

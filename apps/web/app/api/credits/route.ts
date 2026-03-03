@@ -24,6 +24,11 @@ export async function GET(request: NextRequest) {
     const available = getAvailableCredits(anonymousId);
     const userCredits = getOrCreateUserCredits(anonymousId);
 
+    // 检查用户是否已经使用过邀请码（被邀请过）
+    const hasUsedInviteCode = userCredits.inviteCredits.some(
+      c => c.type === 'invite_bonus'
+    );
+
     return NextResponse.json({
       success: true,
       data: {
@@ -33,6 +38,7 @@ export async function GET(request: NextRequest) {
         freeRemaining: available.freeRemaining,
         totalEarned: userCredits.totalEarned,
         totalSpent: userCredits.totalSpent,
+        hasUsedInviteCode, // 新增：是否已使用过邀请码
       },
     });
   } catch (error) {

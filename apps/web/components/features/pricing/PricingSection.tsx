@@ -12,10 +12,10 @@ const PLANS = [
     name: '免费版',
     nameEn: 'Free',
     price: 0,
-    period: '每月重置',
+    period: '新用户专属',
     description: '体验 AI 升级的魔力',
     features: [
-      '每月 3 次免费额度',
+      '8 次免费额度',
       '4 种高级感风格',
       '邀请好友获得额外额度',
       '标准画质导出',
@@ -105,9 +105,10 @@ interface PricingCardProps {
   onPurchase: (packageId: string, simulate?: boolean) => void;
   loading: boolean;
   purchasingId: string | null;
+  authLoading: boolean;
 }
 
-function PricingCard({ plan, onPurchase, loading, purchasingId }: PricingCardProps) {
+function PricingCard({ plan, onPurchase, loading, purchasingId, authLoading }: PricingCardProps) {
   const isPurchasing = purchasingId === plan.id;
 
   const handleClick = () => {
@@ -231,7 +232,7 @@ function PricingCard({ plan, onPurchase, loading, purchasingId }: PricingCardPro
 
       <button
         onClick={handleClick}
-        disabled={loading && isPurchasing}
+        disabled={(loading && isPurchasing) || authLoading}
         style={{
           display: 'block',
           textAlign: 'center',
@@ -261,7 +262,7 @@ interface PricingSectionProps {
 
 export function PricingSection({ showTitle = true, compact = false }: PricingSectionProps) {
   const router = useRouter();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
   const [purchasingId, setPurchasingId] = useState<string | null>(null);
   const [showContactModal, setShowContactModal] = useState(false);
@@ -269,8 +270,19 @@ export function PricingSection({ showTitle = true, compact = false }: PricingSec
   const [showSuccess, setShowSuccess] = useState(false);
 
   const handlePurchase = async (packageId: string, simulate = false) => {
+    // 等待认证加载完成
+    if (authLoading) {
+      return;
+    }
+
     if (!user) {
-      router.push('/auth?redirect=/pricing');
+      // 保存购买意图到 sessionStorage
+      sessionStorage.setItem('purchaseIntent', JSON.stringify({
+        packageId,
+        timestamp: Date.now()
+      }));
+      // 跳转到登录，带完整参数
+      router.push(`/auth?redirect=/checkout?package=${packageId}`);
       return;
     }
 
@@ -281,7 +293,11 @@ export function PricingSection({ showTitle = true, compact = false }: PricingSec
       const response = await fetch('/api/payment/create', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ packageId, simulate }),
+        body: JSON.stringify({
+          packageId,
+          userId: user.id,
+          simulate
+        }),
       });
 
       const data = await response.json();
@@ -302,16 +318,19 @@ export function PricingSection({ showTitle = true, compact = false }: PricingSec
         setShowSuccess(true);
         setTimeout(() => {
           setShowSuccess(false);
-          router.push('/dashboard');
+          router.push('/try?payment=success');
         }, 2000);
         return;
       }
 
-      // 真实支付
-      if (data.mwebUrl) {
-        window.location.href = data.mwebUrl;
+      // 真实支付 - 跳转到checkout页面
+      if (data.order?.id) {
+        router.push(`/payment/checkout?orderId=${data.order.id}`);
+      } else if (data.codeUrl) {
+        // 如果直接返回二维码URL，也跳转到checkout
+        router.push(`/payment/checkout?orderId=${data.order?.id || ''}`);
       } else {
-        router.push('/dashboard?payment=success');
+        router.push('/try?payment=success');
       }
     } catch (err) {
       console.error('Purchase error:', err);
@@ -489,6 +508,7 @@ export function PricingSection({ showTitle = true, compact = false }: PricingSec
               onPurchase={handlePurchase}
               loading={loading}
               purchasingId={purchasingId}
+              authLoading={authLoading}
             />
           ))}
         </div>
@@ -501,7 +521,7 @@ export function PricingSection({ showTitle = true, compact = false }: PricingSec
             color: 'rgba(255, 255, 255, 0.35)',
           }}
         >
-          所有付费方案额度永不过期 · 支持 7 天无理由退款
+          所有付费方案额度永不过期
         </p>
       </div>
     </section>
@@ -513,15 +533,11 @@ export function PricingFAQ() {
   const faqs = [
     {
       q: '免费版有什么限制？',
-      a: '免费版每月可使用 3 次免费额度，支持全部 4 种高级感风格，标准画质导出。邀请好友可获得额外额度。',
+      a: '新用户可获得 8 次免费额度，支持全部 4 种高级感风格，标准画质导出。邀请好友可获得额外额度。',
     },
     {
       q: '额度会过期吗？',
-      a: '付费购买的额度永不过期，可以随时使用。免费额度每月重置。',
-    },
-    {
-      q: '如何退款？',
-      a: '购买后 7 天内，如对产品不满意，可联系客服全额退款，无需任何理由。',
+      a: '付费购买的额度永不过期，可以随时使用。免费额度用完后需购买额度继续使用。',
     },
     {
       q: '支持哪些支付方式？',

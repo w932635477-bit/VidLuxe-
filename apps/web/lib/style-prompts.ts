@@ -30,11 +30,14 @@ export const STYLE_PRESETS: Record<PresetStyle, StyleConfig> = {
     nameEn: 'Magazine',
     description: '时尚杂志封面质感，高级奢华',
     prompt: `
-      Vogue magazine editorial style, luxury fashion aesthetic,
+      Vogue magazine cover style, luxury fashion aesthetic,
+      with elegant English text overlay, "VOGUE" masthead at top in bold sans-serif typography,
+      "FALL ESSENTIALS" subtitle text, "THE NEW CLASSICS" headline at bottom,
       warm golden lighting, sophisticated and elegant,
       professional model photography, high-end beauty editorial,
       warm beige and champagne tones, cinematic background,
-      soft studio lighting, premium quality, editorial composition
+      soft studio lighting, premium quality, editorial composition,
+      magazine cover typography design, fashion editorial text layout
     `.trim().replace(/\s+/g, ' '),
     negativePrompt: `
       amateur, low quality, blurry, distorted, ugly,

@@ -54,10 +54,6 @@ export function saveUserCredits(credits: UserCredits): void {
 // 创建新用户额度记录
 export function createUserCredits(anonymousId: string): UserCredits {
   const now = Date.now();
-  const nextMonth = new Date();
-  nextMonth.setMonth(nextMonth.getMonth() + 1);
-  nextMonth.setDate(1);
-  nextMonth.setHours(0, 0, 0, 0);
 
   const credits: UserCredits = {
     anonymousId,
@@ -68,9 +64,8 @@ export function createUserCredits(anonymousId: string): UserCredits {
     inviteCredits: [],
     transactions: [],
     freeCredits: {
-      monthlyLimit: FREE_CREDIT_CONFIG.monthlyLimit,
-      usedThisMonth: 0,
-      resetAt: nextMonth.getTime(),
+      totalLimit: FREE_CREDIT_CONFIG.totalLimit,
+      usedTotal: 0,
     },
     createdAt: now,
     updatedAt: now,

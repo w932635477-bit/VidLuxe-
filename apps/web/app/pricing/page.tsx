@@ -38,13 +38,13 @@ function PricingNav() {
           体验
         </Link>
         <Link
-          href="/dashboard"
+          href="/try"
           style={{
             fontSize: '14px',
             color: 'rgba(255, 255, 255, 0.6)',
           }}
         >
-          Dashboard
+          体验
         </Link>
       </div>
     </nav>

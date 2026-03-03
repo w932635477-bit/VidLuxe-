@@ -14,7 +14,7 @@ import { ImageBatchFlow } from '@/components/features/try/flows/ImageBatchFlow';
 import { VideoFlow } from '@/components/features/try/flows/VideoFlow';
 
 export default function TryPage() {
-  const [activeMode, setActiveMode] = useState<FlowMode>('batch');
+  const [activeMode, setActiveMode] = useState<FlowMode>('single');
 
   const renderFlow = () => {
     switch (activeMode) {

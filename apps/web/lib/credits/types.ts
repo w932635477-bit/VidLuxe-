@@ -40,9 +40,8 @@ export interface CreditTransaction {
 
 // 免费额度信息
 export interface FreeCreditInfo {
-  monthlyLimit: number;      // 每月限额
-  usedThisMonth: number;     // 本月已用
-  resetAt: number;           // 重置时间
+  totalLimit: number;        // 一次性免费额度总量
+  usedTotal: number;         // 已使用的免费额度
 }
 
 // 额度消耗请求
@@ -67,7 +66,7 @@ export const CREDIT_PACKAGES: CreditPackage[] = [
     id: 'free',
     name: '免费版',
     price: 0,
-    credits: 3,
+    credits: 8,
     expiresAt: undefined, // 每月重置
   },
   {
@@ -100,16 +99,16 @@ export const CREDIT_PACKAGES: CreditPackage[] = [
   },
 ];
 
-// 邀请奖励配置
+// 邀请奖励配置（参考 Dropbox 模式）
 export const INVITE_CONFIG = {
-  referrerBonus: 5,      // 邀请人获得额度
-  inviteeBonus: 5,       // 被邀请人获得额度
-  maxInvitesPerMonth: 20, // 每月最多邀请人数
+  referrerBonus: 5,           // 邀请人获得额度
+  inviteeBonus: 5,            // 被邀请人获得额度
+  maxInvitesLifetime: 20,     // 终身最多邀请人数（取消月限制）
+  newUserWindowHours: 24,     // 新用户时间窗口：账户创建后24小时内可使用邀请码
   inviteCreditExpiresInDays: 30, // 邀请额度有效期
 };
 
 // 免费额度配置
 export const FREE_CREDIT_CONFIG = {
-  monthlyLimit: 3,       // 每月免费额度
-  resetDay: 1,           // 每月1号重置
+  totalLimit: 8,         // 新用户一次性免费额度
 };

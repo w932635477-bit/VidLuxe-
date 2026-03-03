@@ -2,7 +2,162 @@
 
 ## 概述
 
-VidLuxe 采用 Serverless 架构，部署在 Vercel 上，数据存储使用 Supabase。这种架构具有高可用性、自动扩展和低运维成本的优势。
+VidLuxe 目前部署在腾讯云服务器上，使用 PM2 进程管理。
+
+---
+
+## 腾讯云服务器部署 (当前生产环境)
+
+### 服务器信息
+
+| 项目 | 值 |
+|------|-----|
+| IP | 146.56.193.40 |
+| SSH | `ssh -i ~/.ssh/id_vidluxe root@146.56.193.40` |
+| 域名 | vidluxe.com.cn |
+| 磁盘 | 50G SSD |
+
+### ⚠️ 重要：正确路径
+
+```
+/opt/vidluxe/                           # ✅ 项目根目录 (正确)
+├── apps/web/
+│   ├── .next/
+│   │   ├── standalone/
+│   │   │   └── apps/web/              # PM2 运行路径
+│   │   │       └── server.js          # 入口文件
+│   │   └── static/                    # 静态资源
+│   └── public/uploads/                # 用户上传文件
+└── node_modules/
+```
+
+**禁止使用的路径：**
+- ❌ `/www/vidluxe/` - 错误路径
+- ❌ `/www/wwwroot/vidluxe/` - 旧部署路径 (已删除)
+
+### PM2 命令
+
+```bash
+# 查看服务状态
+pm2 status vidluxe
+
+# 查看服务配置
+pm2 show vidluxe
+
+# 重启服务
+pm2 restart vidluxe
+
+# 查看日志
+pm2 logs vidluxe --lines 50
+```
+
+### 部署流程
+
+**推荐方式：使用部署脚本（自动验证路径）**
+
+```bash
+# 完整部署（构建 + 同步 + 重启 + 验证）
+pnpm deploy
+
+# 快速部署（跳过构建，只同步和重启）
+pnpm deploy:quick
+
+# 仅重启（不构建不同步）
+pnpm deploy:restart
+
+# 预览将要执行的操作（不实际执行）
+pnpm deploy:dry
+```
+
+**手动部署（不推荐）**
+
+如果必须手动部署，请严格按以下步骤：
+
+```bash
+# 1. 验证正确路径 ⚠️ 必须先执行
+ssh -i ~/.ssh/id_vidluxe root@146.56.193.40 "pm2 show vidluxe | grep 'script path'"
+# 输出应该是: /opt/vidluxe/apps/web/.next/standalone/...
+
+# 2. 构建
+pnpm --filter=@vidluxe/web build
+
+# 3. 同步 (⚠️ 使用上面验证的路径)
+rsync -avz --delete \
+  -e "ssh -i ~/.ssh/id_vidluxe" \
+  /Users/weilei/VidLuxe/apps/web/.next/ \
+  root@146.56.193.40:/opt/vidluxe/apps/web/.next/
+
+# 4. 重启
+ssh -i ~/.ssh/id_vidluxe root@146.56.193.40 "pm2 restart vidluxe"
+```
+
+### 部署脚本安全机制
+
+`scripts/deploy.sh` 包含以下安全机制：
+
+1. **路径自动验证** - 从 PM2 配置读取实际路径，不依赖手动配置
+2. **错误路径检测** - 自动检测并提示删除 `/www/vidluxe` 等错误路径
+3. **磁盘空间检查** - 部署前检查磁盘空间，超过 90% 时警告
+4. **SSH 连接测试** - 部署前验证 SSH 连接
+5. **部署后验证** - 自动检查服务状态和 HTTP 响应
+6. **Dry Run 模式** - 预览将要执行的操作
+7. **Static 文件复制** - 自动复制 static 和 public 文件到 standalone 目录
+
+### ⚠️ Next.js Standalone 部署注意事项
+
+Next.js standalone 模式需要额外的文件复制步骤：
+
+```bash
+# 必须手动复制 static 文件到 standalone 目录
+cp -r .next/static/* .next/standalone/apps/web/.next/static/
+
+# 必须复制 public 文件
+cp -r public/* .next/standalone/apps/web/public/
+```
+
+**原因：** Next.js standalone 输出不包含 static 和 public 文件夹，需要手动复制。
+
+**部署脚本已自动处理此步骤。**
+
+### 磁盘空间监控
+
+```bash
+# 检查磁盘空间
+ssh -i ~/.ssh/id_vidluxe root@146.56.193.40 "df -h /"
+
+# 检查大目录
+ssh -i ~/.ssh/id_vidluxe root@146.56.193.40 "du -sh /* 2>/dev/null | sort -rh | head -10"
+```
+
+### 故障排查
+
+**服务无法启动：**
+1. 检查日志：`pm2 logs vidluxe --lines 50`
+2. 检查路径：`pm2 show vidluxe`
+3. 检查文件：`ls -la /opt/vidluxe/apps/web/.next/standalone/vidluxe/apps/web/`
+
+**页面更新未生效：**
+1. 强制刷新浏览器 (Cmd+Shift+R)
+2. 检查静态 chunk：
+   ```bash
+   ssh -i ~/.ssh/id_vidluxe root@146.56.193.40 \
+     "ls -la /opt/vidluxe/apps/web/.next/static/chunks/app/try/"
+   ```
+3. 确认 `.next/static/` 目录已同步
+
+### 历史问题记录
+
+**2026-03-02: 错误路径问题**
+- 问题：部署时使用了 `/www/vidluxe/` 路径
+- 原因：未检查 PM2 配置就假设路径
+- 解决：删除错误目录，使用 `/opt/vidluxe/`
+- 释放空间：删除 `/www/vidluxe` (4.4G) + `/www/wwwroot/vidluxe` (23G)
+
+---
+
+## Vercel 部署 (备用方案)
+
+VidLuxe 也可以采用 Serverless 架构，部署在 Vercel 上，数据存储使用 Supabase。这种架构具有高可用性、自动扩展和低运维成本的优势。
 
 ---
 

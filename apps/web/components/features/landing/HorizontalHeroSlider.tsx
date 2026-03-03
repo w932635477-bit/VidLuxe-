@@ -85,9 +85,6 @@ export function HorizontalHeroSlider({ originalImage, enhancedImage }: Horizonta
             <Link href="/try" className="text-secondary hover:text-primary transition-colors" style={{ fontSize: '13px', letterSpacing: '0.02em' }}>
               体验
             </Link>
-            <Link href="/dashboard" className="text-secondary hover:text-primary transition-colors" style={{ fontSize: '13px', letterSpacing: '0.02em' }}>
-              Dashboard
-            </Link>
             <Link href="/pricing" className="text-secondary hover:text-primary transition-colors" style={{ fontSize: '13px', letterSpacing: '0.02em' }}>
               定价
             </Link>

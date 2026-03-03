@@ -11,6 +11,7 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { getFileStorage } from '@/lib/file-storage';
+import { getEffectById, getEffectPrompt } from '@/lib/effect-presets';
 
 // Nano Banana API 配置
 const NANO_BANANA_CONFIG = {
@@ -26,9 +27,9 @@ const NANO_BANANA_CONFIG = {
   pollInterval: 2000,
 };
 
-// 风格到 Prompt 的映射
+// 风格到 Prompt 的映射（向后兼容）
 const STYLE_PROMPTS: Record<string, string> = {
-  magazine: 'magazine cover style, high fashion photography, clean background, professional lighting, editorial look, premium quality',
+  magazine: 'Vogue magazine cover style with elegant English text overlay, "VOGUE" masthead at top in bold sans-serif typography, "FALL ESSENTIALS" subtitle text, "THE NEW CLASSICS" headline at bottom, high fashion photography, clean background, professional lighting, editorial look, premium quality, magazine cover typography design',
   warm: 'warm golden hour lighting, cozy atmosphere, soft tones, premium lifestyle photography, inviting mood',
   cinematic: 'cinematic look, film color grading, moody atmosphere, professional cinematography, movie poster quality',
 };
@@ -36,7 +37,10 @@ const STYLE_PROMPTS: Record<string, string> = {
 // 请求体
 interface EnhanceCoverRequest {
   frameUrl: string; // 关键帧 URL
-  style?: 'magazine' | 'warm' | 'cinematic';
+  style?: 'magazine' | 'warm' | 'cinematic'; // 旧风格参数（向后兼容）
+  effectId?: string; // 新效果系统参数
+  intensity?: number; // 效果强度 0-100
+  contentType?: string; // 内容类型
 }
 
 // 响应
@@ -206,7 +210,7 @@ async function downloadEnhancedImage(url: string): Promise<string> {
 export async function POST(request: NextRequest): Promise<NextResponse<EnhanceCoverResponse>> {
   try {
     const body: EnhanceCoverRequest = await request.json();
-    const { frameUrl, style = 'magazine' } = body;
+    const { frameUrl, style = 'magazine', effectId, intensity = 100, contentType } = body;
 
     if (!frameUrl) {
       return NextResponse.json(
@@ -215,7 +219,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<EnhanceCo
       );
     }
 
-    console.log('[EnhanceCover] Enhancing frame:', frameUrl, 'with style:', style);
+    console.log('[EnhanceCover] Enhancing frame:', frameUrl, 'with effectId:', effectId, 'or style:', style);
 
     // 获取关键帧的本地路径
     const storage = getFileStorage();
@@ -241,8 +245,26 @@ export async function POST(request: NextRequest): Promise<NextResponse<EnhanceCo
       );
     }
 
-    // 构建 prompt
-    const stylePrompt = STYLE_PROMPTS[style] || STYLE_PROMPTS.magazine;
+    // 构建 prompt - 优先使用新效果系统
+    let stylePrompt: string;
+
+    if (effectId) {
+      // 使用新效果系统
+      const effect = getEffectById(effectId);
+      if (effect) {
+        stylePrompt = getEffectPrompt(effectId, intensity);
+        console.log('[EnhanceCover] Using effect system:', effectId, 'intensity:', intensity);
+      } else {
+        // effectId 无效，回退到旧系统
+        stylePrompt = STYLE_PROMPTS[style] || STYLE_PROMPTS.magazine;
+        console.log('[EnhanceCover] Invalid effectId, falling back to style:', style);
+      }
+    } else {
+      // 使用旧风格系统
+      stylePrompt = STYLE_PROMPTS[style] || STYLE_PROMPTS.magazine;
+      console.log('[EnhanceCover] Using legacy style system:', style);
+    }
+
     const basePrompt = `${stylePrompt}, maintain the original person/subject, enhance background and lighting, keep natural look`;
 
     // 获取公网 URL
