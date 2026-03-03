@@ -200,18 +200,24 @@ export async function createPaymentOrder(params: CreatePaymentOrderParams): Prom
 
 /**
  * 查询订单状态
+ * @param orderIdOrOutTradeNo - 订单 ID (UUID) 或商户订单号 (out_trade_no)
  */
-export async function queryPaymentOrder(outTradeNo: string): Promise<{
+export async function queryPaymentOrder(orderIdOrOutTradeNo: string): Promise<{
   order?: PaymentOrder;
   error?: string;
 }> {
   try {
     const supabase = await createClient();
 
+    // 判断是 UUID 还是 out_trade_no
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(orderIdOrOutTradeNo);
+
+    const queryField = isUUID ? 'id' : 'out_trade_no';
+
     const { data: order, error } = await supabase
       .from('payment_orders')
       .select('*')
-      .eq('out_trade_no', outTradeNo)
+      .eq(queryField, orderIdOrOutTradeNo)
       .single();
 
     if (error || !order) {
@@ -220,11 +226,11 @@ export async function queryPaymentOrder(outTradeNo: string): Promise<{
 
     // 如果订单是 pending 状态，查询微信支付状态
     if (order.status === 'pending') {
-      const wechatResult = await queryWechatOrder(outTradeNo);
+      const wechatResult = await queryWechatOrder(order.out_trade_no);
 
       if (wechatResult.tradeState === 'SUCCESS' && order.status !== 'paid') {
         // 更新订单状态（幂等操作）
-        await markOrderAsPaid(outTradeNo, wechatResult.transactionId || null);
+        await markOrderAsPaid(order.out_trade_no, wechatResult.transactionId || null);
         order.status = 'paid';
         order.transaction_id = wechatResult.transactionId || null;
         order.paid_at = new Date().toISOString();

@@ -386,7 +386,14 @@ export function decryptNotifyResource(resource: {
       wechatPayConfig.apiV3Key
     );
 
-    return JSON.parse(decrypted as string);
+    // SDK 可能返回字符串或已解析的对象
+    if (typeof decrypted === 'string') {
+      return JSON.parse(decrypted);
+    } else if (typeof decrypted === 'object' && decrypted !== null) {
+      return decrypted as Record<string, unknown>;
+    }
+
+    return null;
   } catch (error) {
     console.error('Decrypt notify resource error:', error);
     return null;

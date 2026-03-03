@@ -20,12 +20,14 @@ export interface WechatPayConfig {
 /**
  * 微信支付配置
  * 从环境变量读取
+ * 注意：私钥在 .env.local 中使用 \n 表示换行
  */
 export const wechatPayConfig: WechatPayConfig = {
   appId: process.env.WECHAT_PAY_APP_ID || '',
   mchId: process.env.WECHAT_PAY_MCH_ID || '',
   apiV3Key: process.env.WECHAT_PAY_API_V3_KEY || '',
-  privateKey: process.env.WECHAT_PAY_PRIVATE_KEY || '',
+  // 将 \n 字符串转换为真正的换行符
+  privateKey: (process.env.WECHAT_PAY_PRIVATE_KEY || '').replace(/\\n/g, '\n'),
   serialNo: process.env.WECHAT_PAY_SERIAL_NO || '',
   notifyUrl: process.env.WECHAT_PAY_NOTIFY_URL || 'https://vidluxe.com/api/webhook/wechat',
 };
