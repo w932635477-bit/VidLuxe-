@@ -44,11 +44,25 @@ export function UploadStep({ onUploadComplete }: UploadStepProps) {
     fetchCredits(anonymousId || undefined);
   }, [fetchCredits]);
 
-  // 邀请码状态
+  // 邀请码输入状态
   const [inviteCodeInput, setInviteCodeInput] = useState('');
   const [inviteApplied, setInviteApplied] = useState(false);
   const [inviteError, setInviteError] = useState<string | null>(null);
   const [inviteLoading, setInviteLoading] = useState(false);
+
+  // 我的邀请码状态
+  const [myInviteCode, setMyInviteCode] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  // 复制邀请链接
+  const handleCopyInviteLink = useCallback(() => {
+    if (!myInviteCode) return;
+    const inviteUrl = `${window.location.origin}/try?invite=${myInviteCode}`;
+    navigator.clipboard.writeText(inviteUrl).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }, [myInviteCode]);
 
   // 是否显示邀请码输入框：用户未被邀请过 且 还没在本次会话中应用邀请码
   const showInviteInput = !hasUsedInviteCode && !inviteApplied;
@@ -445,7 +459,7 @@ export function UploadStep({ onUploadComplete }: UploadStepProps) {
             </p>
           </div>
 
-          {/* 额度显示 */}
+          {/* 额度显示 + 邀请码 */}
           <div
             style={{
               padding: '16px 20px',
@@ -468,12 +482,37 @@ export function UploadStep({ onUploadComplete }: UploadStepProps) {
                 <span style={{ color: '#D4AF37' }}>{total}</span>
                 <span style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.4)', marginLeft: '4px' }}>次</span>
               </p>
-            </div>
-            <div style={{ textAlign: 'right' }}>
-              <p style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.4)' }}>
+              <p style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.4)', marginTop: '2px' }}>
                 付费 {paid} · 免费 {free}
               </p>
             </div>
+            {myInviteCode && (
+              <div style={{ textAlign: 'right' }}>
+                <p style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.5)', marginBottom: '6px' }}>
+                  🎁 邀请码
+                </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '15px', fontWeight: 600, color: '#34C759', letterSpacing: '0.05em' }}>
+                    {myInviteCode}
+                  </span>
+                  <button
+                    onClick={handleCopyInviteLink}
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: '6px',
+                      border: '1px solid rgba(52, 199, 89, 0.3)',
+                      background: copied ? 'rgba(52, 199, 89, 0.2)' : 'rgba(52, 199, 89, 0.1)',
+                      color: copied ? '#34C759' : 'rgba(255, 255, 255, 0.8)',
+                      fontSize: '12px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    {copied ? '已复制 ✓' : '复制'}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
@@ -488,7 +527,7 @@ export function UploadStep({ onUploadComplete }: UploadStepProps) {
             allowMultiple={true}
           />
 
-          {/* 非批量模式下的额度显示 */}
+          {/* 非批量模式下的额度显示 + 邀请码 */}
           <div
             style={{
               padding: '16px 20px',
@@ -511,12 +550,37 @@ export function UploadStep({ onUploadComplete }: UploadStepProps) {
                 <span style={{ color: '#D4AF37' }}>{total}</span>
                 <span style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.4)', marginLeft: '4px' }}>次</span>
               </p>
-            </div>
-            <div style={{ textAlign: 'right' }}>
-              <p style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.4)' }}>
+              <p style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.4)', marginTop: '2px' }}>
                 付费 {paid} · 免费 {free}
               </p>
             </div>
+            {myInviteCode && (
+              <div style={{ textAlign: 'right' }}>
+                <p style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.5)', marginBottom: '6px' }}>
+                  🎁 邀请码
+                </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '15px', fontWeight: 600, color: '#34C759', letterSpacing: '0.05em' }}>
+                    {myInviteCode}
+                  </span>
+                  <button
+                    onClick={handleCopyInviteLink}
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: '6px',
+                      border: '1px solid rgba(52, 199, 89, 0.3)',
+                      background: copied ? 'rgba(52, 199, 89, 0.2)' : 'rgba(52, 199, 89, 0.1)',
+                      color: copied ? '#34C759' : 'rgba(255, 255, 255, 0.8)',
+                      fontSize: '12px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    {copied ? '已复制 ✓' : '复制'}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* 邀请码输入 */}

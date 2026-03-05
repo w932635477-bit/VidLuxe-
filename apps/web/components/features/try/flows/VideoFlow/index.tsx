@@ -176,6 +176,10 @@ export function VideoFlow() {
 
   const { total, fetchCredits } = useCreditsStore();
 
+  // 我的邀请码状态
+  const [myInviteCode, setMyInviteCode] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
   // 替换帧切换
   const handleReplaceToggle = useCallback((frame: KeyFrame) => {
     setReplaceFrames((prev) =>
@@ -189,7 +193,29 @@ export function VideoFlow() {
   useEffect(() => {
     const id = generateAnonymousId();
     setAnonymousId(id);
+
+    // 获取我的邀请码
+    if (id) {
+      fetch(`/api/invite?anonymousId=${encodeURIComponent(id)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.data?.code) {
+            setMyInviteCode(data.data.code);
+          }
+        })
+        .catch(err => console.error('Failed to fetch invite code:', err));
+    }
   }, []);
+
+  // 复制邀请链接
+  const handleCopyInviteLink = useCallback(() => {
+    if (!myInviteCode) return;
+    const inviteUrl = `${window.location.origin}/try?invite=${myInviteCode}`;
+    navigator.clipboard.writeText(inviteUrl).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }, [myInviteCode]);
 
   useEffect(() => {
     if (anonymousId) {
@@ -511,6 +537,17 @@ export function VideoFlow() {
 
           <div style={{ padding: '16px 20px', borderRadius: '12px', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.06)', maxWidth: '480px', width: '100%', marginTop: '32px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div><p style={{ fontSize: '13px', color: 'rgba(255, 255, 255, 0.5)', marginBottom: '4px' }}>我的额度</p><p style={{ fontSize: '21px', fontWeight: 600 }}><span style={{ color: '#D4AF37' }}>{total}</span><span style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.4)', marginLeft: '4px' }}>次</span></p></div>
+            {myInviteCode && (
+              <div style={{ textAlign: 'right' }}>
+                <p style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.5)', marginBottom: '6px' }}>🎁 邀请码</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '15px', fontWeight: 600, color: '#34C759', letterSpacing: '0.05em' }}>{myInviteCode}</span>
+                  <button onClick={handleCopyInviteLink} style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid rgba(52, 199, 89, 0.3)', background: copied ? 'rgba(52, 199, 89, 0.2)' : 'rgba(52, 199, 89, 0.1)', color: copied ? '#34C759' : 'rgba(255, 255, 255, 0.8)', fontSize: '12px', cursor: 'pointer' }}>
+                    {copied ? '已复制 ✓' : '复制'}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -63,11 +63,37 @@ export function ImageBatchFlow() {
 
   const { total, fetchCredits } = useCreditsStore();
 
+  // 我的邀请码状态
+  const [myInviteCode, setMyInviteCode] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
   // 初始化
   useEffect(() => {
     const id = generateAnonymousId();
     setAnonymousId(id);
+
+    // 获取我的邀请码
+    if (id) {
+      fetch(`/api/invite?anonymousId=${encodeURIComponent(id)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.data?.code) {
+            setMyInviteCode(data.data.code);
+          }
+        })
+        .catch(err => console.error('Failed to fetch invite code:', err));
+    }
   }, []);
+
+  // 复制邀请链接
+  const handleCopyInviteLink = useCallback(() => {
+    if (!myInviteCode) return;
+    const inviteUrl = `${window.location.origin}/try?invite=${myInviteCode}`;
+    navigator.clipboard.writeText(inviteUrl).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }, [myInviteCode]);
 
   useEffect(() => {
     if (anonymousId) {
@@ -261,6 +287,9 @@ export function ImageBatchFlow() {
           onRemove={removeBatchFile}
           onClear={clearBatchFiles}
           credits={{ total, paid: 0, free: total }}
+          myInviteCode={myInviteCode}
+          copied={copied}
+          onCopyInviteLink={handleCopyInviteLink}
         />
       )}
 
@@ -305,13 +334,16 @@ export function ImageBatchFlow() {
 // 子组件
 // ============================================
 
-function UploadStep({ batchFiles, isLoading, onFilesChange, onRemove, onClear, credits }: {
+function UploadStep({ batchFiles, isLoading, onFilesChange, onRemove, onClear, credits, myInviteCode, copied, onCopyInviteLink }: {
   batchFiles: BatchFileItem[];
   isLoading: boolean;
   onFilesChange: (files: File[]) => void;
   onRemove: (id: string) => void;
   onClear: () => void;
   credits: { total: number; paid: number; free: number };
+  myInviteCode?: string | null;
+  copied?: boolean;
+  onCopyInviteLink?: () => void;
 }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '24px' }}>
@@ -439,6 +471,17 @@ function UploadStep({ batchFiles, isLoading, onFilesChange, onRemove, onClear, c
             <span style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.4)', marginLeft: '4px' }}>次</span>
           </p>
         </div>
+        {myInviteCode && (
+          <div style={{ textAlign: 'right' }}>
+            <p style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.5)', marginBottom: '6px' }}>🎁 邀请码</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '15px', fontWeight: 600, color: '#34C759', letterSpacing: '0.05em' }}>{myInviteCode}</span>
+              <button onClick={onCopyInviteLink} style={{ padding: '6px 12px', borderRadius: '6px', border: '1px solid rgba(52, 199, 89, 0.3)', background: copied ? 'rgba(52, 199, 89, 0.2)' : 'rgba(52, 199, 89, 0.1)', color: copied ? '#34C759' : 'rgba(255, 255, 255, 0.8)', fontSize: '12px', cursor: 'pointer' }}>
+                {copied ? '已复制 ✓' : '复制'}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
