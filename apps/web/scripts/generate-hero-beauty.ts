@@ -7,7 +7,7 @@
  */
 
 const API_URL = 'https://api.evolink.ai';
-const API_KEY = 'sk-HjlHRagN4SKCPV522UdoqYtE3T4VGEun1TR7BK7U3bomoa43';
+const API_KEY = process.env.NANO_BANANA_API_KEY || '';
 
 interface TaskResponse {
   id: string;
