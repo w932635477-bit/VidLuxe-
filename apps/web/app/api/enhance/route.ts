@@ -6,6 +6,10 @@
  * 支持两种模式：
  * 1. 新效果系统：effectId + effectIntensity（推荐）
  * 2. 旧风格系统：styleSource.type='preset' + styleSource.presetStyle（向后兼容）
+ *
+ * 额度系统：
+ * - 登录用户：使用 Supabase 数据库
+ * - 匿名用户：使用文件系统
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -13,8 +17,8 @@ import { getTaskQueue, type Task } from '@/lib/task-queue';
 import { processEnhancement } from '@/lib/workflow';
 import { validateEnhanceRequest, type PresetStyle } from '@/lib/validations';
 import { spendCredits, refundCredits, getAvailableCredits } from '@/lib/credits';
-import { getFileStorage } from '@/lib/file-storage';
-import { getEffectById, getEffectPrompt, convertStyleToEffect } from '@/lib/effect-presets';
+import { getEffectById } from '@/lib/effect-presets';
+import { createClient } from '@/lib/supabase/server';
 import type { ContentType } from '@/lib/content-types';
 import fs from 'fs';
 import path from 'path';
@@ -32,7 +36,6 @@ export async function POST(request: NextRequest) {
     // 支持新效果系统参数（可选）
     const effectId = body.effectId as string | undefined;
     const effectIntensity = body.effectIntensity as number | undefined;
-    const contentType = body.contentType as ContentType | undefined;
 
     // 验证 effectId（如果提供）
     if (effectId) {
@@ -64,17 +67,62 @@ export async function POST(request: NextRequest) {
 
     const { content, styleSource, anonymousId } = validation.data;
 
-    // 检查额度（使用新的 credits 系统）
-    const available = getAvailableCredits(anonymousId);
-    if (available.total < 1) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: '额度不足',
-          credits: available,
-        },
-        { status: 429 }
-      );
+    // 检查是否登录用户
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // 获取额度信息
+    let creditsInfo: { total: number; paid: number; free: number };
+    let useSupabaseCredits = false;
+
+    if (user) {
+      // 登录用户：从 Supabase 获取额度
+      useSupabaseCredits = true;
+      const { data: userCredit } = await supabase
+        .from('user_credits')
+        .select('balance, free_credits_used_this_month')
+        .eq('user_id', user.id)
+        .single();
+
+      const balance = userCredit?.balance || 0;
+      const freeCreditsUsed = userCredit?.free_credits_used_this_month || 0;
+      const freeCreditsLimit = 8;
+      const freeCreditsRemaining = Math.max(0, freeCreditsLimit - freeCreditsUsed);
+      creditsInfo = { total: balance + freeCreditsRemaining, paid: balance, free: freeCreditsRemaining };
+
+      console.log('[Enhance API] Logged in user:', user.id, 'credits:', creditsInfo);
+
+      if (creditsInfo.total < 1) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: '额度不足',
+            credits: creditsInfo,
+          },
+          { status: 429 }
+        );
+      }
+    } else {
+      // 匿名用户：从文件系统获取额度
+      const available = getAvailableCredits(anonymousId);
+      creditsInfo = {
+        total: available.total,
+        paid: available.paid,
+        free: available.free,
+      };
+
+      console.log('[Enhance API] Anonymous user:', anonymousId, 'credits:', creditsInfo);
+
+      if (creditsInfo.total < 1) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: '额度不足',
+            credits: creditsInfo,
+          },
+          { status: 429 }
+        );
+      }
     }
 
     // 检查并发限制
@@ -103,25 +151,62 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 扣除额度（使用新的 credits 系统）
-    const spendResult = spendCredits({
-      anonymousId,
-      amount: 1,
-      description: `生成${content.type === 'image' ? '图片' : '视频'}`,
-    });
+    // 扣除额度
+    if (useSupabaseCredits && user) {
+      // 登录用户：使用新的 spend_user_credits RPC 扣除额度
+      const { data: spendResult, error: spendError } = await supabase.rpc('spend_user_credits', {
+        p_user_id: user.id,
+        p_amount: 1,
+        p_description: `生成${content.type === 'image' ? '图片' : '视频'}`,
+        p_task_id: null,
+      });
 
-    if (!spendResult.success) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: spendResult.error || '额度不足',
-          credits: getAvailableCredits(anonymousId),
-        },
-        { status: 429 }
-      );
+      if (spendError || !spendResult?.success) {
+        console.error('[Enhance API] Supabase spend error:', spendError, spendResult);
+        return NextResponse.json(
+          {
+            success: false,
+            error: spendResult?.error || '额度扣除失败',
+            credits: creditsInfo,
+          },
+          { status: spendResult?.error === 'insufficient_balance' ? 429 : 500 }
+        );
+      }
+
+      // 更新 creditsInfo
+      creditsInfo.total = spendResult.balance + spendResult.free_remaining;
+      creditsInfo.paid = spendResult.balance;
+      creditsInfo.free = spendResult.free_remaining;
+      console.log('[Enhance API] Supabase credits spent:', {
+        paid_spent: spendResult.paid_spent,
+        free_spent: spendResult.free_spent,
+        new_balance: spendResult.balance,
+        free_remaining: spendResult.free_remaining,
+      });
+    } else {
+      // 匿名用户：使用文件系统扣除额度
+      const spendResult = spendCredits({
+        anonymousId,
+        amount: 1,
+        description: `生成${content.type === 'image' ? '图片' : '视频'}`,
+      });
+
+      if (!spendResult.success) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: spendResult.error || '额度不足',
+            credits: getAvailableCredits(anonymousId),
+          },
+          { status: 429 }
+        );
+      }
+
+      creditsInfo.total = spendResult.newBalance;
+      console.log('[Enhance API] File credits spent, new total:', creditsInfo.total);
     }
 
-    // 创建任务 - 支持新效果系统和旧风格系统
+    // 创建任务
     const taskInput: Task['input'] = {
       contentType: content.type,
       contentUrl: content.url,
@@ -136,14 +221,17 @@ export async function POST(request: NextRequest) {
 
     const task = taskQueue.create(taskInput);
 
-    // 异步执行任务（带错误捕获和额度退回）
-    executeTaskAsync(task).catch((error) => {
-      // 捕获未处理的异常，确保任务状态被更新和额度退回
+    // 异步执行任务
+    executeTaskAsync(task, useSupabaseCredits, user?.id).catch((error) => {
       console.error(`[Enhance API] Unhandled error in task ${task.id}:`, error);
       try {
         taskQueue.fail(task.id, 'Internal server error');
         // 退回额度
-        refundCredits(anonymousId, 1, '任务执行失败');
+        if (useSupabaseCredits && user) {
+          refundSupabaseCredits(user.id, 1, '任务执行失败');
+        } else {
+          refundCredits(anonymousId, 1, '任务执行失败');
+        }
         console.log(`[Enhance API] Refunded 1 credit for task ${task.id}`);
       } catch (cleanupError) {
         console.error(`[Enhance API] Failed to cleanup task ${task.id}:`, cleanupError);
@@ -154,12 +242,10 @@ export async function POST(request: NextRequest) {
       success: true,
       taskId: task.id,
       estimatedTime: ESTIMATED_TIME[content.type],
-      credits: getAvailableCredits(anonymousId),
+      credits: creditsInfo,
     });
   } catch (error) {
     console.error('[Enhance API] Error:', error);
-
-    // 返回通用错误信息（不泄露内部细节）
     return NextResponse.json(
       { success: false, error: 'Failed to create task. Please try again.' },
       { status: 500 }
@@ -168,9 +254,32 @@ export async function POST(request: NextRequest) {
 }
 
 /**
+ * 退回 Supabase 额度
+ */
+async function refundSupabaseCredits(userId: string, amount: number, reason: string): Promise<void> {
+  const supabase = await createClient();
+  const { data: refundResult, error } = await supabase.rpc('refund_user_credits', {
+    p_user_id: userId,
+    p_amount: amount,
+    p_description: `退回额度: ${reason}`,
+  });
+
+  if (error || !refundResult?.success) {
+    console.error('[Enhance API] Supabase refund error:', error, refundResult);
+    throw error || new Error(refundResult?.error || 'Refund failed');
+  }
+
+  console.log('[Enhance API] Supabase refund success, new balance:', refundResult.balance);
+}
+
+/**
  * 异步执行任务
  */
-async function executeTaskAsync(task: Task): Promise<void> {
+async function executeTaskAsync(
+  task: Task,
+  useSupabaseCredits: boolean,
+  userId?: string
+): Promise<void> {
   console.log(`[Enhance API] Starting async execution for task ${task.id}`);
   const taskQueue = getTaskQueue();
 
@@ -180,7 +289,11 @@ async function executeTaskAsync(task: Task): Promise<void> {
     if (!started) {
       console.warn(`[Enhance API] Could not start task ${task.id} - concurrent limit reached`);
       // 退回额度
-      refundCredits(task.input.anonymousId, 1, '服务器繁忙');
+      if (useSupabaseCredits && userId) {
+        await refundSupabaseCredits(userId, 1, '服务器繁忙');
+      } else {
+        refundCredits(task.input.anonymousId, 1, '服务器繁忙');
+      }
       taskQueue.fail(task.id, 'Server busy');
       return;
     }
@@ -193,29 +306,25 @@ async function executeTaskAsync(task: Task): Promise<void> {
     if (task.input.effectId) {
       const effect = getEffectById(task.input.effectId);
       if (effect) {
-        // 从 effectId 提取 presetStyle（兼容旧系统）
-        // 例如 'outfit-magazine' -> 'magazine'
         const styleMatch = task.input.effectId.match(/-(magazine|soft|urban|vintage)$/);
         if (styleMatch) {
           presetStyle = styleMatch[1] as PresetStyle;
         }
-        console.log(`[Enhance API] Using effect system: ${task.input.effectId} (intensity: ${task.input.effectIntensity || 100}%), mapped to style: ${presetStyle}`);
+        console.log(`[Enhance API] Using effect: ${task.input.effectId}, style: ${presetStyle}`);
       }
     } else if (task.input.presetStyle) {
-      // 使用旧的风格系统
       presetStyle = task.input.presetStyle as PresetStyle;
-      console.log(`[Enhance API] Using legacy style system: ${presetStyle}`);
+      console.log(`[Enhance API] Using legacy style: ${presetStyle}`);
     }
 
     // 执行升级工作流
-    console.log(`[Enhance API] Executing enhancement workflow for task ${task.id}`);
+    console.log(`[Enhance API] Executing enhancement for task ${task.id}`);
     const result = await processEnhancement({
       contentType: task.input.contentType,
       contentUrl: task.input.contentUrl,
       styleSourceType: task.input.styleSourceType,
       presetStyle,
       referenceUrl: task.input.referenceUrl,
-      // 传递新效果系统参数
       effectId: task.input.effectId,
       effectIntensity: task.input.effectIntensity ?? 100,
       onProgress: (progress, stage) => {
@@ -226,25 +335,22 @@ async function executeTaskAsync(task: Task): Promise<void> {
     // 完成
     console.log(`[Enhance API] Task ${task.id} completed successfully`);
     taskQueue.complete(task.id, result);
-    console.log(`[Enhance API] Task ${task.id} marked as completed`);
   } catch (error) {
-    // 记录详细错误到日志
     console.error(`[Enhance API] Task ${task.id} failed:`, error);
 
-    // 标记失败
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     taskQueue.fail(task.id, errorMessage);
 
     // 退回额度
     try {
-      const refundResult = refundCredits(task.input.anonymousId, 1, `任务失败: ${errorMessage}`);
-      if (refundResult.success) {
-        console.log(`[Enhance API] Refunded 1 credit for failed task ${task.id}`);
+      if (useSupabaseCredits && userId) {
+        await refundSupabaseCredits(userId, 1, `任务失败: ${errorMessage}`);
       } else {
-        console.warn(`[Enhance API] Failed to refund credit for task ${task.id}`);
+        refundCredits(task.input.anonymousId, 1, `任务失败: ${errorMessage}`);
       }
+      console.log(`[Enhance API] Refunded 1 credit for failed task ${task.id}`);
     } catch (refundError) {
-      console.error(`[Enhance API] Error refunding credit for task ${task.id}:`, refundError);
+      console.error(`[Enhance API] Error refunding credit:`, refundError);
     }
   }
 }

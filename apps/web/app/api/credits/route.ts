@@ -70,21 +70,25 @@ export async function GET(request: NextRequest) {
         .single();
 
       const hasUsedInviteCode = !!inviteTransaction;
-      const freeCredits = 8;
 
+      const freeCreditsLimit = 8;
+      const freeCreditsUsed = userCredit?.free_credits_used_this_month || 0;
+      const freeCreditsRemaining = Math.max(0, freeCreditsLimit - freeCreditsUsed);
+
+      console.log('[Credits API] Free credits: limit=', freeCreditsLimit, 'used=', freeCreditsUsed, 'remaining=', freeCreditsRemaining);
       console.log('[Credits API] Returning logged-in user credits:', {
         balance,
-        freeCredits,
-        total: balance + freeCredits
+        freeCreditsRemaining,
+        total: balance + freeCreditsRemaining
       });
 
       return NextResponse.json({
         success: true,
         data: {
-          total: balance + freeCredits,
+          total: balance + freeCreditsRemaining,
           paid: balance,
-          free: freeCredits,
-          freeRemaining: freeCredits,
+          free: freeCreditsRemaining,
+          freeRemaining: freeCreditsRemaining,
           totalEarned,
           totalSpent,
           hasUsedInviteCode,
