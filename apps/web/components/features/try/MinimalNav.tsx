@@ -5,8 +5,19 @@
 'use client';
 
 import Link from 'next/link';
+import { useAuth } from '@/components/auth/AuthProvider';
 
 export function MinimalNav() {
+  const { user, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error('Sign out failed:', error);
+    }
+  };
+
   return (
     <nav
       style={{
@@ -49,6 +60,38 @@ export function MinimalNav() {
         >
           示例
         </Link>
+
+        {/* 用户信息和登出按钮 */}
+        {user && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.8)' }}>
+              {user.email?.split('@')[0]}
+            </span>
+            <button
+              onClick={handleSignOut}
+              style={{
+                padding: '6px 16px',
+                borderRadius: '980px',
+                background: 'transparent',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                color: 'rgba(255, 255, 255, 0.8)',
+                fontSize: '14px',
+                cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.4)';
+                e.currentTarget.style.color = '#fff';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)';
+              }}
+            >
+              登出
+            </button>
+          </div>
+        )}
       </div>
     </nav>
   );
