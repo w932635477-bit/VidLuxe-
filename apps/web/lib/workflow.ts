@@ -24,15 +24,21 @@ const NANO_BANANA_CONFIG = {
   baseUrl: 'https://api.evolink.ai',
   apiKey: process.env.NANO_BANANA_API_KEY, // 服务端专用
   model: 'nano-banana-2-lite',
-  // 超时配置
+  // 超时配置（根据图像质量优化：1K 8-15s, 2K 20-30s, 4K 45-60s）
   timeout: {
     create: 30000, // 创建任务超时 30s
     poll: 10000,   // 轮询单次超时 10s
-    total: 120000, // 总超时 120s
+    total: 180000, // 总超时 180s (3分钟，留足时间)
   },
   // 轮询配置
-  maxPollAttempts: 60,
+  maxPollAttempts: 90, // 增加到 90 次 (180s / 2s)
   pollInterval: 2000,
+  // 重试配置
+  retry: {
+    maxAttempts: 3,
+    baseDelay: 1000,
+    maxDelay: 4000,
+  },
 };
 
 /**
@@ -88,7 +94,20 @@ function isPublicUrl(url: string): boolean {
 export type ProgressCallback = (progress: number, stage: string) => void;
 
 /**
- * 调用 Nano Banana API 创建任务（带超时控制）
+ * 延迟函数
+ */
+function delay(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+/**
+ * 调用 Nano Banana API 创建任务（带超时控制 + 指数退避重试）
+ *
+ * 重试策略：
+ * - 最多重试 3 次
+ * - 指数退避：1s, 2s, 4s
+ * - 5xx 错误和网络错误重试
+ * - 4xx 错误不重试（客户端错误）
  */
 async function createNanoBananaTask(params: {
   prompt: string;
@@ -96,46 +115,80 @@ async function createNanoBananaTask(params: {
   size?: string;
   quality?: string;
 }): Promise<{ taskId: string }> {
-  let response: Response;
-  try {
-    response = await fetchWithTimeout(
-      `${NANO_BANANA_CONFIG.baseUrl}/v1/images/generations`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${NANO_BANANA_CONFIG.apiKey}`,
-        },
-        body: JSON.stringify({
-          model: NANO_BANANA_CONFIG.model,
-          prompt: params.prompt,
-          image_urls: params.imageUrls,
-          size: params.size || '9:16',
-          quality: params.quality || '2K',
-        }),
-      },
-      NANO_BANANA_CONFIG.timeout.create
-    );
-  } catch (error) {
-    if (error instanceof Error && error.name === 'AbortError') {
-      throw new Error('API request timeout');
-    }
-    throw error;
-  }
+  const maxRetries = NANO_BANANA_CONFIG.retry.maxAttempts;
+  let lastError: Error | null = null;
 
-  if (!response.ok) {
-    // 记录详细错误到日志，返回通用错误
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    let response: Response;
     try {
-      const errorData = await response.json();
-      console.error('[Workflow] Nano Banana API error:', errorData);
-    } catch {
-      console.error('[Workflow] Nano Banana API error: HTTP', response.status);
+      console.log(`[Workflow] Creating Nano Banana task (attempt ${attempt}/${maxRetries})`);
+
+      response = await fetchWithTimeout(
+        `${NANO_BANANA_CONFIG.baseUrl}/v1/images/generations`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${NANO_BANANA_CONFIG.apiKey}`,
+          },
+          body: JSON.stringify({
+            model: NANO_BANANA_CONFIG.model,
+            prompt: params.prompt,
+            image_urls: params.imageUrls,
+            size: params.size || '9:16',
+            quality: params.quality || '2K',
+          }),
+        },
+        NANO_BANANA_CONFIG.timeout.create
+      );
+
+      // 成功响应
+      if (response.ok) {
+        const result = await response.json();
+        console.log(`[Workflow] Task created successfully: ${result.id}`);
+        return { taskId: result.id };
+      }
+
+      // 4xx 错误不重试
+      if (response.status >= 400 && response.status < 500) {
+        let errorDetail = `HTTP ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorDetail = errorData.error?.message || errorDetail;
+          console.error('[Workflow] Nano Banana API client error:', errorData);
+        } catch {
+          console.error('[Workflow] Nano Banana API client error:', response.status);
+        }
+        throw new Error(`API 错误: ${errorDetail}`);
+      }
+
+      // 5xx 错误，准备重试
+      lastError = new Error(`服务器错误 HTTP ${response.status}`);
+      console.warn(`[Workflow] Server error ${response.status}, attempt ${attempt}/${maxRetries}`);
+
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        lastError = new Error('API 请求超时');
+        console.warn(`[Workflow] Request timeout, attempt ${attempt}/${maxRetries}`);
+      } else if (error instanceof Error && error.message.startsWith('API 错误')) {
+        // 4xx 错误，直接抛出
+        throw error;
+      } else {
+        lastError = error instanceof Error ? error : new Error('Unknown error');
+        console.warn(`[Workflow] Request failed: ${lastError.message}, attempt ${attempt}/${maxRetries}`);
+      }
     }
-    throw new Error('Failed to create image generation task');
+
+    // 如果不是最后一次尝试，等待后重试（指数退避）
+    if (attempt < maxRetries) {
+      const waitTime = 1000 * Math.pow(2, attempt - 1); // 1s, 2s, 4s
+      console.log(`[Workflow] Waiting ${waitTime}ms before retry...`);
+      await delay(waitTime);
+    }
   }
 
-  const result = await response.json();
-  return { taskId: result.id };
+  // 所有重试都失败
+  throw new Error(`创建任务失败: ${lastError?.message || '请稍后重试'}`);
 }
 
 /**

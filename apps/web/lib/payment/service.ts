@@ -48,6 +48,12 @@ export interface PaymentOrder {
 
 export const CREDIT_PACKAGES: CreditPackage[] = [
   {
+    id: 'test',
+    name: '测试套餐',
+    credits: 10,
+    price: 1, // 0.01 元（测试用）
+  },
+  {
     id: 'small',
     name: '尝鲜包',
     credits: 10,

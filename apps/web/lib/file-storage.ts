@@ -314,7 +314,7 @@ export class FileStorage {
         const blob = new Blob([fileBuffer], { type: 'image/jpeg' });
         const formData = new FormData();
         formData.append('reqtype', 'fileupload');
-        formData.append('time', '1h');
+        formData.append('time', '24h'); // 延长到 24 小时， 确保长时间任务不会因链接过期失败
         formData.append('fileToUpload', blob, filename);
 
         const controller = new AbortController();

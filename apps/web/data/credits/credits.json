@@ -2091,5 +2091,119 @@
     },
     "createdAt": 1772501517401,
     "updatedAt": 1772501517401
+  },
+  "anon_1772781572745_0ol0q9dz": {
+    "anonymousId": "anon_1772781572745_0ol0q9dz",
+    "balance": 1,
+    "totalEarned": 6,
+    "totalSpent": 14,
+    "packages": [],
+    "inviteCredits": [],
+    "transactions": [
+      {
+        "id": "txn_1772783064621_qjifmgal",
+        "amount": -1,
+        "type": "spend",
+        "description": "生成图片",
+        "createdAt": 1772783064621
+      },
+      {
+        "id": "txn_1772783204699_3y62cerx",
+        "amount": -1,
+        "type": "spend",
+        "description": "生成图片",
+        "createdAt": 1772783204699
+      },
+      {
+        "id": "txn_1772783331494_gmitp64a",
+        "amount": 1,
+        "type": "refund",
+        "description": "退回额度: 任务失败: Task timeout - please try again",
+        "createdAt": 1772783331494
+      },
+      {
+        "id": "txn_1772783351439_bll3qed2",
+        "amount": -1,
+        "type": "spend",
+        "description": "生成图片",
+        "createdAt": 1772783351439
+      },
+      {
+        "id": "txn_1772783478021_as6nh82z",
+        "amount": 1,
+        "type": "refund",
+        "description": "退回额度: 任务失败: Task timeout - please try again",
+        "createdAt": 1772783478021
+      },
+      {
+        "id": "txn_1772785458539_m8zgl9zj",
+        "amount": -1,
+        "type": "spend",
+        "description": "生成图片",
+        "createdAt": 1772785458539
+      },
+      {
+        "id": "txn_1772785585013_yhghlu1u",
+        "amount": 1,
+        "type": "refund",
+        "description": "退回额度: 任务失败: Task timeout - please try again",
+        "createdAt": 1772785585013
+      },
+      {
+        "id": "txn_1772786498334_4jnmiv2y",
+        "amount": -1,
+        "type": "spend",
+        "description": "生成图片",
+        "createdAt": 1772786498335
+      },
+      {
+        "id": "txn_1772786535370_0x5lwen4",
+        "amount": 1,
+        "type": "refund",
+        "description": "退回额度: 任务失败: Image generation failed",
+        "createdAt": 1772786535370
+      },
+      {
+        "id": "txn_1772786573452_bti0p1li",
+        "amount": -1,
+        "type": "spend",
+        "description": "生成图片",
+        "createdAt": 1772786573452
+      },
+      {
+        "id": "txn_1772788210685_m910mafw",
+        "amount": -1,
+        "type": "spend",
+        "description": "生成图片",
+        "createdAt": 1772788210685
+      },
+      {
+        "id": "txn_1772788336301_6knfs15y",
+        "amount": 1,
+        "type": "refund",
+        "description": "退回额度: 任务失败: Task timeout - please try again",
+        "createdAt": 1772788336301
+      },
+      {
+        "id": "txn_1772788390730_jn9xk87x",
+        "amount": -1,
+        "type": "spend",
+        "description": "生成图片",
+        "createdAt": 1772788390730
+      },
+      {
+        "id": "txn_1772788516295_wcshuggs",
+        "amount": 1,
+        "type": "refund",
+        "description": "退回额度: 任务失败: Task timeout - please try again",
+        "createdAt": 1772788516295
+      }
+    ],
+    "freeCredits": {
+      "totalLimit": 8,
+      "usedTotal": 3
+    },
+    "createdAt": 1772783064619,
+    "updatedAt": 1772788516296
   }
 }

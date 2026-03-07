@@ -1,0 +1,62 @@
+{
+  "codes": {
+    "16KZHS": {
+      "code": "16KZHS",
+      "ownerId": "test_123",
+      "createdAt": 1772695324311,
+      "invitees": [],
+      "totalEarned": 0
+    },
+    "WGKXLR": {
+      "code": "WGKXLR",
+      "ownerId": "test_user_1772695396",
+      "createdAt": 1772695397099,
+      "invitees": [],
+      "totalEarned": 0
+    },
+    "6RPYJU": {
+      "code": "6RPYJU",
+      "ownerId": "fresh_test_1772695498197933000",
+      "createdAt": 1772695498224,
+      "invitees": [],
+      "totalEarned": 0
+    },
+    "SQDLL1": {
+      "code": "SQDLL1",
+      "ownerId": "test_build_check",
+      "createdAt": 1772695822525,
+      "invitees": [],
+      "totalEarned": 0
+    },
+    "U1FZ1P": {
+      "code": "U1FZ1P",
+      "ownerId": "anon_1771648234106_t7bqbr32",
+      "createdAt": 1772696187612,
+      "invitees": [],
+      "totalEarned": 0
+    },
+    "ZVONJA": {
+      "code": "ZVONJA",
+      "ownerId": "anon_1772780936886_2taao3j8",
+      "createdAt": 1772780937122,
+      "invitees": [],
+      "totalEarned": 0
+    },
+    "9EH94D": {
+      "code": "9EH94D",
+      "ownerId": "anon_1772781572745_0ol0q9dz",
+      "createdAt": 1772781572765,
+      "invitees": [],
+      "totalEarned": 0
+    }
+  },
+  "users": {
+    "test_123": "16KZHS",
+    "test_user_1772695396": "WGKXLR",
+    "fresh_test_1772695498197933000": "6RPYJU",
+    "test_build_check": "SQDLL1",
+    "anon_1771648234106_t7bqbr32": "U1FZ1P",
+    "anon_1772780936886_2taao3j8": "ZVONJA",
+    "anon_1772781572745_0ol0q9dz": "9EH94D"
+  }
+}

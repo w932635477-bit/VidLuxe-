@@ -219,9 +219,13 @@ build() {
 sync() {
     log_info "开始同步..."
 
-    # 同步 .next 目录
+    # 同步 .next 目录（排除用户上传文件和开发缓存）
     log_info "同步 .next 目录到 $DEPLOY_PATH/apps/web/.next/"
     rsync_cmd --delete \
+        --exclude 'standalone/apps/web/public/uploads/' \
+        --exclude 'cache/webpack/client-development/' \
+        --exclude 'cache/webpack/server-development/' \
+        --exclude 'cache/webpack/edge-server-development/' \
         "$LOCAL_NEXT_DIR/" \
         "$SERVER_USER@$SERVER_IP:$DEPLOY_PATH/apps/web/.next/"
 
@@ -230,9 +234,9 @@ sync() {
     log_info "复制 static 文件到 standalone 目录..."
     ssh_cmd "mkdir -p $DEPLOY_PATH/apps/web/.next/standalone/apps/web/.next/static && cp -r $DEPLOY_PATH/apps/web/.next/static/* $DEPLOY_PATH/apps/web/.next/standalone/apps/web/.next/static/"
 
-    # 复制 public 文件到 standalone 目录
+    # 复制 public 文件到 standalone 目录（排除 uploads）
     log_info "复制 public 文件到 standalone 目录..."
-    ssh_cmd "mkdir -p $DEPLOY_PATH/apps/web/.next/standalone/apps/web/public && cp -r $DEPLOY_PATH/apps/web/public/* $DEPLOY_PATH/apps/web/.next/standalone/apps/web/public/ 2>/dev/null || true"
+    ssh_cmd "mkdir -p $DEPLOY_PATH/apps/web/.next/standalone/apps/web/public && rsync -a --exclude 'uploads' $DEPLOY_PATH/apps/web/public/* $DEPLOY_PATH/apps/web/.next/standalone/apps/web/public/ 2>/dev/null || true"
 
     log_success "同步完成"
     echo ""
