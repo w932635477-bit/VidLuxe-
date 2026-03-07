@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/components/auth/AuthProvider';
 
 interface NavbarProps {
   transparent?: boolean;
@@ -12,6 +13,16 @@ interface NavbarProps {
 export function Navbar({ transparent = false, showAuth = true }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const { user, signOut } = useAuth();
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      setMobileMenuOpen(false);
+    } catch (error) {
+      console.error('Sign out failed:', error);
+    }
+  };
 
   return (
     <nav
@@ -52,25 +63,58 @@ export function Navbar({ transparent = false, showAuth = true }: NavbarProps) {
         {/* Desktop CTA */}
         {showAuth && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <Link
-              href={`/auth?redirect=${pathname}`}
-              style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.6)' }}
-            >
-              登录
-            </Link>
-            <Link
-              href="/try"
-              style={{
-                padding: '8px 20px',
-                borderRadius: '980px',
-                background: '#D4AF37',
-                color: '#000',
-                fontSize: '14px',
-                fontWeight: 500,
-              }}
-            >
-              免费体验
-            </Link>
+            {user ? (
+              <>
+                <span style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.8)' }}>
+                  {user.email?.split('@')[0]}
+                </span>
+                <button
+                  onClick={handleSignOut}
+                  style={{
+                    padding: '6px 16px',
+                    borderRadius: '980px',
+                    background: 'transparent',
+                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.4)';
+                    e.currentTarget.style.color = '#fff';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+                    e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)';
+                  }}
+                >
+                  登出
+                </button>
+              </>
+            ) : (
+              <>
+                <Link
+                  href={`/auth?redirect=${pathname}`}
+                  style={{ fontSize: '14px', color: 'rgba(255, 255, 255, 0.6)' }}
+                >
+                  登录
+                </Link>
+                <Link
+                  href="/try"
+                  style={{
+                    padding: '8px 20px',
+                    borderRadius: '980px',
+                    background: '#D4AF37',
+                    color: '#000',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                  }}
+                >
+                  免费体验
+                </Link>
+              </>
+            )}
           </div>
         )}
 
@@ -109,9 +153,33 @@ export function Navbar({ transparent = false, showAuth = true }: NavbarProps) {
           <Link href="/pricing" style={{ display: 'block', padding: '12px 0', color: 'rgba(255, 255, 255, 0.9)' }}>
             定价
           </Link>
-          <Link href={`/auth?redirect=${pathname}`} style={{ display: 'block', padding: '12px 0', color: 'rgba(255, 255, 255, 0.6)' }}>
-            登录
-          </Link>
+          {user ? (
+            <>
+              <div style={{ padding: '12px 0', color: 'rgba(255, 255, 255, 0.6)', fontSize: '14px' }}>
+                {user.email}
+              </div>
+              <button
+                onClick={handleSignOut}
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  padding: '12px 0',
+                  color: '#ef4444',
+                  background: 'none',
+                  border: 'none',
+                  textAlign: 'left',
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                }}
+              >
+                登出
+              </button>
+            </>
+          ) : (
+            <Link href={`/auth?redirect=${pathname}`} style={{ display: 'block', padding: '12px 0', color: 'rgba(255, 255, 255, 0.6)' }}>
+              登录
+            </Link>
+          )}
         </div>
       )}
     </nav>
