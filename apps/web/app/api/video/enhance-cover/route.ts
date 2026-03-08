@@ -471,11 +471,11 @@ export async function POST(request: NextRequest): Promise<NextResponse<EnhanceCo
         } else if (anonymousIdForCredit) {
           // 匿名用户：使用文件系统退还额度
           const { refundCredits } = await import('@/lib/credits');
-          refundCredits({
-            anonymousId: anonymousIdForCredit,
-            amount: 1,
-            description: '视频帧增强失败退款',
-          });
+          refundCredits(
+            anonymousIdForCredit,
+            1,
+            '视频帧增强失败退款'
+          );
           console.log('[EnhanceCover] Refunded 1 credit for anonymous user');
         }
       } catch (refundError) {
