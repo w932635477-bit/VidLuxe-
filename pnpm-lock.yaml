@@ -106,6 +106,9 @@ importers:
       remotion:
         specifier: 4.0.429
         version: 4.0.429(react-dom@18.3.1)(react@18.3.1)
+      undici:
+        specifier: ^7.22.0
+        version: 7.22.0
       wechatpay-node-v3:
         specifier: ^2.2.1
         version: 2.2.1
@@ -8945,7 +8948,6 @@ packages:
   /undici@7.22.0:
     resolution: {integrity: sha512-RqslV2Us5BrllB+JeiZnK4peryVTndy9Dnqq62S3yYRRTj0tFQCwEniUy2167skdGOy3vqRzEvl1Dm4sV2ReDg==}
     engines: {node: '>=20.18.1'}
-    dev: true
 
   /unrs-resolver@1.11.1:
     resolution: {integrity: sha512-bSjt9pjaEBnNiGgc9rUiHGKv5l4/TGzDmYw3RhnkJGtLhbnnA/5qJj7x3dNDCRx/PJxu774LlH8lCOlB4hEfKg==}

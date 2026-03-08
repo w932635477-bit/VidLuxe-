@@ -13,6 +13,7 @@ import { useCreditsStore } from '@/lib/stores/credits-store';
 import { ProcessingAnimation } from '@/components/features/try/flows/shared/ProcessingAnimation';
 import { KeyframeSelector } from './KeyframeSelector';
 import { EffectFlowSelector } from '@/components/features/try/EffectFlowSelector';
+import { ResultSection } from '@/components/features/try/ResultSection';
 import { uploadFile } from '@/lib/actions/upload';
 import { getEffectById } from '@/lib/effect-presets';
 import type { KeyFrame } from '@/lib/types/flow';
@@ -306,7 +307,7 @@ export function VideoFlow() {
     fetchKeyframes();
   }, [uploadedFileUrl, fetchKeyframes]);
 
-  // 关键帧确认后开始处理（包含调色和增强）
+  // 关键帧确认后开始处理（仅增强图片）
   const handleKeyframeConfirm = useCallback(async () => {
     if (!selectedKeyframe) {
       setError('请选择一个关键帧');
@@ -316,174 +317,63 @@ export function VideoFlow() {
     setStep('processing');
     setProgress(0);
 
-    // 获取效果名称
     const effect = getEffectById(selectedEffectId);
     const effectName = effect?.name || '自定义风格';
 
-    const stages = [
-      '🎨 正在分析视频色彩...',
-      '✨ 正在应用 ' + effectName + '...',
-      '🖼️ 正在增强封面帧...',
-    ];
-
-    // 添加替换帧的阶段
-    if (replaceFrames.length > 0) {
-      stages.push(`📸 正在增强 ${replaceFrames.length} 张替换帧...`);
-      stages.push('🎬 正在合成增强视频...');
-    }
-    stages.push('✅ 完成！');
+    const allFrames = [selectedKeyframe, ...replaceFrames];
+    const totalFrames = allFrames.length;
 
     try {
-      let currentProgress = 0;
-      const progressPerStage = 100 / stages.length;
+      const enhancedFrames: { originalUrl: string; enhancedUrl: string }[] = [];
 
-      // 1. 调色（可选，如果有替换帧）
-      if (replaceFrames.length > 0) {
-        setCurrentStage(stages[0]);
-        const gradeResponse = await fetch('/api/video/color-grade', {
+      for (let i = 0; i < allFrames.length; i++) {
+        const frame = allFrames[i];
+        const progressPerFrame = 90 / totalFrames;
+
+        setCurrentStage(`🖼️ 正在增强第 ${i + 1}/${totalFrames} 张图片...`);
+        setProgress(Math.round(i * progressPerFrame));
+
+        const enhanceResponse = await fetch('/api/video/enhance-cover', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            videoUrl: uploadedFileUrl,
+            frameUrl: frame.url,
             effectId: selectedEffectId,
+            intensity: effectIntensity,
+            contentType: selectedContentType,
           }),
         });
 
-        const gradeData = await gradeResponse.json();
-        if (!gradeData.success) {
-          console.warn('[VideoFlow] Color grade warning:', gradeData.error);
-          // 继续处理，颜色分级不是必须的
+        const enhanceData = await enhanceResponse.json();
+        if (!enhanceData.success) {
+          throw new Error(enhanceData.error || `第 ${i + 1} 张图片增强失败`);
         }
-        currentProgress += progressPerStage;
-        setProgress(Math.round(currentProgress));
 
-        setCurrentStage(stages[1]);
-        // 给用户一些反馈时间
-        await new Promise(resolve => setTimeout(resolve, 500));
-        currentProgress += progressPerStage;
-        setProgress(Math.round(currentProgress));
+        enhancedFrames.push({
+          originalUrl: frame.url,
+          enhancedUrl: enhanceData.enhancedUrl,
+        });
       }
 
-      // 2. 增强封面帧
-      setCurrentStage(stages[2]);
-      const enhanceResponse = await fetch('/api/video/enhance-cover', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          frameUrl: selectedKeyframe.url,
-          effectId: selectedEffectId,
-          intensity: effectIntensity,
-          contentType: selectedContentType,
-        }),
+      setProgress(100);
+      setCurrentStage('✅ 完成！');
+
+      // 设置结果
+      setResultData({
+        enhancedUrl: enhancedFrames[0].enhancedUrl,
+        originalUrl: uploadedFileUrl || '',
+        enhancedFrames,
       });
 
-      const enhanceData = await enhanceResponse.json();
-
-      if (!enhanceData.success) {
-        throw new Error(enhanceData.error || '封面增强失败');
-      }
-
-      let coverUrl = enhanceData.enhancedUrl || selectedKeyframe.url;
-      setEnhancedCoverUrl(coverUrl);
-      currentProgress += progressPerStage;
-      setProgress(Math.round(currentProgress));
-
-      // 3. 增强替换帧（如果有）
-      const enhancedFrames: { timestamp: number; enhancedUrl: string }[] = [];
-
-      if (replaceFrames.length > 0) {
-        setCurrentStage(stages[3]);
-
-        for (let i = 0; i < replaceFrames.length; i++) {
-          const frame = replaceFrames[i];
-          const frameResponse = await fetch('/api/video/enhance-cover', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              frameUrl: frame.url,
-              effectId: selectedEffectId,
-              intensity: effectIntensity,
-              contentType: selectedContentType,
-            }),
-          });
-
-          const frameData = await frameResponse.json();
-          if (!frameData.success) {
-            console.error(`替换帧 ${i + 1} 增强失败:`, frameData.error);
-            continue;
-          }
-          if (frameData.enhancedUrl) {
-            enhancedFrames.push({
-              timestamp: frame.timestamp,
-              enhancedUrl: frameData.enhancedUrl,
-            });
-          }
-        }
-        currentProgress += progressPerStage;
-        setProgress(Math.round(currentProgress));
-
-        // 4. 合成新视频
-        setCurrentStage(stages[4]);
-        let finalVideoUrl = uploadedFileUrl || '';
-
-        if (enhancedFrames.length > 0) {
-          const replaceResponse = await fetch('/api/video/replace-frames', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              videoUrl: uploadedFileUrl,
-              frames: enhancedFrames,
-            }),
-          });
-
-          const replaceData = await replaceResponse.json();
-          if (replaceData.success && replaceData.outputUrl) {
-            finalVideoUrl = replaceData.outputUrl;
-            console.log('[VideoFlow] Video synthesized:', finalVideoUrl);
-          }
-        }
-        currentProgress += progressPerStage;
-        setProgress(Math.round(currentProgress));
-
-        // 5. 完成
-        setCurrentStage(stages[stages.length - 1]);
-        setProgress(100);
-
-        // 设置结果 - 使用合成后的视频 URL
-        setResultData({
-          enhancedUrl: coverUrl,
-          originalUrl: uploadedFileUrl || '',
-          enhancedCoverUrl: coverUrl,
-          enhancedVideoUrl: finalVideoUrl, // 使用合成后的视频 URL
-        });
-
-        fetchCredits(anonymousId);
-
-        // 短暂延迟后显示结果
-        await new Promise(resolve => setTimeout(resolve, 500));
-        setStep('result');
-      } else {
-        // 没有替换帧，只生成封面
-        setCurrentStage(stages[stages.length - 1]);
-        setProgress(100);
-
-        setResultData({
-          enhancedUrl: coverUrl,
-          originalUrl: uploadedFileUrl || '',
-          enhancedCoverUrl: coverUrl,
-          enhancedVideoUrl: undefined,
-        });
-
-        fetchCredits(anonymousId);
-        await new Promise(resolve => setTimeout(resolve, 500));
-        setStep('result');
-      }
+      fetchCredits(anonymousId);
+      await new Promise(resolve => setTimeout(resolve, 500));
+      setStep('result');
     } catch (error) {
       console.error('处理失败:', error);
       setError(error instanceof Error ? error.message : '处理失败，请重试');
       setStep('keyframe');
     }
-  }, [selectedKeyframe, selectedEffectId, effectIntensity, selectedContentType, uploadedFileUrl, replaceFrames, anonymousId, setStep, setProgress, setCurrentStage, setEnhancedCoverUrl, setResultData, fetchCredits, setError]);
+  }, [selectedKeyframe, selectedEffectId, effectIntensity, selectedContentType, uploadedFileUrl, replaceFrames, anonymousId, setStep, setProgress, setCurrentStage, setResultData, fetchCredits, setError]);
 
   // 重置
   const handleReset = useCallback(() => {
@@ -624,121 +514,11 @@ export function VideoFlow() {
 
       {/* 结果步骤 */}
       {step === 'result' && resultData && (
-        <div style={{ display: 'flex', flexDirection: 'column', padding: '24px', maxWidth: '480px', margin: '0 auto' }}>
-          <p style={{ fontSize: '24px', fontWeight: 600, marginBottom: '24px', textAlign: 'center' }}>
-            {resultData.enhancedVideoUrl ? '视频增强完成！' : '封面生成完成！'}
-          </p>
-
-          {/* 视频预览（如果有增强视频） */}
-          {resultData.enhancedVideoUrl && (
-            <div style={{ marginBottom: '24px', borderRadius: '16px', overflow: 'hidden', position: 'relative', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
-              <video
-                src={resultData.enhancedVideoUrl}
-                style={{ width: '100%', maxHeight: '50vh', display: 'block', margin: '0 auto' }}
-                controls
-                playsInline
-              />
-              <p style={{ textAlign: 'center', fontSize: '13px', color: 'rgba(255, 255, 255, 0.5)', padding: '12px', margin: 0 }}>
-                增强后视频预览
-              </p>
-            </div>
-          )}
-
-          {/* 封面预览 */}
-          {enhancedCoverUrl && (
-            <div style={{ marginBottom: '24px', borderRadius: '16px', overflow: 'hidden', position: 'relative' }}>
-              <img src={enhancedCoverUrl} alt="增强封面" style={{ width: '100%', aspectRatio: '9/16', objectFit: 'cover' }} />
-              {/* 封面下载按钮 - 右上角 */}
-              <button
-                onClick={async () => {
-                  try {
-                    const response = await fetch(enhancedCoverUrl);
-                    const blob = await response.blob();
-                    const blobUrl = URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.href = blobUrl;
-                    link.download = 'vidluxe_cover.jpg';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    URL.revokeObjectURL(blobUrl);
-                  } catch {
-                    alert('下载失败，请重试');
-                  }
-                }}
-                style={BUTTON_STYLES.icon}
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
-                </svg>
-              </button>
-            </div>
-          )}
-
-          {/* 下载按钮区域 */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '24px' }}>
-            {/* 下载封面按钮 */}
-            {enhancedCoverUrl && (
-              <button
-                onClick={async () => {
-                  try {
-                    const response = await fetch(enhancedCoverUrl);
-                    const blob = await response.blob();
-                    const blobUrl = URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.href = blobUrl;
-                    link.download = 'vidluxe_cover.jpg';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    URL.revokeObjectURL(blobUrl);
-                  } catch {
-                    alert('下载失败，请重试');
-                  }
-                }}
-                style={BUTTON_STYLES.download}
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                  <circle cx="8.5" cy="8.5" r="1.5" />
-                  <polyline points="21 15 16 10 5 21" />
-                </svg>
-                下载封面图片
-              </button>
-            )}
-
-            {/* 下载增强视频按钮 - 金色 */}
-            {resultData.enhancedVideoUrl && (
-              <button
-                onClick={async () => {
-                  try {
-                    const response = await fetch(resultData.enhancedVideoUrl!);
-                    const blob = await response.blob();
-                    const blobUrl = URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.href = blobUrl;
-                    link.download = 'vidluxe_enhanced_video.mp4';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    URL.revokeObjectURL(blobUrl);
-                  } catch {
-                    alert('下载失败，请重试');
-                  }
-                }}
-                style={BUTTON_STYLES.downloadPrimary}
-              >
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <polygon points="23 7 16 12 23 17 23 7" />
-                  <rect x="1" y="5" width="15" height="14" rx="2" ry="2" />
-                </svg>
-                下载增强视频
-              </button>
-            )}
-          </div>
-
-          <button onClick={handleReset} style={BUTTON_STYLES.ghost}>继续使用</button>
-        </div>
+        <ResultSection
+          resultData={resultData}
+          contentType="video"
+          onReset={handleReset}
+        />
       )}
 
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
