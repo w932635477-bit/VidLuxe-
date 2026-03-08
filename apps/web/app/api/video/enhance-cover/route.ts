@@ -7,11 +7,14 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
+import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { getFileStorage } from '@/lib/file-storage';
 import { getEffectById, getEffectPrompt } from '@/lib/effect-presets';
+import { spendCredits, getAvailableCredits } from '@/lib/credits';
 
 // Nano Banana API 配置
 const NANO_BANANA_CONFIG = {
@@ -41,6 +44,7 @@ interface EnhanceCoverRequest {
   effectId?: string; // 新效果系统参数
   intensity?: number; // 效果强度 0-100
   contentType?: string; // 内容类型
+  anonymousId?: string; // 匿名用户 ID（用于额度扣除）
 }
 
 // 响应
@@ -208,9 +212,13 @@ async function downloadEnhancedImage(url: string): Promise<string> {
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse<EnhanceCoverResponse>> {
+  let creditsDeducted = false;
+  let anonymousIdForCredit: string | undefined;
+
   try {
     const body: EnhanceCoverRequest = await request.json();
-    const { frameUrl, style = 'magazine', effectId, intensity = 100, contentType } = body;
+    const { frameUrl, style = 'magazine', effectId, intensity = 100, contentType, anonymousId } = body;
+    anonymousIdForCredit = anonymousId;
 
     if (!frameUrl) {
       return NextResponse.json(
@@ -220,6 +228,110 @@ export async function POST(request: NextRequest): Promise<NextResponse<EnhanceCo
     }
 
     console.log('[EnhanceCover] Enhancing frame:', frameUrl, 'with effectId:', effectId, 'or style:', style);
+
+    // ========== 额度检查和扣除 ==========
+    let creditsInfo: { total: number; paid: number; free: number };
+
+    // 尝试获取登录用户
+    const cookieStore = await cookies();
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll();
+          },
+          setAll(cookiesToSet) {
+            try {
+              cookiesToSet.forEach(({ name, value, options }) =>
+                cookieStore.set(name, value, options)
+              );
+            } catch {
+              // The `setAll` method must be called from a Server Component.
+            }
+          },
+        },
+      }
+    );
+
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (user) {
+      // 登录用户：使用 Supabase RPC 扣除额度
+      const { data: userCredit, error: creditError } = await supabase
+        .from('user_credits')
+        .select('balance, free_credits_used_this_month')
+        .eq('user_id', user.id)
+        .single();
+
+      if (creditError || !userCredit) {
+        return NextResponse.json(
+          { success: false, error: '无法获取用户额度' },
+          { status: 500 }
+        );
+      }
+
+      const freeCreditsUsed = userCredit?.free_credits_used_this_month || 0;
+      const freeCreditsRemaining = Math.max(0, 8 - freeCreditsUsed);
+      creditsInfo = { total: userCredit.balance + freeCreditsRemaining, paid: userCredit.balance, free: freeCreditsRemaining };
+      console.log('[EnhanceCover] Logged in user:', user.id, 'credits:', creditsInfo);
+
+      if (creditsInfo.total < 1) {
+        return NextResponse.json(
+          { success: false, error: '额度不足', credits: creditsInfo },
+          { status: 429 }
+        );
+      }
+
+      // 扣除额度
+      const { data: spendResult, error: spendError } = await supabase.rpc('spend_user_credits', {
+        p_user_id: user.id,
+        p_amount: 1,
+        p_description: '视频帧增强',
+      });
+
+      if (spendError || !spendResult?.success) {
+        console.error('[EnhanceCover] Supabase spend error:', spendError, spendResult);
+        return NextResponse.json(
+          { success: false, error: spendResult?.error || '额度扣除失败', credits: creditsInfo },
+          { status: spendResult?.error === 'insufficient_balance' ? 429 : 500 }
+        );
+      }
+
+      creditsDeducted = true;
+      creditsInfo.total = spendResult.balance + spendResult.free_remaining;
+      console.log('[EnhanceCover] Credits spent for user:', user.id);
+    } else if (anonymousId) {
+      // 匿名用户：使用文件系统扣除额度
+      creditsInfo = getAvailableCredits(anonymousId);
+      console.log('[EnhanceCover] Anonymous user:', anonymousId, 'credits:', creditsInfo);
+
+      if (creditsInfo.total < 1) {
+        return NextResponse.json(
+          { success: false, error: '额度不足', credits: creditsInfo },
+          { status: 429 }
+        );
+      }
+
+      const spendResult = spendCredits({
+        anonymousId,
+        amount: 1,
+        description: '视频帧增强',
+      });
+
+      if (!spendResult.success) {
+        return NextResponse.json(
+          { success: false, error: spendResult.error || '额度不足', credits: getAvailableCredits(anonymousId) },
+          { status: 429 }
+        );
+      }
+
+      creditsDeducted = true;
+      creditsInfo.total = spendResult.newBalance;
+      console.log('[EnhanceCover] Credits spent for anonymous:', anonymousId, 'new total:', creditsInfo.total);
+    }
+    // ========== 额度检查和扣除结束 ==========
 
     // 获取关键帧的本地路径
     const storage = getFileStorage();
@@ -316,6 +428,61 @@ export async function POST(request: NextRequest): Promise<NextResponse<EnhanceCo
     });
   } catch (error) {
     console.error('[EnhanceCover] Error:', error);
+
+    // 如果已扣除额度但处理失败，退还额度
+    if (creditsDeducted) {
+      try {
+        const cookieStore = await cookies();
+        const supabase = createServerClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          {
+            cookies: {
+              getAll() {
+                return cookieStore.getAll();
+              },
+              setAll(cookiesToSet) {
+                try {
+                  cookiesToSet.forEach(({ name, value, options }) =>
+                    cookieStore.set(name, value, options)
+                  );
+                } catch {
+                  // Server Component limitation
+                }
+              },
+            },
+          }
+        );
+
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (user) {
+          // 登录用户：使用 Supabase RPC 退还额度
+          const { error: refundError } = await supabase.rpc('refund_user_credits', {
+            p_user_id: user.id,
+            p_amount: 1,
+            p_description: '视频帧增强失败退款',
+          });
+          if (refundError) {
+            console.error('[EnhanceCover] Supabase refund error:', refundError);
+          } else {
+            console.log('[EnhanceCover] Refunded 1 credit for logged in user');
+          }
+        } else if (anonymousIdForCredit) {
+          // 匿名用户：使用文件系统退还额度
+          const { refundCredits } = await import('@/lib/credits');
+          refundCredits({
+            anonymousId: anonymousIdForCredit,
+            amount: 1,
+            description: '视频帧增强失败退款',
+          });
+          console.log('[EnhanceCover] Refunded 1 credit for anonymous user');
+        }
+      } catch (refundError) {
+        console.error('[EnhanceCover] Error refunding credit:', refundError);
+      }
+    }
+
     return NextResponse.json(
       {
         success: false,
