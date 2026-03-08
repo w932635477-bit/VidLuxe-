@@ -135,6 +135,7 @@ export function EnhancedFramesResult({
   resultData,
   onReset,
   credits,
+  anonymousId,
   onCreditsUpdate,
 }: EnhancedFramesResultProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -165,6 +166,22 @@ export function EnhancedFramesResult({
     setShowDownloadModal(false);
 
     try {
+      // 先扣除额度
+      const spendResponse = await fetch('/api/credits/spend', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          anonymousId,
+          amount: frames.length,
+          description: `下载 ${frames.length} 张视频增强图片`,
+        }),
+      });
+
+      const spendData = await spendResponse.json();
+      if (!spendData.success) {
+        throw new Error(spendData.error || '额度扣除失败');
+      }
+
       // 逐张下载图片
       for (let i = 0; i < frames.length; i++) {
         const frame = frames[i];
@@ -183,14 +200,15 @@ export function EnhancedFramesResult({
         await new Promise(resolve => setTimeout(resolve, 300));
       }
 
-      // 更新额度
+      // 更新额度显示
       onCreditsUpdate();
     } catch (error) {
       console.error('Download failed:', error);
+      alert(error instanceof Error ? error.message : '下载失败，请重试');
     } finally {
       setIsDownloading(false);
     }
-  }, [frames, onCreditsUpdate]);
+  }, [frames, anonymousId, onCreditsUpdate]);
 
   if (frames.length === 0 || !currentFrame) {
     return null;
