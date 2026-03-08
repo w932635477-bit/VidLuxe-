@@ -24,22 +24,6 @@ const PLANS = [
     popular: false,
   },
   {
-    id: 'test',
-    name: '测试套餐',
-    nameEn: 'Test',
-    price: 0.01,
-    period: '仅限测试',
-    description: '支付流程测试用',
-    features: [
-      '10 个额度',
-      '测试支付流程',
-      '真实微信支付',
-    ],
-    cta: '测试支付',
-    popular: false,
-    badge: '测试',
-  },
-  {
     id: 'small',
     name: '小包',
     nameEn: 'Starter',
