@@ -1,7 +1,7 @@
 /**
  * TryPage - 主页面
  *
- * 使用新的独立流程架构，支持单图、批量、视频三种模式切换
+ * 使用新的独立流程架构，支持单图、视频两种模式切换
  * 用户必须登录才能使用
  */
 
@@ -12,7 +12,6 @@ import { useRouter } from 'next/navigation';
 import { ModeTabs, type FlowMode } from '@/components/features/try/ModeTabs';
 import { MinimalNav } from '@/components/features/try';
 import { ImageSingleFlow } from '@/components/features/try/flows/ImageSingleFlow';
-import { ImageBatchFlow } from '@/components/features/try/flows/ImageBatchFlow';
 import { VideoFlow } from '@/components/features/try/flows/VideoFlow';
 import { useAuth } from '@/components/auth/AuthProvider';
 
@@ -53,12 +52,10 @@ export default function TryPage() {
     switch (activeMode) {
       case 'single':
         return <ImageSingleFlow />;
-      case 'batch':
-        return <ImageBatchFlow />;
       case 'video':
         return <VideoFlow />;
       default:
-        return <ImageBatchFlow />;
+        return <ImageSingleFlow />;
     }
   };
 

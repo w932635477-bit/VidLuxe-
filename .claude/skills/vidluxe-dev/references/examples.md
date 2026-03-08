@@ -1,0 +1,6 @@
+# Long Examples
+
+Put examples longer than ~20 lines here, split by use case:
+
+- Use case 1: ...
+- Use case 2: ...

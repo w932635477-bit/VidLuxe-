@@ -140,6 +140,10 @@ export class TaskQueue {
         let loadedCount = 0;
         let skippedCount = 0;
 
+        // 重置 processingCount，避免重复累加
+        this.processingCount = 0;
+        this.tasks.clear();
+
         // 验证并加载每个任务
         for (const [id, taskData] of Object.entries(data)) {
           if (!validateTask(taskData)) {
@@ -160,7 +164,7 @@ export class TaskQueue {
           }
         }
 
-        console.log(`[TaskQueue] Loaded ${loadedCount} tasks from backup, skipped ${skippedCount} invalid`);
+        console.log(`[TaskQueue] Loaded ${loadedCount} tasks from backup, skipped ${skippedCount} invalid, processing: ${this.processingCount}`);
       }
     } catch (error) {
       console.error('[TaskQueue] Failed to load backup:', error);
@@ -278,8 +282,13 @@ export class TaskQueue {
 
   /**
    * 获取任务
+   * @param taskId 任务ID
+   * @param forceReload 是否强制从文件重新加载（多进程环境下需要）
    */
-  get(taskId: string): Task | undefined {
+  get(taskId: string, forceReload = false): Task | undefined {
+    if (forceReload) {
+      this.loadFromBackup();
+    }
     return this.tasks.get(taskId);
   }
 

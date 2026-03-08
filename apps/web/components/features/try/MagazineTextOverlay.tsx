@@ -34,8 +34,9 @@ export function MagazineTextOverlay({
       const ctx = canvas?.getContext('2d');
       if (!ctx || !canvas) throw new Error('Canvas context not available');
 
-      // 使用 fetch + blob 方式绕过 CORS 限制
-      const response = await fetch(imageUrl);
+      // 使用代理 API 绕过 CORS 限制
+      const proxyUrl = `/api/proxy-image?url=${encodeURIComponent(imageUrl)}`;
+      const response = await fetch(proxyUrl);
       if (!response.ok) throw new Error('Failed to fetch image');
       const blob = await response.blob();
       const blobUrl = URL.createObjectURL(blob);

@@ -12,7 +12,6 @@ import { useCreditsStore } from '@/lib/stores/credits-store';
 import {
   EffectSourceSelector,
   StyleMultiSelector,
-  BatchPreviewGrid,
   StepIndicator,
 } from '@/components/features/try';
 import { getRecommendedStyles } from '@/lib/category-modifiers';
@@ -164,17 +163,6 @@ export function StyleStep({ onStartProcessing, onBack }: StyleStepProps) {
       }}
     >
       <StepIndicator currentStep="style" contentType={contentType} />
-
-      {/* 批量预览 */}
-      {uploadMode === 'batch' && batchFiles.length > 0 && (
-        <div style={{ marginBottom: '24px' }}>
-          <BatchPreviewGrid
-            items={batchFiles}
-            onRemove={removeBatchFile}
-            disabled={isLoading}
-          />
-        </div>
-      )}
 
       {/* 单图预览 */}
       {uploadMode === 'single' && previewUrl && (

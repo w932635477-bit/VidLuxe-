@@ -283,6 +283,9 @@ export async function processImageEnhancement(params: {
     sourceType: styleSourceType,
     referenceUrl,
     presetStyle,
+    // 新效果系统：传递 effectId 以使用正确的 prompt
+    effectId,
+    effectIntensity,
   });
   onProgress?.(10, '风格特征已获取');
 
@@ -404,6 +407,9 @@ export async function processVideoEnhancement(params: {
     sourceType: styleSourceType,
     referenceUrl,
     presetStyle,
+    // 新效果系统：传递 effectId 以使用正确的 prompt
+    effectId,
+    effectIntensity,
   });
   onProgress?.(10, '风格特征已提取');
 
@@ -552,13 +558,9 @@ export async function processEnhancement(params: {
   effectId?: string;
   effectIntensity?: number;
 }): Promise<TaskResult> {
-  // 如果提供了 effectId，使用新效果系统的 Prompt
+  // effectId 和 effectIntensity 会传递给子函数，由 getStyleProfile 处理
   if (params.effectId) {
-    const { getEffectPrompt } = await import('./effect-presets');
-    const effectPrompt = getEffectPrompt(params.effectId, params.effectIntensity ?? 100);
-    console.log('[Workflow] Using effect prompt from new effect system:', params.effectId);
-    // 可以在这里覆盖 styleProfile 的 prompt
-    // 目前先使用 effectId 映射到 presetStyle 的方式
+    console.log('[Workflow] Using effect:', params.effectId, 'intensity:', params.effectIntensity);
   }
 
   if (params.contentType === 'image') {

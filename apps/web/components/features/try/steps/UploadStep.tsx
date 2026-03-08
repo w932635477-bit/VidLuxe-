@@ -9,7 +9,7 @@
 import { useCallback, useState, useEffect } from 'react';
 import { useTryStore } from '@/lib/stores/try-store';
 import { useCreditsStore } from '@/lib/stores';
-import { UploadSection, BatchPreviewGrid } from '@/components/features/try';
+import { UploadSection } from '@/components/features/try';
 import { uploadFile } from '@/lib/actions/upload';
 
 interface UploadStepProps {

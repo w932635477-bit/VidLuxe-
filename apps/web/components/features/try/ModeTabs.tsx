@@ -1,12 +1,12 @@
 /**
  * ModeTabs 组件
  *
- * 用于单图、批量图片、视频三种模式切换
+ * 用于单图、视频两种模式切换
  */
 
 'use client';
 
-export type FlowMode = 'single' | 'batch' | 'video';
+export type FlowMode = 'single' | 'video';
 
 interface ModeTabsProps {
   activeMode: FlowMode;
@@ -15,7 +15,6 @@ interface ModeTabsProps {
 
 const MODES: { id: FlowMode; label: string; icon: string }[] = [
   { id: 'single', label: '单图', icon: '🖼️' },
-  { id: 'batch', label: '批量', icon: '📚' },
   { id: 'video', label: '视频', icon: '🎬' },
 ];
 

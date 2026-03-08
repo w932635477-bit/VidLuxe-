@@ -14,6 +14,7 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { Agent } from 'undici';
 
 // 存储配置
 const STORAGE_CONFIG = {
@@ -305,6 +306,12 @@ export class FileStorage {
     const maxRetries = 3;
     const timeout = 30000;
 
+    // 创建不使用代理的 Agent
+    const noProxyAgent = new Agent({
+      connections: 1,
+      pipelining: 1,
+    });
+
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         console.log(`[FileStorage] Uploading to litterbox (attempt ${attempt}/${maxRetries})...`);
@@ -324,6 +331,8 @@ export class FileStorage {
           method: 'POST',
           body: formData,
           signal: controller.signal,
+          // @ts-expect-error - undici dispatcher for disabling proxy
+          dispatcher: noProxyAgent,
         });
 
         clearTimeout(timeoutId);

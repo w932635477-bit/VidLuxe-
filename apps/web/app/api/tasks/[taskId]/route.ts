@@ -22,7 +22,8 @@ export async function GET(
     }
 
     const taskQueue = getTaskQueue();
-    const task = taskQueue.get(taskId);
+    // 强制从文件重新加载，解决多进程环境下状态不同步问题
+    const task = taskQueue.get(taskId, true);
 
     if (!task) {
       return NextResponse.json(

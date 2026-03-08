@@ -12,6 +12,7 @@ import { useCreditsStore } from '@/lib/stores/credits-store';
 import { ProcessingAnimation } from '@/components/features/try/flows/shared/ProcessingAnimation';
 import { EffectFlowSelector } from '@/components/features/try/EffectFlowSelector';
 import { MagazineTextOverlay } from '@/components/features/try/MagazineTextOverlay';
+import { ResultSection } from '@/components/features/try/ResultSection';
 import { uploadFile } from '@/lib/actions/upload';
 import type { StyleType, StyleSourceType, ResultData } from '@/lib/types/flow';
 import type { ContentType } from '@/lib/content-types';
@@ -227,8 +228,8 @@ export function ImageSingleFlow() {
       const data = await response.json();
 
       if (data.success && data.taskId) {
-        // 轮询任务状态
-        for (let i = 0; i < 60; i++) {
+        // 轮询任务状态 (90次 × 2秒 = 180秒，匹配后端超时)
+        for (let i = 0; i < 90; i++) {
           await new Promise((resolve) => setTimeout(resolve, 2000));
           const statusResponse = await fetch(`/api/enhance/${data.taskId}`);
           const statusData = await statusResponse.json();
@@ -469,68 +470,11 @@ export function ImageSingleFlow() {
 
       {/* 结果步骤 */}
       {step === 'result' && resultData && (
-        <div style={{ display: 'flex', flexDirection: 'column', padding: '24px', maxWidth: '480px', margin: '0 auto' }}>
-          <p style={{ fontSize: '24px', fontWeight: 600, marginBottom: '24px', textAlign: 'center' }}>升级完成！</p>
-
-          <div style={{ marginBottom: '24px', borderRadius: '16px', overflow: 'hidden' }}>
-            {/* 如果是杂志风格，显示带文字叠加的效果 */}
-            {selectedEffectId?.includes('magazine') ? (
-              <MagazineTextOverlay
-                imageUrl={resultData.enhancedUrl}
-                showDownloadButton={true}
-              />
-            ) : (
-              <div style={{ position: 'relative' }}>
-                <img src={resultData.enhancedUrl} alt="结果" style={{ width: '100%', aspectRatio: '9/16', objectFit: 'cover', display: 'block', borderRadius: '16px' }} />
-                {/* 下载按钮 */}
-                <button
-                  onClick={async () => {
-                    try {
-                      const response = await fetch(resultData.enhancedUrl);
-                      const blob = await response.blob();
-                      const blobUrl = URL.createObjectURL(blob);
-                      const link = document.createElement('a');
-                      link.href = blobUrl;
-                      link.download = 'vidluxe_enhanced.jpg';
-                      document.body.appendChild(link);
-                      link.click();
-                      document.body.removeChild(link);
-                      URL.revokeObjectURL(blobUrl);
-                    } catch {
-                      alert('下载失败，请重试');
-                    }
-                  }}
-                  style={{
-                    position: 'absolute',
-                    top: '12px',
-                    right: '12px',
-                    width: '40px',
-                    height: '40px',
-                    borderRadius: '10px',
-                    background: 'rgba(0, 0, 0, 0.6)',
-                    border: 'none',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
-                  </svg>
-                </button>
-              </div>
-            )}
-          </div>
-
-          {resultData.score && (
-            <div style={{ padding: '16px', borderRadius: '12px', background: 'rgba(212, 175, 55, 0.1)', border: '1px solid rgba(212, 175, 55, 0.2)', marginBottom: '24px' }}>
-              <p style={{ fontSize: '15px', fontWeight: 500, color: '#D4AF37' }}>种草评分: {resultData.score.overall}分</p>
-            </div>
-          )}
-
-          <button onClick={handleReset} style={{ width: '100%', padding: '16px', borderRadius: '12px', border: 'none', background: '#D4AF37', color: '#000', fontSize: '16px', fontWeight: 600, cursor: 'pointer' }}>继续使用</button>
-        </div>
+        <ResultSection
+          resultData={resultData}
+          contentType="image"
+          onReset={handleReset}
+        />
       )}
 
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>

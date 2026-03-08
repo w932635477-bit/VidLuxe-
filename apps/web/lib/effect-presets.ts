@@ -280,7 +280,7 @@ export const BEAUTY_EFFECTS: EffectPreset[] = [
     negativePrompt: 'western makeup style, heavy contour, dramatic, cool tones, minimalist modern, casual, vintage retro',
     popularity: 720,
     isHot: false,
-    accentColor: '#C41E3A',
+    accentColor: '#D4AF37',
   },
 ];
 

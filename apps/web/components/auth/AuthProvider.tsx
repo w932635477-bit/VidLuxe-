@@ -23,7 +23,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // 获取当前用户
-    supabase.auth.getUser().then(({ data: { user } }) => {
+    supabase.auth.getUser().then(({ data: { user }, error }) => {
+      if (error) {
+        // 刷新令牌无效时，清除本地会话
+        console.warn('[Auth] Session error:', error.message);
+        supabase.auth.signOut().catch(() => {});
+      }
       setUser(user);
       setLoading(false);
     });

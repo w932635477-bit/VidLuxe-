@@ -44,6 +44,23 @@ tmp/
 # User uploads (should not be committed)
 **/uploads/
 
+# Scripts with secrets (should not be committed)
+scripts/verify-*.js
+scripts/test-*.ts
+
+apps/web/scripts/*test*.ts
+apps/web/scripts/verify*.js
+
+# macOS metadata files
+._*
+
+# Backup files (防止混淆)
+*.backup
+*.bak
+*.old
+.backup/
+**/.backup/
+
 # Backup files (防止混淆)
 *.backup
 *.bak

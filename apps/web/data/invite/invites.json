@@ -48,6 +48,29 @@
       "createdAt": 1772781572765,
       "invitees": [],
       "totalEarned": 0
+    },
+    "CQV33L": {
+      "code": "CQV33L",
+      "ownerId": "anon_1772181565199_fwrb6az5",
+      "createdAt": 1772931699983,
+      "invitees": [],
+      "totalEarned": 0
+    },
+    "XO3WRG": {
+      "code": "XO3WRG",
+      "ownerId": "test_user_a_1772939823192_omeffz",
+      "createdAt": 1772939823288,
+      "invitees": [
+        "test_user_b_1772939823606_36yt7m"
+      ],
+      "totalEarned": 5
+    },
+    "2W0SFQ": {
+      "code": "2W0SFQ",
+      "ownerId": "test_health_1772939893959",
+      "createdAt": 1772939894048,
+      "invitees": [],
+      "totalEarned": 0
     }
   },
   "users": {
@@ -57,6 +80,9 @@
     "test_build_check": "SQDLL1",
     "anon_1771648234106_t7bqbr32": "U1FZ1P",
     "anon_1772780936886_2taao3j8": "ZVONJA",
-    "anon_1772781572745_0ol0q9dz": "9EH94D"
+    "anon_1772781572745_0ol0q9dz": "9EH94D",
+    "anon_1772181565199_fwrb6az5": "CQV33L",
+    "test_user_a_1772939823192_omeffz": "XO3WRG",
+    "test_health_1772939893959": "2W0SFQ"
   }
 }
