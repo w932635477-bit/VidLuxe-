@@ -12,8 +12,8 @@ import { useVideoStore } from '@/lib/stores/flows';
 import { useCreditsStore } from '@/lib/stores/credits-store';
 import { ProcessingAnimation } from '@/components/features/try/flows/shared/ProcessingAnimation';
 import { KeyframeSelector } from './KeyframeSelector';
+import { EnhancedFramesResult } from './EnhancedFramesResult';
 import { EffectFlowSelector } from '@/components/features/try/EffectFlowSelector';
-import { ResultSection } from '@/components/features/try/ResultSection';
 import { uploadFile } from '@/lib/actions/upload';
 import { getEffectById } from '@/lib/effect-presets';
 import type { KeyFrame } from '@/lib/types/flow';
@@ -512,12 +512,14 @@ export function VideoFlow() {
         />
       )}
 
-      {/* 结果步骤 */}
-      {step === 'result' && resultData && (
-        <ResultSection
+      {/* 结果步骤 - 新的滑动卡片结果 */}
+      {step === 'result' && resultData?.enhancedFrames && resultData.enhancedFrames.length > 0 && (
+        <EnhancedFramesResult
           resultData={resultData}
-          contentType="video"
           onReset={handleReset}
+          credits={total}
+          anonymousId={anonymousId}
+          onCreditsUpdate={() => fetchCredits(anonymousId)}
         />
       )}
 
