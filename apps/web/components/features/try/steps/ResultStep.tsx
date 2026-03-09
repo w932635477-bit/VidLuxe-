@@ -15,12 +15,52 @@ interface ResultStepProps {
   onRetry: () => void;
 }
 
+// 下载图片的辅助函数
+async function downloadImage(url: string, filename: string): Promise<void> {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('下载失败');
+
+    const blob = await response.blob();
+    const blobUrl = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+  } catch (error) {
+    console.error('Download error:', error);
+    window.open(url, '_blank');
+  }
+}
+
 export function ResultStep({ onReset, onRetry }: ResultStepProps) {
   const { resultData, batchResults, uploadMode, batchFiles } = useTryStore();
   const { total } = useCreditsStore();
   const [selectedResult, setSelectedResult] = useState<BatchResultItem | null>(
     batchResults.length > 0 ? batchResults[0] : null
   );
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  // 处理单图下载
+  const handleSingleDownload = async () => {
+    if (!resultData?.enhancedUrl) return;
+    setIsDownloading(true);
+    await downloadImage(resultData.enhancedUrl, `vidluxe_enhanced_${Date.now()}.jpg`);
+    setIsDownloading(false);
+  };
+
+  // 处理批量结果下载
+  const handleBatchDownload = async () => {
+    if (!selectedResult?.enhancedUrl) return;
+    setIsDownloading(true);
+    await downloadImage(selectedResult.enhancedUrl, `vidluxe_enhanced_${Date.now()}.jpg`);
+    setIsDownloading(false);
+  };
 
   // 单图结果
   if (uploadMode === 'single' && resultData) {
@@ -91,9 +131,9 @@ export function ResultStep({ onReset, onRetry }: ResultStepProps) {
 
         {/* 操作按钮 */}
         <div style={{ display: 'flex', gap: '12px' }}>
-          <a
-            href={resultData.enhancedUrl}
-            download
+          <button
+            onClick={handleSingleDownload}
+            disabled={isDownloading}
             style={{
               flex: 1,
               display: 'block',
@@ -105,10 +145,13 @@ export function ResultStep({ onReset, onRetry }: ResultStepProps) {
               fontSize: '15px',
               fontWeight: 600,
               textDecoration: 'none',
+              border: 'none',
+              cursor: isDownloading ? 'wait' : 'pointer',
+              opacity: isDownloading ? 0.7 : 1,
             }}
           >
-            下载图片
-          </a>
+            {isDownloading ? '下载中...' : '下载图片'}
+          </button>
           <button
             onClick={onReset}
             style={{
@@ -205,11 +248,12 @@ export function ResultStep({ onReset, onRetry }: ResultStepProps) {
 
         {/* 选中结果操作 */}
         {selectedResult && (
-          <a
-            href={selectedResult.enhancedUrl}
-            download
+          <button
+            onClick={handleBatchDownload}
+            disabled={isDownloading}
             style={{
               display: 'block',
+              width: '100%',
               textAlign: 'center',
               padding: '16px',
               borderRadius: '12px',
@@ -217,12 +261,14 @@ export function ResultStep({ onReset, onRetry }: ResultStepProps) {
               color: '#000',
               fontSize: '15px',
               fontWeight: 600,
-              textDecoration: 'none',
+              border: 'none',
               marginBottom: '12px',
+              cursor: isDownloading ? 'wait' : 'pointer',
+              opacity: isDownloading ? 0.7 : 1,
             }}
           >
-            下载选中图片
-          </a>
+            {isDownloading ? '下载中...' : '下载选中图片'}
+          </button>
         )}
 
         <button

@@ -7,6 +7,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { CreditsCard } from '../../CreditsCard';
 import type { ResultData } from '@/lib/types/flow';
 
 interface EnhancedFramesResultProps {
@@ -359,23 +360,12 @@ export function EnhancedFramesResult({
 
       {/* 下载按钮区域 */}
       <div style={{ marginTop: 'auto' }}>
-        {/* 额度显示 */}
-        <div style={{
-          padding: '12px 16px',
-          borderRadius: '12px',
-          background: 'rgba(255, 255, 255, 0.03)',
-          border: '1px solid rgba(255, 255, 255, 0.06)',
-          marginBottom: '16px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}>
-          <span style={{ color: 'rgba(255, 255, 255, 0.5)', fontSize: '14px' }}>
-            下载需消耗
-          </span>
-          <span style={{ color: '#D4AF37', fontWeight: 600 }}>
-            {frames.length} 额度（当前余额：{credits}）
-          </span>
+        {/* 额度卡片 */}
+        <div style={{ marginBottom: '16px' }}>
+          <CreditsCard
+            remainingCredits={credits}
+            consumedCredits={frames.length}
+          />
         </div>
 
         {/* 一键下载按钮 */}

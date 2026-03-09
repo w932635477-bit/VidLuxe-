@@ -7,7 +7,10 @@
 
 'use client';
 
+import { useState } from 'react';
 import { SeedingScoreCard } from './SeedingScoreCard';
+import { CreditsCard } from './CreditsCard';
+import { useCreditsStore } from '@/lib/stores/credits-store';
 import type { ContentType } from '@/lib/types/try-page';
 import type { ResultData } from '@/lib/types/flow';
 
@@ -15,6 +18,33 @@ interface ResultSectionProps {
   resultData: ResultData;
   contentType: ContentType;
   onReset: () => void;
+  /** 本次消耗的额度，默认为 1 */
+  creditsConsumed?: number;
+}
+
+// 下载图片的辅助函数
+async function downloadImage(url: string, filename: string): Promise<void> {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('下载失败');
+
+    const blob = await response.blob();
+    const blobUrl = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = blobUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    // 清理 blob URL
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 100);
+  } catch (error) {
+    console.error('Download error:', error);
+    // 回退方案：直接打开图片
+    window.open(url, '_blank');
+  }
 }
 
 // 按钮样式常量
@@ -59,7 +89,26 @@ const styles = {
   },
 };
 
-export function ResultSection({ resultData, contentType, onReset }: ResultSectionProps) {
+export function ResultSection({ resultData, contentType, onReset, creditsConsumed = 1 }: ResultSectionProps) {
+  const [isDownloading, setIsDownloading] = useState(false);
+  const { total: remainingCredits } = useCreditsStore();
+
+  // 处理下载
+  const handleDownload = async () => {
+    const url = contentType === 'video' && resultData.enhancedVideoUrl
+      ? resultData.enhancedVideoUrl
+      : (resultData.enhancedCoverUrl || resultData.enhancedUrl);
+
+    if (!url) return;
+
+    setIsDownloading(true);
+    const extension = url.includes('.mp4') || contentType === 'video' ? 'mp4' : 'jpg';
+    const filename = `vidluxe_enhanced_${Date.now()}.${extension}`;
+
+    await downloadImage(url, filename);
+    setIsDownloading(false);
+  };
+
   return (
     <div
       style={{
@@ -136,19 +185,31 @@ export function ResultSection({ resultData, contentType, onReset }: ResultSectio
       {/* 种草力评分卡片 */}
       {resultData.score && <SeedingScoreCard score={resultData.score} />}
 
+      {/* 额度卡片 */}
+      <div style={{ marginTop: resultData.score ? '16px' : '0' }}>
+        <CreditsCard
+          remainingCredits={remainingCredits}
+          consumedCredits={creditsConsumed}
+        />
+      </div>
+
       {/* 下载按钮区域 */}
       <div style={{ marginTop: '24px' }}>
         {/* 主下载按钮 - 视频/图片 */}
-        <a
-          href={contentType === 'video' && resultData.enhancedVideoUrl
-            ? resultData.enhancedVideoUrl
-            : (resultData.enhancedCoverUrl || resultData.enhancedUrl)}
-          download
-          style={styles.primaryButton}
+        <button
+          onClick={handleDownload}
+          disabled={isDownloading}
+          style={{
+            ...styles.primaryButton,
+            opacity: isDownloading ? 0.7 : 1,
+            cursor: isDownloading ? 'wait' : 'pointer',
+          }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = '#E5C04B';
-            e.currentTarget.style.boxShadow = '0 4px 16px rgba(212, 175, 55, 0.35)';
-            e.currentTarget.style.transform = 'translateY(-1px)';
+            if (!isDownloading) {
+              e.currentTarget.style.background = '#E5C04B';
+              e.currentTarget.style.boxShadow = '0 4px 16px rgba(212, 175, 55, 0.35)';
+              e.currentTarget.style.transform = 'translateY(-1px)';
+            }
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.background = '#D4AF37';
@@ -163,14 +224,15 @@ export function ResultSection({ resultData, contentType, onReset }: ResultSectio
           </svg>
           {contentType === 'video'
             ? (resultData.enhancedVideoUrl ? '下载视频' : '下载封面')
-            : '下载高清图'}
-        </a>
+            : isDownloading ? '下载中...' : '下载高清图'}
+        </button>
 
         {/* 次要操作按钮组 */}
         <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
           {/* 封面图下载 - 仅在视频流程且有视频时显示（主按钮下载视频，此处下载封面） */}
           {contentType === 'video' && resultData.enhancedVideoUrl && resultData.enhancedCoverUrl && (
             <button
+              onClick={() => downloadImage(resultData.enhancedCoverUrl!, `vidluxe_cover_${Date.now()}.jpg`)}
               style={styles.secondaryButton}
               onMouseEnter={(e) => {
                 e.currentTarget.style.background = 'rgba(255, 255, 255, 0.08)';
@@ -181,24 +243,12 @@ export function ResultSection({ resultData, contentType, onReset }: ResultSectio
                 e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.15)';
               }}
             >
-              <a
-                href={resultData.enhancedCoverUrl}
-                download
-                style={{
-                  color: 'inherit',
-                  textDecoration: 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                }}
-              >
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                  <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2"/>
-                  <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/>
-                  <path d="M21 15L16 10L5 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
-                封面图
-              </a>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                <rect x="3" y="3" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/>
+                <path d="M21 15L16 10L5 21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              封面图
             </button>
           )}
 

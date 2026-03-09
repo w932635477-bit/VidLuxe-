@@ -12,6 +12,7 @@ interface ProcessingAnimationProps {
   progress: number;
   currentStage?: string;
   mode?: 'image' | 'video' | 'batch';
+  estimatedSeconds?: number; // 预估总秒数，默认 60
 }
 
 // 趣味提示文字
@@ -46,10 +47,9 @@ const stages = {
   ],
 };
 
-export function ProcessingAnimation({ progress, currentStage, mode = 'image' }: ProcessingAnimationProps) {
+export function ProcessingAnimation({ progress, currentStage, mode = 'image', estimatedSeconds = 60 }: ProcessingAnimationProps) {
   const [tipIndex, setTipIndex] = useState(0);
   const [elapsedTime, setElapsedTime] = useState(0);
-  const [estimatedTotal] = useState(60); // 预估总时间60秒
 
   // 轮播提示文字
   useEffect(() => {
@@ -68,14 +68,11 @@ export function ProcessingAnimation({ progress, currentStage, mode = 'image' }: 
     return () => clearInterval(interval);
   }, []);
 
-  // 计算预估剩余时间
+  // 计算预估剩余时间（倒计时）
   const getEstimatedRemaining = () => {
-    if (progress <= 0) return '--:--';
-    const elapsedMinutes = elapsedTime / 60;
-    const estimatedTotalTime = (elapsedMinutes / progress) * 100;
-    const remaining = Math.max(0, estimatedTotalTime - elapsedMinutes);
-    const mins = Math.floor(remaining);
-    const secs = Math.floor((remaining - mins) * 60);
+    const remaining = Math.max(0, estimatedSeconds - elapsedTime);
+    const mins = Math.floor(remaining / 60);
+    const secs = remaining % 60;
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 

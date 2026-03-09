@@ -275,12 +275,19 @@ export function VideoFlow() {
     setIsLoading(true);
     setCurrentStage('正在提取关键帧...');
 
+    // 设置 2 分钟超时（视频处理需要较长时间）
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 120000);
+
     try {
       const response = await fetch('/api/video/analyze', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ videoUrl: uploadedFileUrl }),
+        signal: controller.signal,
       });
+
+      clearTimeout(timeoutId);
 
       const data = await response.json();
 
@@ -323,6 +330,10 @@ export function VideoFlow() {
     const allFrames = [selectedKeyframe, ...replaceFrames];
     const totalFrames = allFrames.length;
 
+    // 设置 5 分钟超时（与 CDN 和服务端匹配）
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 300000);
+
     try {
       const enhancedFrames: { originalUrl: string; enhancedUrl: string }[] = [];
 
@@ -342,6 +353,7 @@ export function VideoFlow() {
             intensity: effectIntensity,
             contentType: selectedContentType,
           }),
+          signal: controller.signal,
         });
 
         const enhanceData = await enhanceResponse.json();
@@ -370,8 +382,13 @@ export function VideoFlow() {
       setStep('result');
     } catch (error) {
       console.error('处理失败:', error);
-      setError(error instanceof Error ? error.message : '处理失败，请重试');
+      const errorMsg = error instanceof Error && error.name === 'AbortError'
+        ? '请求超时，请重试'
+        : (error instanceof Error ? error.message : '处理失败，请重试');
+      setError(errorMsg);
       setStep('keyframe');
+    } finally {
+      clearTimeout(timeoutId);
     }
   }, [selectedKeyframe, selectedEffectId, effectIntensity, selectedContentType, uploadedFileUrl, replaceFrames, anonymousId, setStep, setProgress, setCurrentStage, setResultData, fetchCredits, setError]);
 
@@ -509,6 +526,7 @@ export function VideoFlow() {
           progress={progress}
           currentStage={currentStage}
           mode="video"
+          estimatedSeconds={(replaceFrames.length + 1) * 60}
         />
       )}
 

@@ -3,71 +3,99 @@
 @tailwind utilities;
 
 :root {
-  /* Apple 风格品牌色 - 香槟金 */
+  /* Apple 风格品牌色 - 高级香槟金 */
+  --brand-50: #FBF8ED;
+  --brand-100: #F5ECD4;
+  --brand-200: #E8D4A8;
+  --brand-300: #D9B97A;
+  --brand-400: #D4AF37;
+  --brand-500: #C9A020;
+  --brand-600: #A88618;
   --brand-primary: #D4AF37;
-  --brand-light: #E5C04B;
+  --brand-light: #E5C55A;
   --brand-dark: #B8962E;
 
-  /* 文字色级 - Apple 灰阶 */
-  --text-primary: rgba(255, 255, 255, 0.95);
-  --text-secondary: rgba(255, 255, 255, 0.7);
-  --text-tertiary: rgba(255, 255, 255, 0.5);
-  --text-muted: rgba(255, 255, 255, 0.35);
-  --text-subtle: rgba(255, 255, 255, 0.2);
+  /* 文字色级 - Apple 精细灰阶 */
+  --text-primary: rgba(255, 255, 255, 0.92);
+  --text-secondary: rgba(255, 255, 255, 0.65);
+  --text-tertiary: rgba(255, 255, 255, 0.45);
+  --text-muted: rgba(255, 255, 255, 0.32);
+  --text-subtle: rgba(255, 255, 255, 0.18);
 
-  /* 评分等级色 */
-  --grade-s: #FFD700;
-  --grade-a: #34C759;
-  --grade-b: #007AFF;
-  --grade-c: #FF9500;
-  --grade-d: #FF3B30;
+  /* 评分等级色 - Apple 系统色 */
+  --grade-s: #FFD60A;
+  --grade-a: #30D158;
+  --grade-b: #0A84FF;
+  --grade-c: #FF9F0A;
+  --grade-d: #FF453A;
 
-  /* 背景色 - 纯黑系 */
+  /* 绿色系统 - 邀请功能 */
+  --green-50: rgba(52, 199, 89, 0.06);
+  --green-100: rgba(52, 199, 89, 0.12);
+  --green-200: rgba(52, 199, 89, 0.2);
+  --green-500: #34C759;
+  --green-600: #2DB94D;
+
+  /* 背景色 - 深邃黑系 */
   --bg-primary: #000000;
-  --bg-secondary: #0a0a0a;
-  --bg-elevated: #1c1c1e;
-  --bg-card: rgba(255, 255, 255, 0.03);
-  --bg-hover: rgba(255, 255, 255, 0.06);
-  --bg-active: rgba(255, 255, 255, 0.08);
+  --bg-secondary: #0A0A0A;
+  --bg-tertiary: #141414;
+  --bg-elevated: #1C1C1E;
+  --bg-card: rgba(255, 255, 255, 0.04);
+  --bg-card-hover: rgba(255, 255, 255, 0.06);
+  --bg-hover: rgba(255, 255, 255, 0.08);
+  --bg-active: rgba(255, 255, 255, 0.1);
 
-  /* 边框色 */
-  --border-subtle: rgba(255, 255, 255, 0.06);
-  --border-default: rgba(255, 255, 255, 0.1);
-  --border-hover: rgba(255, 255, 255, 0.15);
-  --border-focus: rgba(212, 175, 55, 0.4);
+  /* 边框色 - 微妙层次 */
+  --border-faint: rgba(255, 255, 255, 0.04);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-default: rgba(255, 255, 255, 0.12);
+  --border-hover: rgba(255, 255, 255, 0.18);
+  --border-focus: rgba(212, 175, 55, 0.5);
 
-  /* 圆角系统 - Apple Style */
+  /* 圆角系统 - Apple 精确比例 */
+  --radius-xs: 4px;
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
   --radius-xl: 20px;
-  --radius-2xl: 24px;
+  --radius-2xl: 28px;
+  --radius-3xl: 36px;
   --radius-full: 980px;
 
-  /* 动画时长 - Apple Style */
-  --duration-instant: 100ms;
-  --duration-fast: 150ms;
+  /* 动画时长 - Apple 精确控制 */
+  --duration-instant: 80ms;
+  --duration-fast: 120ms;
   --duration-normal: 200ms;
-  --duration-slow: 300ms;
-  --duration-slower: 400ms;
+  --duration-slow: 280ms;
+  --duration-slower: 360ms;
+  --duration-slowest: 480ms;
 
-  /* Apple 缓动曲线 */
+  /* Apple 缓动曲线 - 精确参数 */
   --ease-default: cubic-bezier(0.25, 0.1, 0.25, 1);
-  --ease-in: cubic-bezier(0.4, 0, 1, 1);
-  --ease-out: cubic-bezier(0, 0, 0.2, 1);
-  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
-  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
-  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-in: cubic-bezier(0.42, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.58, 1);
+  --ease-in-out: cubic-bezier(0.42, 0, 0.58, 1);
+  --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
   --ease-apple: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* 阴影系统 */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.15);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.2);
-  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.25);
-  --shadow-glow: 0 0 24px rgba(212, 175, 55, 0.3);
+  /* 阴影系统 - 精确层次 */
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.12);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.16);
+  --shadow-xl: 0 12px 40px rgba(0, 0, 0, 0.2);
+  --shadow-2xl: 0 20px 60px rgba(0, 0, 0, 0.25);
+  --shadow-inner: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+  --shadow-glow-sm: 0 0 12px rgba(212, 175, 55, 0.2);
+  --shadow-glow: 0 0 20px rgba(212, 175, 55, 0.25);
+  --shadow-glow-lg: 0 0 32px rgba(212, 175, 55, 0.3);
+  --shadow-green-glow: 0 0 16px rgba(52, 199, 89, 0.25);
 
-  /* 间距系统 */
+  /* 间距系统 - 4px 基数 */
+  --space-0: 0;
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -77,6 +105,8 @@
   --space-8: 32px;
   --space-10: 40px;
   --space-12: 48px;
+  --space-16: 64px;
+  --space-20: 80px;
 }
 
 * {

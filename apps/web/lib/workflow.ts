@@ -28,10 +28,10 @@ const NANO_BANANA_CONFIG = {
   timeout: {
     create: 30000, // 创建任务超时 30s
     poll: 10000,   // 轮询单次超时 10s
-    total: 180000, // 总超时 180s (3分钟，留足时间)
+    total: 300000, // 总超时 300s (5分钟，Nano Banana 有时需要 3+ 分钟)
   },
   // 轮询配置
-  maxPollAttempts: 90, // 增加到 90 次 (180s / 2s)
+  maxPollAttempts: 150, // 增加到 150 次 (300s / 2s)
   pollInterval: 2000,
   // 重试配置
   retry: {
