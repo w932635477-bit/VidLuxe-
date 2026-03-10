@@ -338,12 +338,21 @@ export class TaskQueue {
 
   /**
    * 更新进度
+   * 注意：进度更新会立即保存到文件，确保多进程环境下状态同步
    */
   updateProgress(taskId: string, progress: number, stage?: string): Task | undefined {
-    return this.update(taskId, {
+    const task = this.update(taskId, {
       progress: Math.min(100, Math.max(0, progress)),
       currentStage: stage,
     });
+
+    // 立即保存到文件，确保多进程环境下进度同步
+    // 这是关键修复：进度更新必须持久化，否则状态 API 会从文件加载过时的进度
+    if (task) {
+      this.saveToBackup();
+    }
+
+    return task;
   }
 
   /**

@@ -243,7 +243,8 @@ export function ImageSingleFlow() {
               originalUrl: statusData.result.originalUrl,
               score: statusData.result.score,
             });
-            fetchCredits(anonymousId);
+            // 等待额度刷新完成后再切换到结果页面，确保显示正确的剩余额度
+            await fetchCredits(anonymousId);
             setStep('result');
             return;
           }
