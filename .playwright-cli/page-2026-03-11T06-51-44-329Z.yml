@@ -1,0 +1,48 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e12] [cursor=pointer]:
+    - img [ref=e13]
+  - alert [ref=e6]
+  - generic [ref=e35]:
+    - navigation [ref=e36]:
+      - link "VidLuxe" [ref=e37] [cursor=pointer]:
+        - /url: /
+      - generic [ref=e38]:
+        - link "价格" [ref=e39] [cursor=pointer]:
+          - /url: /pricing
+        - link "示例" [ref=e40] [cursor=pointer]:
+          - /url: /demo
+        - generic [ref=e41]:
+          - generic [ref=e42]: "932635477"
+          - button "登出" [ref=e43] [cursor=pointer]
+    - generic [ref=e44]:
+      - button "🖼️ 单图" [ref=e45] [cursor=pointer]:
+        - generic [ref=e46]: 🖼️
+        - generic [ref=e47]: 单图
+      - button "🎬 视频" [ref=e48] [cursor=pointer]:
+        - generic [ref=e49]: 🎬
+        - generic [ref=e50]: 视频
+    - generic [ref=e196]:
+      - generic [ref=e197]:
+        - img [ref=e200]
+        - img [ref=e205]
+        - generic [ref=e210]: "3"
+      - generic [ref=e211]:
+        - generic [ref=e212]: 分析
+        - generic [ref=e213]: 生成
+        - generic [ref=e214]: 优化
+      - generic [ref=e215]:
+        - img [ref=e217]
+        - generic [ref=e221]: 0%
+      - paragraph [ref=e223]: 正在分析图片...
+      - paragraph [ref=e225]: 好的作品值得等待...
+      - generic [ref=e226]:
+        - generic [ref=e227]:
+          - paragraph [ref=e228]: 已用时
+          - paragraph [ref=e229]: 0:07
+        - generic [ref=e231]:
+          - paragraph [ref=e232]: 预计剩余
+          - paragraph [ref=e233]: 0:53
+    - button "🎁 邀请好友，双方各得 5 额度" [ref=e73] [cursor=pointer]:
+      - generic [ref=e74]: 🎁
+      - generic [ref=e75]: 邀请好友，双方各得 5 额度
+      - img [ref=e76]

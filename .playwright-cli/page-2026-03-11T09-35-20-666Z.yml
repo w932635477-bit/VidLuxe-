@@ -1,0 +1,5 @@
+- generic [active] [ref=e1]:
+  - alert [ref=e2]
+  - generic [ref=e3] [cursor=pointer]:
+    - generic [ref=e6]: "0"
+    - generic [ref=e7]: 0 次

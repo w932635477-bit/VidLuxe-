@@ -1,0 +1,119 @@
+- generic [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e28] [cursor=pointer]:
+    - img [ref=e29]
+  - alert [ref=e5]
+  - generic [ref=e32]:
+    - navigation [ref=e33]:
+      - link "VidLuxe" [ref=e34] [cursor=pointer]:
+        - /url: /
+      - generic [ref=e35]:
+        - link "价格" [ref=e36] [cursor=pointer]:
+          - /url: /pricing
+        - link "示例" [ref=e37] [cursor=pointer]:
+          - /url: /demo
+        - generic [ref=e38]:
+          - generic [ref=e39]: "932635477"
+          - button "登出" [ref=e40] [cursor=pointer]
+    - generic [ref=e41]:
+      - button "🖼️ 单图" [ref=e42] [cursor=pointer]:
+        - generic [ref=e43]: 🖼️
+        - generic [ref=e44]: 单图
+      - button "🎬 视频" [ref=e45] [cursor=pointer]:
+        - generic [ref=e46]: 🎬
+        - generic [ref=e47]: 视频
+    - generic [ref=e75]:
+      - img "预览" [ref=e89]
+      - generic [ref=e90]:
+        - generic [ref=e91]:
+          - generic [ref=e92]:
+            - heading "选择内容类型" [level=3] [ref=e93]
+            - paragraph [ref=e94]: 选择你的内容类型，获得更精准的增强效果
+          - generic [ref=e95]:
+            - button "👗 穿搭" [ref=e96] [cursor=pointer]:
+              - generic [ref=e97]: 👗
+              - generic [ref=e98]: 穿搭
+            - button "💄 美妆" [ref=e99] [cursor=pointer]:
+              - generic [ref=e100]: 💄
+              - generic [ref=e101]: 美妆
+            - button "☕ 探店" [ref=e102] [cursor=pointer]:
+              - generic [ref=e103]: ☕
+              - generic [ref=e104]: 探店
+            - button "✈️ 旅游" [ref=e105] [cursor=pointer]:
+              - generic [ref=e106]: ✈️
+              - generic [ref=e107]: 旅游
+            - button "🍽️ 美食" [ref=e108] [cursor=pointer]:
+              - generic [ref=e109]: 🍽️
+              - generic [ref=e110]: 美食
+          - generic [ref=e111]:
+            - generic [ref=e112]:
+              - generic [ref=e113]: 👗
+              - generic [ref=e114]: 穿搭
+            - paragraph [ref=e115]: 时尚穿搭、街拍、日常搭配
+        - generic [ref=e117]:
+          - generic [ref=e118]:
+            - generic [ref=e119]:
+              - img "原图"
+              - generic [ref=e121]: 原图
+            - generic [ref=e122]:
+              - img "效果图"
+              - generic:
+                - generic:
+                  - heading "VOGUE" [level=1]
+                  - paragraph: FALL ESSENTIALS
+                - heading "THE NEW CLASSICS" [level=2]
+              - generic [ref=e124]: 杂志大片
+            - img [ref=e128]
+            - generic [ref=e131]:
+              - generic [ref=e132]: 杂志大片 · 高级奢华
+              - generic [ref=e133]:
+                - img [ref=e134]
+                - text: 热门
+          - generic [ref=e136]:
+            - button "杂志大片 · 高级奢华 VOGUE 杂志大片" [active] [ref=e137] [cursor=pointer]:
+              - generic [ref=e138]:
+                - img "杂志大片 · 高级奢华" [ref=e139]
+                - generic:
+                  - generic:
+                    - heading "VOGUE" [level=1]
+              - generic [ref=e141]: 杂志大片
+            - button "日系温柔 · 清新治愈 日系温柔" [ref=e142] [cursor=pointer]:
+              - img "日系温柔 · 清新治愈" [ref=e144]
+              - generic [ref=e146]: 日系温柔
+            - button "韩系高级 · 奶茶色调 韩系高级" [ref=e147] [cursor=pointer]:
+              - img "韩系高级 · 奶茶色调" [ref=e149]
+              - generic [ref=e151]: 韩系高级
+            - button "复古胶片 · 电影氛围 复古胶片" [ref=e152] [cursor=pointer]:
+              - img "复古胶片 · 电影氛围" [ref=e154]
+              - generic [ref=e156]: 复古胶片
+            - button "都市职场 · 专业干练 都市职场" [ref=e157] [cursor=pointer]:
+              - img "都市职场 · 专业干练" [ref=e159]
+              - generic [ref=e161]: 都市职场
+            - button "街头酷感 · 高对比度 街头酷感" [ref=e162] [cursor=pointer]:
+              - img "街头酷感 · 高对比度" [ref=e164]
+              - generic [ref=e166]: 街头酷感
+            - button "极简纯净 · 高级灰 极简纯净" [ref=e167] [cursor=pointer]:
+              - img "极简纯净 · 高级灰" [ref=e169]
+              - generic [ref=e171]: 极简纯净
+            - button "温暖惬意 · 秋日氛围 温暖惬意" [ref=e172] [cursor=pointer]:
+              - img "温暖惬意 · 秋日氛围" [ref=e174]
+              - generic [ref=e176]: 温暖惬意
+          - generic [ref=e177]:
+            - generic [ref=e178]:
+              - generic [ref=e179]: 效果强度
+              - generic [ref=e180]: 100%
+            - slider [ref=e181] [cursor=pointer]: "100"
+            - generic [ref=e182]:
+              - generic [ref=e183]: 轻柔
+              - generic [ref=e184]: 强烈
+      - generic [ref=e185]:
+        - paragraph [ref=e186]: 🎁 输入邀请码，双方各得 5 个额度
+        - generic [ref=e187]:
+          - textbox "输入6位邀请码" [ref=e188]
+          - button "兑换" [disabled] [ref=e189]
+      - generic [ref=e190]:
+        - button "返回" [ref=e191] [cursor=pointer]
+        - button "开始升级" [ref=e192] [cursor=pointer]
+    - button "🎁 邀请好友，双方各得 5 额度" [ref=e65] [cursor=pointer]:
+      - generic [ref=e66]: 🎁
+      - generic [ref=e67]: 邀请好友，双方各得 5 额度
+      - img [ref=e68]

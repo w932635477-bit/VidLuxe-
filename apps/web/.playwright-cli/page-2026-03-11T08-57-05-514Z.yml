@@ -1,0 +1,28 @@
+- generic [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e59] [cursor=pointer]:
+    - img [ref=e60]
+  - alert [ref=e6]
+  - main [ref=e63]:
+    - generic [ref=e64]:
+      - generic [ref=e65]:
+        - link "VidLuxe" [ref=e66] [cursor=pointer]:
+          - /url: /
+        - paragraph [ref=e67]: 欢迎回来
+      - generic [ref=e68]:
+        - generic [ref=e69]:
+          - button "登录" [ref=e70] [cursor=pointer]
+          - button "注册" [ref=e71] [cursor=pointer]
+        - generic [ref=e72]:
+          - generic [ref=e73]:
+            - generic [ref=e74]: 邮箱地址
+            - textbox "请输入邮箱" [ref=e75]: 932635477@qq.com
+          - generic [ref=e76]:
+            - generic [ref=e77]: 密码
+            - textbox "请输入密码（至少6位）" [active] [ref=e78]: test123456
+        - button "登录" [ref=e90] [cursor=pointer]
+        - paragraph
+      - link "← 返回首页" [ref=e81] [cursor=pointer]:
+        - /url: /
+  - generic [ref=e7] [cursor=pointer]:
+    - generic [ref=e10]: "24"
+    - generic [ref=e11]: 24 次

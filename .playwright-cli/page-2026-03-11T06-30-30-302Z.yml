@@ -1,0 +1,34 @@
+- generic [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e6]:
+        - link "VidLuxe" [ref=e7] [cursor=pointer]:
+          - /url: /
+        - paragraph [ref=e8]: 创建账号
+      - generic [ref=e9]:
+        - generic [ref=e10]:
+          - button "登录" [ref=e11] [cursor=pointer]
+          - button "注册" [active] [ref=e12] [cursor=pointer]
+        - generic [ref=e13]:
+          - generic [ref=e14]:
+            - generic [ref=e15]: 邮箱地址
+            - textbox "请输入邮箱" [ref=e16]: test@test.com
+          - generic [ref=e17]:
+            - generic [ref=e18]: 密码
+            - textbox "请输入密码（至少6位）" [ref=e19]: test123456
+          - generic [ref=e33]:
+            - generic [ref=e34]: 确认密码
+            - textbox "请再次输入密码" [ref=e35]
+        - button "注册" [ref=e36] [cursor=pointer]
+        - paragraph [ref=e37]:
+          - text: 注册即表示同意
+          - link "用户协议" [ref=e38] [cursor=pointer]:
+            - /url: /terms
+          - text: 和
+          - link "隐私政策" [ref=e39] [cursor=pointer]:
+            - /url: /privacy
+      - link "← 返回首页" [ref=e22] [cursor=pointer]:
+        - /url: /
+  - button "Open Next.js Dev Tools" [ref=e28] [cursor=pointer]:
+    - img [ref=e29]
+  - alert [ref=e5]

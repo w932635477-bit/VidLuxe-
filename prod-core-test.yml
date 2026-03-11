@@ -1,0 +1,26 @@
+- generic [active] [ref=e1]:
+  - alert [ref=e2]
+  - main [ref=e8]:
+    - generic [ref=e9]:
+      - generic [ref=e10]:
+        - link "VidLuxe" [ref=e11] [cursor=pointer]:
+          - /url: /
+        - paragraph [ref=e12]: 欢迎回来
+      - generic [ref=e13]:
+        - generic [ref=e14]:
+          - button "登录" [ref=e15] [cursor=pointer]
+          - button "注册" [ref=e16] [cursor=pointer]
+        - generic [ref=e17]:
+          - generic [ref=e18]:
+            - generic [ref=e19]: 邮箱地址
+            - textbox "请输入邮箱" [ref=e20]
+          - generic [ref=e21]:
+            - generic [ref=e22]: 密码
+            - textbox "请输入密码（至少6位）" [ref=e23]
+        - button "登录" [ref=e24] [cursor=pointer]
+        - paragraph
+      - link "← 返回首页" [ref=e26] [cursor=pointer]:
+        - /url: /
+  - generic [ref=e3] [cursor=pointer]:
+    - generic [ref=e6]: "0"
+    - generic [ref=e7]: 0 次

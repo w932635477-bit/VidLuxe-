@@ -222,7 +222,18 @@ export async function createNativeOrder(params: NativeOrderParams): Promise<Nati
       prepayId: data?.prepay_id as string,
     };
   } catch (error) {
-    console.error('Create Native order error:', error);
+    console.error('[WechatPay] Create Native order error:', {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      outTradeNo,
+      config: {
+        hasAppId: !!wechatPayConfig.appId,
+        hasMchId: !!wechatPayConfig.mchId,
+        hasApiV3Key: !!wechatPayConfig.apiV3Key,
+        hasPrivateKey: !!wechatPayConfig.privateKey,
+        notifyUrl: wechatPayConfig.notifyUrl,
+      },
+    });
     return {
       outTradeNo,
       error: error instanceof Error ? error.message : '创建订单失败',

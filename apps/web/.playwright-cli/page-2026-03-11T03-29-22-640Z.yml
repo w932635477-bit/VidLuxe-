@@ -1,0 +1,44 @@
+- generic [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e12] [cursor=pointer]:
+    - img [ref=e13]
+  - alert [ref=e6]
+  - generic [ref=e16]:
+    - navigation [ref=e17]:
+      - link "VidLuxe" [ref=e18] [cursor=pointer]:
+        - /url: /
+      - generic [ref=e19]:
+        - link "价格" [ref=e20] [cursor=pointer]:
+          - /url: /pricing
+        - link "示例" [ref=e21] [cursor=pointer]:
+          - /url: /demo
+        - generic [ref=e22]:
+          - generic [ref=e23]: "932635477"
+          - button "登出" [ref=e24] [cursor=pointer]
+    - generic [ref=e25]:
+      - button "🖼️ 单图" [ref=e26] [cursor=pointer]:
+        - generic [ref=e27]: 🖼️
+        - generic [ref=e28]: 单图
+      - button "🎬 视频" [active] [ref=e29] [cursor=pointer]:
+        - generic [ref=e30]: 🎬
+        - generic [ref=e31]: 视频
+    - generic [ref=e336]:
+      - generic [ref=e337]:
+        - heading "视频升级" [level=1] [ref=e338]
+        - paragraph [ref=e339]: 上传视频，AI 自动优化
+      - generic [ref=e340] [cursor=pointer]:
+        - img [ref=e342]
+        - paragraph [ref=e344]: 拖入你的视频
+        - paragraph [ref=e345]: MP4 / MOV 最大 500MB
+      - generic [ref=e346]:
+        - generic [ref=e347]:
+          - paragraph [ref=e348]: 我的额度
+          - paragraph [ref=e349]: 8次
+        - generic [ref=e350]:
+          - paragraph [ref=e351]: 🎁 邀请码
+          - generic [ref=e352]:
+            - generic [ref=e353]: TMXAZ4
+            - button "复制" [ref=e354] [cursor=pointer]
+    - button "🎁 邀请好友，双方各得 5 额度" [ref=e54] [cursor=pointer]:
+      - generic [ref=e55]: 🎁
+      - generic [ref=e56]: 邀请好友，双方各得 5 额度
+      - img [ref=e57]

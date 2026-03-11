@@ -1,0 +1,58 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - link "返回首页" [ref=e4] [cursor=pointer]:
+      - /url: /
+      - img [ref=e5]
+      - text: 返回首页
+    - heading "隐私政策" [level=1] [ref=e7]
+    - paragraph [ref=e8]: 最后更新：2026年2月24日
+    - generic [ref=e9]:
+      - generic [ref=e10]:
+        - heading "1. 信息收集" [level=2] [ref=e11]
+        - paragraph [ref=e12]: 我们收集您使用服务时提供的信息，包括上传的图片和视频文件、联系方式（如邮箱、手机号）、 以及设备信息（如IP地址、浏览器类型）。这些信息用于提供和改进我们的服务。
+      - generic [ref=e13]:
+        - heading "2. 信息使用" [level=2] [ref=e14]
+        - paragraph [ref=e15]: 我们使用收集的信息来：
+        - list [ref=e16]:
+          - listitem [ref=e17]: 提供图片和视频增强服务
+          - listitem [ref=e18]: 处理您的订单和付款
+          - listitem [ref=e19]: 发送服务相关通知
+          - listitem [ref=e20]: 改进产品功能和用户体验
+          - listitem [ref=e21]: 防止欺诈和滥用行为
+      - generic [ref=e22]:
+        - heading "3. 信息共享" [level=2] [ref=e23]
+        - paragraph [ref=e24]: 我们不会将您的个人信息出售给第三方。我们仅在以下情况下共享信息： 获得您的明确同意、法律法规要求、与帮助我们运营服务的受信任合作伙伴共享 （如支付处理商、云服务提供商），这些合作伙伴均受保密协议约束。
+      - generic [ref=e25]:
+        - heading "4. 数据安全" [level=2] [ref=e26]
+        - paragraph [ref=e27]: 我们采用行业标准的安全措施保护您的数据，包括数据加密、访问控制、安全审计等。 您上传的文件在处理完成后会定期删除，我们不会长期存储您的内容。
+      - generic [ref=e28]:
+        - heading "5. 用户权利" [level=2] [ref=e29]
+        - paragraph [ref=e30]: 您有权：
+        - list [ref=e31]:
+          - listitem [ref=e32]: 访问和下载您的个人数据
+          - listitem [ref=e33]: 更正不准确的信息
+          - listitem [ref=e34]: 删除您的账户和相关数据
+          - listitem [ref=e35]: 撤回对数据处理的同意
+          - listitem [ref=e36]: 向监管机构投诉
+      - generic [ref=e37]:
+        - heading "6. Cookie 政策" [level=2] [ref=e38]
+        - paragraph [ref=e39]: 我们使用 Cookie 和类似技术来提供、保护和改进我们的服务。 您可以通过浏览器设置管理 Cookie 偏好，但这可能影响某些功能的使用。
+      - generic [ref=e40]:
+        - heading "7. 儿童隐私" [level=2] [ref=e41]
+        - paragraph [ref=e42]: 我们的服务不面向13岁以下儿童。如果我们发现无意中收集了儿童的信息， 将会尽快删除相关数据。
+      - generic [ref=e43]:
+        - heading "8. 政策更新" [level=2] [ref=e44]
+        - paragraph [ref=e45]: 我们可能会不时更新本隐私政策。更新后的政策将在本页面发布， 重大变更将通过邮件或站内通知告知您。
+      - generic [ref=e46]:
+        - heading "9. 联系我们" [level=2] [ref=e47]
+        - paragraph [ref=e48]: 如果您对本隐私政策有任何疑问，请通过以下方式联系我们：
+        - paragraph [ref=e49]:
+          - text: 邮箱：
+          - link "privacy@vidluxe.com" [ref=e50] [cursor=pointer]:
+            - /url: mailto:privacy@vidluxe.com
+    - generic [ref=e51]:
+      - link "服务条款" [ref=e52] [cursor=pointer]:
+        - /url: /terms
+      - link "返回首页" [ref=e53] [cursor=pointer]:
+        - /url: /
+  - alert [ref=e54]

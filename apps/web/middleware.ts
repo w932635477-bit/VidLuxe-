@@ -2,6 +2,7 @@
  * Next.js Middleware
  *
  * 实现 API 速率限制
+ * 注意：Supabase 认证在开发模式下有网络问题，所以不在中间件处理
  */
 
 import { NextResponse } from 'next/server';
@@ -18,6 +19,7 @@ const RATE_LIMIT_CONFIGS: Record<string, RateLimitConfig> = {
   '/api/enhance': { interval: 60 * 1000, limit: 10 },
   '/api/recognize': { interval: 60 * 1000, limit: 30 },
   '/api/invite': { interval: 60 * 1000, limit: 5 },
+  '/api/credits/spend': { interval: 60 * 1000, limit: 10 }, // 严格的额度消耗限制
   'default': { interval: 60 * 1000, limit: 60 },
 };
 
@@ -90,9 +92,7 @@ export function middleware(request: NextRequest) {
         status: 429,
         headers: {
           'Retry-After': String(retryAfter),
-          'X-RateLimit-Limit': String(
-            remaining + 1
-          ),
+          'X-RateLimit-Limit': String(remaining + 1),
           'X-RateLimit-Remaining': '0',
           'X-RateLimit-Reset': String(Math.floor(resetTime / 1000)),
         },

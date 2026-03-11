@@ -1,0 +1,159 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e507] [cursor=pointer]:
+    - img [ref=e508]
+  - alert [ref=e511]
+  - main [ref=e512]:
+    - navigation [ref=e513]:
+      - link "VidLuxe" [ref=e514] [cursor=pointer]:
+        - /url: /
+      - generic [ref=e515]:
+        - link "体验" [ref=e516] [cursor=pointer]:
+          - /url: /try
+        - link "体验" [ref=e517] [cursor=pointer]:
+          - /url: /try
+    - generic [ref=e518]:
+      - generic [ref=e520]:
+        - generic [ref=e521]:
+          - heading "定价" [level=2] [ref=e522]
+          - paragraph [ref=e523]: 选择适合你的方案
+        - generic [ref=e524]:
+          - generic [ref=e525]:
+            - generic [ref=e526]: 免费版Free
+            - paragraph [ref=e527]: 体验 AI 升级的魔力
+            - generic [ref=e528]: 免费
+            - list [ref=e529]:
+              - listitem [ref=e530]:
+                - img [ref=e531]
+                - text: 8 次免费额度
+              - listitem [ref=e533]:
+                - img [ref=e534]
+                - text: 4 种高级感风格
+              - listitem [ref=e536]:
+                - img [ref=e537]
+                - text: 邀请好友获得额外额度
+              - listitem [ref=e539]:
+                - img [ref=e540]
+                - text: 标准画质导出
+            - button "开始体验" [ref=e542] [cursor=pointer]
+          - generic [ref=e543]:
+            - generic [ref=e544]: 小包Starter
+            - paragraph [ref=e545]: 轻度用户首选
+            - generic [ref=e546]: ¥29一次性购买
+            - list [ref=e547]:
+              - listitem [ref=e548]:
+                - img [ref=e549]
+                - text: 20 个额度
+              - listitem [ref=e551]:
+                - img [ref=e552]
+                - text: 额度永不过期
+              - listitem [ref=e554]:
+                - img [ref=e555]
+                - text: 4 种高级感风格
+              - listitem [ref=e557]:
+                - img [ref=e558]
+                - text: 高清画质导出
+              - listitem [ref=e560]:
+                - img [ref=e561]
+                - text: 多风格批量生成
+            - button "立即购买" [ref=e563] [cursor=pointer]
+          - generic [ref=e564]:
+            - generic [ref=e565]: 最受欢迎
+            - generic [ref=e566]: 中包Pro
+            - paragraph [ref=e567]: 专业创作者推荐
+            - generic [ref=e568]: ¥79一次性购买
+            - list [ref=e569]:
+              - listitem [ref=e570]:
+                - img [ref=e571]
+                - text: 60 个额度
+              - listitem [ref=e573]:
+                - img [ref=e574]
+                - text: 额度永不过期
+              - listitem [ref=e576]:
+                - img [ref=e577]
+                - text: 4 种高级感风格
+              - listitem [ref=e579]:
+                - img [ref=e580]
+                - text: 高清画质导出
+              - listitem [ref=e582]:
+                - img [ref=e583]
+                - text: 多风格批量生成
+              - listitem [ref=e585]:
+                - img [ref=e586]
+                - text: 优先处理队列
+            - button "立即购买" [ref=e588] [cursor=pointer]
+          - generic [ref=e589]:
+            - generic [ref=e590]: 大包Business
+            - paragraph [ref=e591]: 高频创作者必备
+            - generic [ref=e592]: ¥199一次性购买
+            - list [ref=e593]:
+              - listitem [ref=e594]:
+                - img [ref=e595]
+                - text: 150 个额度
+              - listitem [ref=e597]:
+                - img [ref=e598]
+                - text: 额度永不过期
+              - listitem [ref=e600]:
+                - img [ref=e601]
+                - text: 4 种高级感风格
+              - listitem [ref=e603]:
+                - img [ref=e604]
+                - text: 高清画质导出
+              - listitem [ref=e606]:
+                - img [ref=e607]
+                - text: 多风格批量生成
+              - listitem [ref=e609]:
+                - img [ref=e610]
+                - text: 优先处理队列
+              - listitem [ref=e612]:
+                - img [ref=e613]
+                - text: 专属客服支持
+            - button "立即购买" [ref=e615] [cursor=pointer]
+          - generic [ref=e616]:
+            - generic [ref=e617]: 最划算
+            - generic [ref=e618]: 超大包Enterprise
+            - paragraph [ref=e619]: 无限创作可能
+            - generic [ref=e620]: ¥499一次性购买
+            - list [ref=e621]:
+              - listitem [ref=e622]:
+                - img [ref=e623]
+                - text: 400 个额度
+              - listitem [ref=e625]:
+                - img [ref=e626]
+                - text: 额度永不过期
+              - listitem [ref=e628]:
+                - img [ref=e629]
+                - text: 4 种高级感风格
+              - listitem [ref=e631]:
+                - img [ref=e632]
+                - text: 4K 超清画质导出
+              - listitem [ref=e634]:
+                - img [ref=e635]
+                - text: 多风格批量生成
+              - listitem [ref=e637]:
+                - img [ref=e638]
+                - text: 最高优先级处理
+              - listitem [ref=e640]:
+                - img [ref=e641]
+                - text: 专属客服支持
+              - listitem [ref=e643]:
+                - img [ref=e644]
+                - text: API 接入权限
+            - button "立即购买" [ref=e646] [cursor=pointer]
+        - paragraph [ref=e647]: 所有付费方案额度永不过期
+      - generic [ref=e648]:
+        - heading "常见问题" [level=3] [ref=e649]
+        - generic [ref=e650]:
+          - generic [ref=e651]:
+            - paragraph [ref=e652]: 免费版有什么限制？
+            - paragraph [ref=e653]: 新用户可获得 8 次免费额度，支持全部 4 种高级感风格，标准画质导出。邀请好友可获得额外额度。
+          - generic [ref=e654]:
+            - paragraph [ref=e655]: 额度会过期吗？
+            - paragraph [ref=e656]: 付费购买的额度永不过期，可以随时使用。免费额度用完后需购买额度继续使用。
+          - generic [ref=e657]:
+            - paragraph [ref=e658]: 支持哪些支付方式？
+            - paragraph [ref=e659]: 支持微信支付、支付宝、信用卡等多种支付方式。
+      - generic [ref=e660]:
+        - heading "准备好了吗？" [level=2] [ref=e661]
+        - paragraph [ref=e662]: 从免费版开始，随时升级
+        - link "立即体验" [ref=e663] [cursor=pointer]:
+          - /url: /try

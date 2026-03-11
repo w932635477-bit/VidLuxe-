@@ -4,6 +4,9 @@
  * 管理单图上传、识别、风格选择、处理、结果
  */
 
+// File 类型 - 使用全局类型定义
+type FileType = File;
+
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
 import { devtools } from 'zustand/middleware';
@@ -25,7 +28,7 @@ interface ImageSingleState {
   step: ImageSingleStep;
 
   // 上传
-  uploadedFile: File | null;
+  uploadedFile: FileType | null;
   uploadedFileUrl: string | null;
   previewUrl: string | null;
 
@@ -46,7 +49,7 @@ interface ImageSingleState {
   // 风格
   styleSourceType: StyleSourceType;
   selectedPreset: StyleType;
-  referenceFile: File | null;
+  referenceFile: FileType | null;
   referenceFileUrl: string | null;
 
   // 效果系统（新增）
@@ -69,7 +72,7 @@ interface ImageSingleActions {
   prevStep: () => void;
 
   // 上传操作
-  setUploadedFile: (file: File | null) => void;
+  setUploadedFile: (file: FileType | null) => void;
   setUploadedFileUrl: (url: string | null) => void;
   setPreviewUrl: (url: string | null) => void;
 
@@ -87,7 +90,7 @@ interface ImageSingleActions {
   // 风格操作
   setStyleSourceType: (type: StyleSourceType) => void;
   setSelectedPreset: (preset: StyleType) => void;
-  setReferenceFile: (file: File | null) => void;
+  setReferenceFile: (file: FileType | null) => void;
   setReferenceFileUrl: (url: string | null) => void;
 
   // 效果系统操作（新增）

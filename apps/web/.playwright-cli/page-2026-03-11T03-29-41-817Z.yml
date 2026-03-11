@@ -1,0 +1,91 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e12] [cursor=pointer]:
+    - img [ref=e13]
+  - alert [ref=e6]
+  - generic [ref=e355]:
+    - navigation [ref=e356]:
+      - generic [ref=e357]:
+        - generic [ref=e358]:
+          - generic [ref=e359]: VidLuxe
+          - generic [ref=e360]: PRO
+        - generic [ref=e361]:
+          - link "features" [ref=e362] [cursor=pointer]:
+            - /url: "#"
+          - link "pricing" [ref=e363] [cursor=pointer]:
+            - /url: "#"
+          - link "about" [ref=e364] [cursor=pointer]:
+            - /url: "#"
+          - button "Get Started" [ref=e365] [cursor=pointer]
+    - generic [ref=e367]:
+      - generic [ref=e369]: Introducing VidLuxe 2.0
+      - heading "Transform ordinary into extraordinary" [level=1] [ref=e370]:
+        - text: Transform ordinary
+        - text: into extraordinary
+      - paragraph [ref=e371]: AI-powered content enhancement for creators who demand excellence
+      - generic [ref=e372]:
+        - button "Start Free Trial" [ref=e373] [cursor=pointer]
+        - button "Learn More" [ref=e374] [cursor=pointer]
+    - generic [ref=e377]:
+      - img "Before" [ref=e378]
+      - img "After" [ref=e380]
+      - generic [ref=e383]:
+        - img [ref=e384]
+        - img [ref=e386]
+      - generic [ref=e388]: Before
+      - generic [ref=e389]: After
+    - generic [ref=e391]:
+      - generic [ref=e392]:
+        - heading "Designed for perfection" [level=2] [ref=e393]
+        - paragraph [ref=e394]: Every feature crafted with intention
+      - generic [ref=e395]:
+        - generic [ref=e397]:
+          - generic [ref=e398]: ✦
+          - heading "智能主体锁定" [level=3] [ref=e399]
+          - paragraph [ref=e400]: AI 精准识别并锁定核心主体
+        - generic [ref=e402]:
+          - generic [ref=e403]: ◈
+          - heading "风格化重构" [level=3] [ref=e404]
+          - paragraph [ref=e405]: 四种高级感风格一键切换
+        - generic [ref=e407]:
+          - generic [ref=e408]: ◎
+          - heading "四维评分" [level=3] [ref=e409]
+          - paragraph [ref=e410]: 全方位量化内容高级感
+        - generic [ref=e412]:
+          - generic [ref=e413]: ◇
+          - heading "秒级处理" [level=3] [ref=e414]
+          - paragraph [ref=e415]: 平均 15 秒完成升级
+    - generic [ref=e417]:
+      - generic [ref=e418]:
+        - heading "Four distinct aesthetics" [level=2] [ref=e419]
+        - paragraph [ref=e420]: Define your visual identity
+      - generic [ref=e421]:
+        - generic [ref=e422] [cursor=pointer]:
+          - heading "极简" [level=3] [ref=e424]
+          - paragraph [ref=e425]: Minimal
+        - generic [ref=e426] [cursor=pointer]:
+          - heading "暖调奢华" [level=3] [ref=e428]
+          - paragraph [ref=e429]: Warm Luxury
+        - generic [ref=e430] [cursor=pointer]:
+          - heading "冷调专业" [level=3] [ref=e432]
+          - paragraph [ref=e433]: Cool Pro
+        - generic [ref=e434] [cursor=pointer]:
+          - heading "莫兰迪" [level=3] [ref=e436]
+          - paragraph [ref=e437]: Morandi
+    - generic [ref=e439]:
+      - heading "Ready to elevate?" [level=2] [ref=e440]
+      - paragraph [ref=e441]: Start your journey to extraordinary content today
+      - button "Get Started Free" [ref=e442] [cursor=pointer]:
+        - text: Get Started Free
+        - img [ref=e443]
+      - paragraph [ref=e445]: No credit card required · 10 free trials
+    - contentinfo [ref=e446]:
+      - generic [ref=e447]:
+        - generic [ref=e448]: VidLuxe
+        - generic [ref=e449]:
+          - link "Privacy" [ref=e450] [cursor=pointer]:
+            - /url: "#"
+          - link "Terms" [ref=e451] [cursor=pointer]:
+            - /url: "#"
+          - link "Contact" [ref=e452] [cursor=pointer]:
+            - /url: "#"
+        - generic [ref=e453]: © 2026

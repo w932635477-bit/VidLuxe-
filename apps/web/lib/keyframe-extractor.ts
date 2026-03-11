@@ -141,6 +141,14 @@ async function execFFprobe(args: string[], timeout: number): Promise<{ stdout: s
  * 获取视频时长
  */
 async function getVideoDuration(videoPath: string): Promise<number> {
+  console.log(`[KeyframeExtractor] Getting video duration for: ${videoPath}`);
+
+  // 检查文件是否存在
+  if (!fs.existsSync(videoPath)) {
+    console.error('[KeyframeExtractor] Video file not found:', videoPath);
+    throw new Error(`Video file not found: ${videoPath}`);
+  }
+
   const args = [
     '-v', 'error',
     '-show_entries', 'format=duration',
@@ -149,30 +157,49 @@ async function getVideoDuration(videoPath: string): Promise<number> {
   ];
 
   try {
-    const { stdout } = await execFFprobe(args, 10000);
-    const duration = parseFloat(stdout.trim());
-    console.log(`[KeyframeExtractor] Video duration: ${duration}s`);
-    return duration || 0;
-  } catch (error) {
-    console.error('[KeyframeExtractor] Failed to get video duration:', error);
-    // 回退方案：尝试使用 ffmpeg 获取时长
-    try {
-      const fallbackArgs = ['-i', videoPath, '-hide_banner'];
-      const { stderr } = await execFFmpeg(fallbackArgs, 10000);
-      // 从 stderr 中解析 Duration: 00:00:XX.XX
-      const match = stderr.match(/Duration: (\d{2}):(\d{2}):(\d{2})\.(\d{2})/);
-      if (match) {
-        const hours = parseInt(match[1]);
-        const minutes = parseInt(match[2]);
-        const seconds = parseInt(match[3]);
-        const centiseconds = parseInt(match[4]);
-        return hours * 3600 + minutes * 60 + seconds + centiseconds / 100;
-      }
-    } catch {
-      // 忽略
+    console.log(`[KeyframeExtractor] Running ffprobe with args:`, args.join(' '));
+    const { stdout, stderr } = await execFFprobe(args, 10000);
+    console.log(`[KeyframeExtractor] FFprobe stdout: "${stdout.trim()}"`);
+    if (stderr) {
+      console.log(`[KeyframeExtractor] FFprobe stderr: "${stderr.trim()}"`);
     }
-    return 0;
+
+    const duration = parseFloat(stdout.trim());
+    if (duration > 0) {
+      console.log(`[KeyframeExtractor] Video duration: ${duration}s`);
+      return duration;
+    }
+
+    console.warn('[KeyframeExtractor] FFprobe returned 0 or invalid duration');
+  } catch (error) {
+    console.error('[KeyframeExtractor] FFprobe failed:', error instanceof Error ? error.message : String(error));
   }
+
+  // 回退方案：尝试使用 ffmpeg 获取时长
+  try {
+    console.log('[KeyframeExtractor] Trying ffmpeg fallback...');
+    const fallbackArgs = ['-i', videoPath, '-hide_banner'];
+    const { stderr } = await execFFmpeg(fallbackArgs, 10000);
+    // 从 stderr 中解析 Duration: 00:00:XX.XX
+    const match = stderr.match(/Duration: (\d{2}):(\d{2}):(\d{2})\.(\d{2})/);
+    if (match) {
+      const hours = parseInt(match[1]);
+      const minutes = parseInt(match[2]);
+      const seconds = parseInt(match[3]);
+      const centiseconds = parseInt(match[4]);
+      const duration = hours * 3600 + minutes * 60 + seconds + centiseconds / 100;
+      console.log(`[KeyframeExtractor] FFmpeg fallback duration: ${duration}s`);
+      return duration;
+    }
+    console.warn('[KeyframeExtractor] FFmpeg fallback failed to parse duration');
+  } catch (fallbackError) {
+    console.error('[KeyframeExtractor] FFmpeg fallback failed:', fallbackError instanceof Error ? fallbackError.message : String(fallbackError));
+  }
+
+  // 最后的回退：使用默认时长（假设 30 秒短视频）
+  const defaultDuration = 30;
+  console.warn(`[KeyframeExtractor] Using default duration: ${defaultDuration}s`);
+  return defaultDuration;
 }
 
 /**
@@ -196,19 +223,31 @@ async function extractFrames(
   const outputDir = ensureOutputDir();
   const sessionDir = path.join(outputDir, sessionId);
 
+  console.log(`[KeyframeExtractor] extractFrames called with videoPath: ${videoPath}, sessionId: ${sessionId}`);
+  console.log(`[KeyframeExtractor] outputDir: ${outputDir}, sessionDir: ${sessionDir}`);
+
   if (!fs.existsSync(sessionDir)) {
     fs.mkdirSync(sessionDir, { recursive: true });
+    console.log(`[KeyframeExtractor] Created session directory: ${sessionDir}`);
   }
 
-  const duration = await getVideoDuration(videoPath);
-  if (duration === 0) {
-    throw new Error('Could not determine video duration');
+  // 检查视频文件是否存在
+  if (!fs.existsSync(videoPath)) {
+    console.error(`[KeyframeExtractor] Video file does not exist: ${videoPath}`);
+    return [];
   }
+  console.log(`[KeyframeExtractor] Video file exists, size: ${fs.statSync(videoPath).size} bytes`);
+
+  const duration = await getVideoDuration(videoPath);
+  console.log(`[KeyframeExtractor] Using duration: ${duration}s for frame extraction`);
+
+  // 如果时长为 0（不太可能，因为我们有默认回退），使用最小值
+  const effectiveDuration = Math.max(duration, 1);
 
   // 计算提取时间点
   const interval = EXTRACTOR_CONFIG.extractInterval;
   const timestamps: number[] = [];
-  for (let t = 0; t < duration; t += interval) {
+  for (let t = 0; t < effectiveDuration; t += interval) {
     timestamps.push(t);
     if (timestamps.length >= EXTRACTOR_CONFIG.maxFrames) break;
   }
@@ -230,12 +269,16 @@ async function extractFrames(
     ];
 
     try {
+      console.log(`[KeyframeExtractor] Extracting frame at ${timestamp}s with args:`, args.join(' '));
       await execFFmpeg(args, 10000);
       if (fs.existsSync(outputPath)) {
+        console.log(`[KeyframeExtractor] Frame extracted successfully: ${outputPath}`);
         frames.push({ localPath: outputPath, timestamp });
+      } else {
+        console.warn(`[KeyframeExtractor] Frame file not created: ${outputPath}`);
       }
     } catch (error) {
-      console.warn(`[KeyframeExtractor] Failed to extract frame at ${timestamp}s:`, error);
+      console.error(`[KeyframeExtractor] Failed to extract frame at ${timestamp}s:`, error instanceof Error ? error.message : error);
     }
   }
 

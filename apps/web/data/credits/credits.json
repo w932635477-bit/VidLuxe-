@@ -2802,5 +2802,443 @@
     },
     "createdAt": 1772939894072,
     "updatedAt": 1772939894072
+  },
+  "anon_1773199268842_ahwhd882": {
+    "anonymousId": "anon_1773199268842_ahwhd882",
+    "balance": 1,
+    "totalEarned": 2,
+    "totalSpent": 4,
+    "packages": [],
+    "inviteCredits": [],
+    "transactions": [
+      {
+        "id": "txn_1773199684159_shwjsehp",
+        "amount": -1,
+        "type": "spend",
+        "description": "生成图片",
+        "createdAt": 1773199684159
+      },
+      {
+        "id": "txn_1773199718706_rmzm990f",
+        "amount": 1,
+        "type": "refund",
+        "description": "退回额度: 任务失败: 无法上传图片到图床，请检查网络连接",
+        "createdAt": 1773199718706
+      },
+      {
+        "id": "txn_1773200679727_a2xm2q5g",
+        "amount": -1,
+        "type": "spend",
+        "description": "生成图片",
+        "createdAt": 1773200679727
+      },
+      {
+        "id": "txn_1773200714261_t6md0t0g",
+        "amount": 1,
+        "type": "refund",
+        "description": "退回额度: 任务失败: 无法上传图片到图床，请检查网络连接",
+        "createdAt": 1773200714261
+      }
+    ],
+    "freeCredits": {
+      "totalLimit": 8,
+      "usedTotal": 1
+    },
+    "createdAt": 1773199542650,
+    "updatedAt": 1773200714262
+  },
+  "anon_1773199852442_zakzxla7": {
+    "anonymousId": "anon_1773199852442_zakzxla7",
+    "balance": 0,
+    "totalEarned": 0,
+    "totalSpent": 0,
+    "packages": [],
+    "inviteCredits": [],
+    "transactions": [],
+    "freeCredits": {
+      "totalLimit": 8,
+      "usedTotal": 0
+    },
+    "createdAt": 1773199890032,
+    "updatedAt": 1773199890032
+  },
+  "anon_1773200367321_puqie0el": {
+    "anonymousId": "anon_1773200367321_puqie0el",
+    "balance": 0,
+    "totalEarned": 0,
+    "totalSpent": 0,
+    "packages": [],
+    "inviteCredits": [],
+    "transactions": [],
+    "freeCredits": {
+      "totalLimit": 8,
+      "usedTotal": 0
+    },
+    "createdAt": 1773200402584,
+    "updatedAt": 1773200402584
+  },
+  "anon_1773200598739_padt7o39": {
+    "anonymousId": "anon_1773200598739_padt7o39",
+    "balance": 0,
+    "totalEarned": 0,
+    "totalSpent": 0,
+    "packages": [],
+    "inviteCredits": [],
+    "transactions": [],
+    "freeCredits": {
+      "totalLimit": 8,
+      "usedTotal": 0
+    },
+    "createdAt": 1773200635952,
+    "updatedAt": 1773200635952
+  },
+  "test_user_1773207361324_1": {
+    "anonymousId": "test_user_1773207361324_1",
+    "balance": 0,
+    "totalEarned": 0,
+    "totalSpent": 0,
+    "packages": [],
+    "inviteCredits": [],
+    "transactions": [],
+    "freeCredits": {
+      "totalLimit": 8,
+      "usedTotal": 0
+    },
+    "createdAt": 1773207361324,
+    "updatedAt": 1773207361324
+  },
+  "test_user_1773207361325_2": {
+    "anonymousId": "test_user_1773207361325_2",
+    "balance": 10,
+    "totalEarned": 10,
+    "totalSpent": 0,
+    "packages": [
+      {
+        "id": "txn_test_1773207361325",
+        "amount": 10,
+        "type": "purchase",
+        "description": "Test purchase",
+        "createdAt": 1773207361325
+      }
+    ],
+    "inviteCredits": [],
+    "transactions": [
+      {
+        "id": "txn_test_1773207361325",
+        "amount": 10,
+        "type": "purchase",
+        "description": "Test purchase",
+        "createdAt": 1773207361325
+      }
+    ],
+    "freeCredits": {
+      "totalLimit": 8,
+      "usedTotal": 0
+    },
+    "createdAt": 1773207361325,
+    "updatedAt": 1773207361326
+  },
+  "test_user_1773207361326_3": {
+    "anonymousId": "test_user_1773207361326_3",
+    "balance": 0,
+    "totalEarned": 0,
+    "totalSpent": 0,
+    "packages": [],
+    "inviteCredits": [],
+    "transactions": [],
+    "freeCredits": {
+      "totalLimit": 8,
+      "usedTotal": 0
+    },
+    "createdAt": 1773207361327,
+    "updatedAt": 1773207361327
+  },
+  "test_user_1773207361327_4": {
+    "anonymousId": "test_user_1773207361327_4",
+    "balance": 2,
+    "totalEarned": 5,
+    "totalSpent": 3,
+    "packages": [
+      {
+        "id": "txn_test_1773207361328",
+        "amount": 5,
+        "type": "purchase",
+        "description": "Test purchase",
+        "createdAt": 1773207361328
+      }
+    ],
+    "inviteCredits": [],
+    "transactions": [
+      {
+        "id": "txn_test_1773207361328",
+        "amount": 5,
+        "type": "purchase",
+        "description": "Test purchase",
+        "createdAt": 1773207361328
+      },
+      {
+        "id": "txn_1773207361329_469giw4b",
+        "amount": -3,
+        "type": "spend",
+        "description": "Test task",
+        "createdAt": 1773207361329
+      }
+    ],
+    "freeCredits": {
+      "totalLimit": 8,
+      "usedTotal": 0
+    },
+    "createdAt": 1773207361327,
+    "updatedAt": 1773207361329
+  },
+  "test_user_1773207361330_5": {
+    "anonymousId": "test_user_1773207361330_5",
+    "balance": 5,
+    "totalEarned": 5,
+    "totalSpent": 0,
+    "packages": [],
+    "inviteCredits": [
+      {
+        "id": "txn_1773207361331_zloaqgtw",
+        "amount": 5,
+        "type": "invite_earned",
+        "description": "邀请好友奖励",
+        "inviteCode": "test_user_1773207361330_6",
+        "createdAt": 1773207361331,
+        "expiresAt": 1775799361331
+      }
+    ],
+    "transactions": [
+      {
+        "id": "txn_1773207361331_zloaqgtw",
+        "amount": 5,
+        "type": "invite_earned",
+        "description": "邀请好友奖励",
+        "inviteCode": "test_user_1773207361330_6",
+        "createdAt": 1773207361331,
+        "expiresAt": 1775799361331
+      }
+    ],
+    "freeCredits": {
+      "totalLimit": 8,
+      "usedTotal": 0
+    },
+    "createdAt": 1773207361331,
+    "updatedAt": 1773207361332
+  },
+  "test_user_1773207361330_6": {
+    "anonymousId": "test_user_1773207361330_6",
+    "balance": 5,
+    "totalEarned": 5,
+    "totalSpent": 0,
+    "packages": [],
+    "inviteCredits": [
+      {
+        "id": "txn_1773207361332_i4vk04l0",
+        "amount": 5,
+        "type": "invite_bonus",
+        "description": "新用户邀请奖励",
+        "inviteCode": "test_user_1773207361330_5",
+        "createdAt": 1773207361331,
+        "expiresAt": 1775799361331
+      }
+    ],
+    "transactions": [
+      {
+        "id": "txn_1773207361332_i4vk04l0",
+        "amount": 5,
+        "type": "invite_bonus",
+        "description": "新用户邀请奖励",
+        "inviteCode": "test_user_1773207361330_5",
+        "createdAt": 1773207361331,
+        "expiresAt": 1775799361331
+      }
+    ],
+    "freeCredits": {
+      "totalLimit": 8,
+      "usedTotal": 0
+    },
+    "createdAt": 1773207361331,
+    "updatedAt": 1773207361332
+  },
+  "anon_1773210775803_1i474lh8": {
+    "anonymousId": "anon_1773210775803_1i474lh8",
+    "balance": 1,
+    "totalEarned": 1,
+    "totalSpent": 2,
+    "packages": [],
+    "inviteCredits": [],
+    "transactions": [
+      {
+        "id": "txn_1773210879073_lql0gblf",
+        "amount": -1,
+        "type": "spend",
+        "description": "生成图片",
+        "createdAt": 1773210879073
+      },
+      {
+        "id": "txn_1773210948117_h86ools6",
+        "amount": 1,
+        "type": "refund",
+        "description": "退回额度: 任务失败: 创建任务失败: fetch failed",
+        "createdAt": 1773210948118
+      }
+    ],
+    "freeCredits": {
+      "totalLimit": 8,
+      "usedTotal": 1
+    },
+    "createdAt": 1773210786496,
+    "updatedAt": 1773210948120
+  },
+  "anon_1773211466858_kyz4iez5": {
+    "anonymousId": "anon_1773211466858_kyz4iez5",
+    "balance": 1,
+    "totalEarned": 1,
+    "totalSpent": 2,
+    "packages": [],
+    "inviteCredits": [],
+    "transactions": [
+      {
+        "id": "txn_1773211575449_q5lreq0f",
+        "amount": -1,
+        "type": "spend",
+        "description": "生成图片",
+        "createdAt": 1773211575449
+      },
+      {
+        "id": "txn_1773211606315_494it559",
+        "amount": 1,
+        "type": "refund",
+        "description": "退回额度: 任务失败: API 错误: image_urls[0]: invalid URL format, must start with http:// or https://",
+        "createdAt": 1773211606315
+      }
+    ],
+    "freeCredits": {
+      "totalLimit": 8,
+      "usedTotal": 1
+    },
+    "createdAt": 1773211477573,
+    "updatedAt": 1773211606315
+  },
+  "anon_1773211745615_tglppa69": {
+    "anonymousId": "anon_1773211745615_tglppa69",
+    "balance": 1,
+    "totalEarned": 1,
+    "totalSpent": 2,
+    "packages": [],
+    "inviteCredits": [],
+    "transactions": [
+      {
+        "id": "txn_1773211908497_0bcvvb4q",
+        "amount": -1,
+        "type": "spend",
+        "description": "生成图片",
+        "createdAt": 1773211908497
+      },
+      {
+        "id": "txn_1773211977533_l0x1tc1g",
+        "amount": 1,
+        "type": "refund",
+        "description": "退回额度: 任务失败: 创建任务失败: fetch failed",
+        "createdAt": 1773211977533
+      }
+    ],
+    "freeCredits": {
+      "totalLimit": 8,
+      "usedTotal": 1
+    },
+    "createdAt": 1773211783105,
+    "updatedAt": 1773211977535
+  },
+  "test_123": {
+    "anonymousId": "test_123",
+    "balance": 1,
+    "totalEarned": 1,
+    "totalSpent": 2,
+    "packages": [],
+    "inviteCredits": [],
+    "transactions": [
+      {
+        "id": "txn_1773212003660_hqs0fb3n",
+        "amount": -1,
+        "type": "spend",
+        "description": "生成图片",
+        "createdAt": 1773212003660
+      },
+      {
+        "id": "txn_1773212072709_kr3osunq",
+        "amount": 1,
+        "type": "refund",
+        "description": "退回额度: 任务失败: 创建任务失败: fetch failed",
+        "createdAt": 1773212072709
+      }
+    ],
+    "freeCredits": {
+      "totalLimit": 8,
+      "usedTotal": 1
+    },
+    "createdAt": 1773212003659,
+    "updatedAt": 1773212072710
+  },
+  "anon_1773212539239_d1do93px": {
+    "anonymousId": "anon_1773212539239_d1do93px",
+    "balance": 0,
+    "totalEarned": 0,
+    "totalSpent": 0,
+    "packages": [],
+    "inviteCredits": [],
+    "transactions": [],
+    "freeCredits": {
+      "totalLimit": 8,
+      "usedTotal": 0
+    },
+    "createdAt": 1773212549760,
+    "updatedAt": 1773212549760
+  },
+  "anon_1773212913369_dcus5hds": {
+    "anonymousId": "anon_1773212913369_dcus5hds",
+    "balance": 0,
+    "totalEarned": 0,
+    "totalSpent": 0,
+    "packages": [],
+    "inviteCredits": [],
+    "transactions": [],
+    "freeCredits": {
+      "totalLimit": 8,
+      "usedTotal": 0
+    },
+    "createdAt": 1773212934784,
+    "updatedAt": 1773212934784
+  },
+  "anon_1773218396155_fc3xc47o": {
+    "anonymousId": "anon_1773218396155_fc3xc47o",
+    "balance": 1,
+    "totalEarned": 1,
+    "totalSpent": 2,
+    "packages": [],
+    "inviteCredits": [],
+    "transactions": [
+      {
+        "id": "txn_1773218684000_eqmbf0ev",
+        "amount": -1,
+        "type": "spend",
+        "description": "生成图片",
+        "createdAt": 1773218684000
+      },
+      {
+        "id": "txn_1773218753045_ek1w1b9s",
+        "amount": 1,
+        "type": "refund",
+        "description": "退回额度: 任务失败: 创建任务失败: fetch failed",
+        "createdAt": 1773218753045
+      }
+    ],
+    "freeCredits": {
+      "totalLimit": 8,
+      "usedTotal": 1
+    },
+    "createdAt": 1773218683996,
+    "updatedAt": 1773218753047
   }
 }

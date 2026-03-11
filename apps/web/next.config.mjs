@@ -7,6 +7,8 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: '500mb',
     },
+    // 启用 instrumentation hook
+    instrumentationHook: true,
   },
   images: {
     remotePatterns: [

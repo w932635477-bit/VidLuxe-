@@ -9,7 +9,12 @@
     "lint": "next lint",
     "test": "vitest",
     "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:report": "playwright show-report"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.998.0",
@@ -22,6 +27,7 @@
     "@vidluxe/types": "workspace:*",
     "busboy": "^1.6.0",
     "immer": "^11.1.4",
+    "jose": "^6.2.1",
     "jszip": "^3.10.1",
     "next": "^15.3.0",
     "qrcode": "^1.5.4",
@@ -34,6 +40,7 @@
     "zustand": "^5.0.11"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@tailwindcss/forms": "^0.5.7",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",

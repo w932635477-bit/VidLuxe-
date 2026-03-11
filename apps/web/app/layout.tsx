@@ -1,23 +1,11 @@
 import type { Metadata, Viewport } from 'next';
-import { Playfair_Display, Plus_Jakarta_Sans } from 'next/font/google';
 import { AuthProvider } from '@/components/auth/AuthProvider';
+import { ContextStatusBar } from '@/components/layout/ContextStatusBar';
 import './globals.css';
 
-// Playfair Display - 优雅衬线体，用于标题，传递奢华感
-const playfairDisplay = Playfair_Display({
-  subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-serif',
-  display: 'swap',
-});
-
-// Plus Jakarta Sans - 现代几何无衬线体，用于正文，清晰精致
-const plusJakartaSans = Plus_Jakarta_Sans({
-  subsets: ['latin'],
-  weight: ['300', '400', '500', '600', '700'],
-  variable: '--font-sans',
-  display: 'swap',
-});
+// 使用系统字体栈，避免网络依赖
+// Serif: Georgia, Times New Roman 等 - 用于标题，传递奢华感
+// Sans: -apple-system, BlinkMacSystemFont, Segoe UI 等 - 用于正文，清晰精致
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://vidluxe.com'),
@@ -77,13 +65,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html
-      lang="zh"
-      className={`${playfairDisplay.variable} ${plusJakartaSans.variable}`}
-    >
-      <body className="font-sans antialiased">
+    <html lang="zh">
+      <body className="antialiased">
         <AuthProvider>
           {children}
+          <ContextStatusBar />
         </AuthProvider>
       </body>
     </html>

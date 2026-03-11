@@ -579,7 +579,7 @@ export class FileStorage {
 
   /**
    * 将本地文件上传到公网（用于 Image-to-Image API）
-   * 优先级：R2 > litterbox
+   * 优先级：R2 > litterbox > 本地文件服务器
    */
   async getPublicUrl(localPath: string): Promise<string | null> {
     // 如果文件已经是公网 URL，直接返回
@@ -603,13 +603,59 @@ export class FileStorage {
     }
 
     // 尝试上传到 litterbox（备选）
-    const litterboxUrl = await this.uploadToLitterbox(localPath);
-    if (litterboxUrl) {
-      return litterboxUrl;
+    try {
+      const litterboxUrl = await this.uploadToLitterbox(localPath);
+      if (litterboxUrl) {
+        return litterboxUrl;
+      }
+    } catch (error) {
+      console.warn('[FileStorage] litterbox upload failed:', error);
+    }
+
+    // 最后降级：使用本地文件服务器（开发环境）
+    // 将文件复制到 public/uploads 目录并返回本地 URL
+    try {
+      const localUrl = await this.copyToPublicDir(localPath);
+      if (localUrl) {
+        console.log('[FileStorage] Using local file server as fallback:', localUrl);
+        return localUrl;
+      }
+    } catch (error) {
+      console.warn('[FileStorage] Local fallback failed:', error);
     }
 
     console.warn('[FileStorage] All upload methods failed');
     return null;
+  }
+
+  /**
+   * 将文件复制到 public 目录（开发环境降级方案）
+   * 返回可通过 localhost 访问的 URL
+   */
+  private async copyToPublicDir(localPath: string): Promise<string | null> {
+    try {
+      const filename = path.basename(localPath);
+      const timestamp = Date.now();
+      const uniqueFilename = `${timestamp}_${filename}`;
+
+      // 确保目标目录存在
+      const targetDir = path.join(this.basePath, 'temp');
+      if (!fs.existsSync(targetDir)) {
+        fs.mkdirSync(targetDir, { recursive: true });
+      }
+
+      const targetPath = path.join(targetDir, uniqueFilename);
+
+      // 复制文件
+      fs.copyFileSync(localPath, targetPath);
+
+      // 返回可通过 localhost 访问的 URL
+      // 格式: /uploads/temp/timestamp_filename.jpg
+      return `/uploads/temp/${uniqueFilename}`;
+    } catch (error) {
+      console.error('[FileStorage] Failed to copy file to public dir:', error);
+      return null;
+    }
   }
 
   /**

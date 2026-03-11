@@ -83,10 +83,15 @@ export const useCreditsStore = create<CreditsState & CreditsActions>()(
           // API 会通过 cookie 检测登录用户，从 Supabase 获取额度
           const url = id ? `/api/credits?anonymousId=${id}` : '/api/credits';
 
+          console.log('[Credits Store] Fetching from:', url);
           const response = await fetch(url);
+          console.log('[Credits Store] Response status:', response.status);
+
           const data = await response.json();
+          console.log('[Credits Store] Response data:', JSON.stringify(data).substring(0, 200));
 
           if (response.ok && data.success) {
+            console.log('[Credits Store] Setting credits:', data.data);
             set(
               {
                 total: data.data.total,
@@ -99,6 +104,7 @@ export const useCreditsStore = create<CreditsState & CreditsActions>()(
               'fetchCredits/success'
             );
           } else {
+            console.error('[Credits Store] API error:', data.error);
             set(
               {
                 isLoading: false,
@@ -109,6 +115,7 @@ export const useCreditsStore = create<CreditsState & CreditsActions>()(
             );
           }
         } catch (error) {
+          console.error('[Credits Store] Network error:', error);
           set(
             {
               isLoading: false,

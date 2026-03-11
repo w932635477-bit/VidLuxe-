@@ -1,0 +1,44 @@
+- generic [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e28] [cursor=pointer]:
+    - img [ref=e29]
+  - alert [ref=e5]
+  - generic [ref=e43]:
+    - navigation [ref=e44]:
+      - link "VidLuxe" [ref=e45] [cursor=pointer]:
+        - /url: /
+      - generic [ref=e46]:
+        - link "价格" [ref=e47] [cursor=pointer]:
+          - /url: /pricing
+        - link "示例" [ref=e48] [cursor=pointer]:
+          - /url: /demo
+        - generic [ref=e49]:
+          - generic [ref=e50]: "932635477"
+          - button "登出" [ref=e51] [cursor=pointer]
+    - generic [ref=e52]:
+      - button "🖼️ 单图" [ref=e53] [cursor=pointer]:
+        - generic [ref=e54]: 🖼️
+        - generic [ref=e55]: 单图
+      - button "🎬 视频" [active] [ref=e56] [cursor=pointer]:
+        - generic [ref=e57]: 🎬
+        - generic [ref=e58]: 视频
+    - generic [ref=e363]:
+      - generic [ref=e364]:
+        - heading "视频升级" [level=1] [ref=e365]
+        - paragraph [ref=e366]: 上传视频，AI 自动优化
+      - generic [ref=e367] [cursor=pointer]:
+        - img [ref=e369]
+        - paragraph [ref=e371]: 拖入你的视频
+        - paragraph [ref=e372]: MP4 / MOV 最大 500MB
+      - generic [ref=e373]:
+        - generic [ref=e374]:
+          - paragraph [ref=e375]: 我的额度
+          - paragraph [ref=e376]: 8次
+        - generic [ref=e377]:
+          - paragraph [ref=e378]: 🎁 邀请码
+          - generic [ref=e379]:
+            - generic [ref=e380]: 0WR7K5
+            - button "复制" [ref=e381] [cursor=pointer]
+    - button "🎁 邀请好友，双方各得 5 额度" [ref=e81] [cursor=pointer]:
+      - generic [ref=e82]: 🎁
+      - generic [ref=e83]: 邀请好友，双方各得 5 额度
+      - img [ref=e84]

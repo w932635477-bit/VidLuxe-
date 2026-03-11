@@ -9,6 +9,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { extractKeyFrames, type FrameScore } from '@/lib/keyframe-extractor';
 import { getFileStorage } from '@/lib/file-storage';
+import fs from 'fs';
 
 // 请求体
 interface AnalyzeRequest {
@@ -110,14 +111,25 @@ export async function POST(request: NextRequest): Promise<NextResponse<AnalyzeRe
     }
 
     // 提取关键帧
+    console.log('[VideoAnalyze] Calling extractKeyFrames with localPath:', localPath);
+    console.log('[VideoAnalyze] extractInterval: 2, topFrames: 10');
     const keyframes = await extractKeyFrames(localPath, {
       extractInterval: 2,
       topFrames: 10,
     });
+    console.log('[VideoAnalyze] extractKeyFrames returned:', keyframes.length, 'frames');
 
     if (keyframes.length === 0) {
       return NextResponse.json(
-        { success: false, error: 'No frames extracted from video' },
+        {
+          success: false,
+          error: 'No frames extracted from video',
+          debug: {
+            localPath,
+            fileExists: true,
+            fileSize: fs.statSync(localPath).size
+          }
+        },
         { status: 500 }
       );
     }

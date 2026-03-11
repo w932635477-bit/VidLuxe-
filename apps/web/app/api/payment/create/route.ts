@@ -40,6 +40,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '免费套餐无需购买' }, { status: 400 });
     }
 
+    // 开发环境模拟支付
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[Payment API] Development mode - simulating successful payment');
+
+      const simulatedOrderId = `sim_${Date.now()}_${packageId}`;
+      const simulatedTransactionId = `sim_txn_${Date.now()}`;
+
+      return NextResponse.json({
+        success: true,
+        simulated: true,
+        order: {
+          id: simulatedOrderId,
+          out_trade_no: simulatedOrderId,
+          package_id: packageId,
+          amount: pkg.price,
+          credits: pkg.credits,
+          status: 'pending',
+          created_at: new Date().toISOString(),
+        },
+        package: pkg,
+      });
+    }
+
     // 创建支付订单
     const result = await createPaymentOrder({
       userId,

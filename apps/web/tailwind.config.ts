@@ -54,11 +54,19 @@ const config: Config = {
         },
       },
       fontFamily: {
-        // Premium Typography System
-        sans: ['var(--font-sans)', 'system-ui', '-apple-system', 'sans-serif'],
-        serif: ['var(--font-serif)', 'Georgia', 'Times New Roman', 'serif'],
-        display: ['var(--font-serif)', 'Georgia', 'Times New Roman', 'serif'],
-        mono: ['"JetBrains Mono"', 'monospace'],
+        // System Font Stack - 避免网络依赖
+        sans: [
+          '-apple-system',
+          'BlinkMacSystemFont',
+          '"Segoe UI"',
+          'Roboto',
+          '"Helvetica Neue"',
+          'Arial',
+          'sans-serif',
+        ],
+        serif: ['Georgia', '"Times New Roman"', 'serif'],
+        display: ['Georgia', '"Times New Roman"', 'serif'],
+        mono: ['"SF Mono"', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
       },
       fontSize: {
         'hero': ['clamp(48px, 8vw, 88px)', { lineHeight: '1.05', letterSpacing: '-0.04em', fontWeight: '600' }],

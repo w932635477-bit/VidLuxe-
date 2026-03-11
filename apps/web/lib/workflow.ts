@@ -311,6 +311,10 @@ export async function processImageEnhancement(params: {
     publicUrl = await storage.getPublicUrl(localPath);
 
     if (publicUrl) {
+      // 如果返回的是相对路径，转换为完整 URL
+      if (publicUrl.startsWith('/')) {
+        publicUrl = toFullUrl(publicUrl);
+      }
       console.log('[Workflow] Got public URL:', publicUrl);
     } else {
       throw new Error('无法上传图片到图床，请检查网络连接');

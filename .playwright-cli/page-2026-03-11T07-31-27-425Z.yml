@@ -1,0 +1,38 @@
+- generic [active] [ref=e1]:
+  - button "Open Next.js Dev Tools" [ref=e28] [cursor=pointer]:
+    - img [ref=e29]
+  - alert [ref=e5]
+  - generic [ref=e32]:
+    - navigation [ref=e33]:
+      - link "VidLuxe" [ref=e34] [cursor=pointer]:
+        - /url: /
+      - generic [ref=e35]:
+        - link "价格" [ref=e36] [cursor=pointer]:
+          - /url: /pricing
+        - link "示例" [ref=e37] [cursor=pointer]:
+          - /url: /demo
+        - generic [ref=e38]:
+          - generic [ref=e39]: "932635477"
+          - button "登出" [ref=e40] [cursor=pointer]
+    - generic [ref=e41]:
+      - button "🖼️ 单图" [ref=e42] [cursor=pointer]:
+        - generic [ref=e43]: 🖼️
+        - generic [ref=e44]: 单图
+      - button "🎬 视频" [ref=e45] [cursor=pointer]:
+        - generic [ref=e46]: 🎬
+        - generic [ref=e47]: 视频
+    - generic [ref=e49]:
+      - generic [ref=e50]:
+        - heading "让普通素材变爆款" [level=1] [ref=e51]
+        - paragraph [ref=e52]: 光线差、背景乱？一键提升高级感
+      - generic [ref=e53] [cursor=pointer]:
+        - img [ref=e55]
+        - paragraph [ref=e57]: 拖入你的原片
+        - paragraph [ref=e58]: 图片
+      - generic [ref=e60]:
+        - paragraph [ref=e61]: 我的额度
+        - paragraph [ref=e62]: 0次
+    - button "🎁 邀请好友，双方各得 5 额度" [ref=e65] [cursor=pointer]:
+      - generic [ref=e66]: 🎁
+      - generic [ref=e67]: 邀请好友，双方各得 5 额度
+      - img [ref=e68]
