@@ -186,7 +186,36 @@ fast_sync() {
 
 restart() {
     log_info "重启服务..."
-    ssh_cmd "pm2 restart vidluxe && sleep 3 && pm2 status vidluxe"
+
+    # 确保 polyfill 脚本存在
+    ssh_cmd "
+        if [ ! -f $DEPLOY_PATH/apps/web/.next/standalone/apps/web/server-with-polyfill.js ]; then
+            echo '创建 File API polyfill 脚本...'
+            cat > $DEPLOY_PATH/apps/web/.next/standalone/apps/web/server-with-polyfill.js << 'POLYFILL_EOF'
+// File API Polyfill for Node.js 20
+if (typeof globalThis.File === 'undefined') {
+  try {
+    const { File } = require('buffer');
+    globalThis.File = File;
+    console.log('[Server] File polyfill applied from buffer');
+  } catch (error) {
+    console.error('[Server] Failed to apply File polyfill:', error);
+  }
+}
+require('./server.js');
+POLYFILL_EOF
+        fi
+    "
+
+    # 使用 polyfill 脚本启动
+    ssh_cmd "
+        pm2 delete vidluxe 2>/dev/null || true
+        cd $DEPLOY_PATH/apps/web/.next/standalone/apps/web
+        pm2 start server-with-polyfill.js --name vidluxe --interpreter /usr/local/bin/node
+        pm2 save
+        sleep 3
+        pm2 status vidluxe
+    "
     log_success "服务已重启"
 }
 

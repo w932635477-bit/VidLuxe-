@@ -60,25 +60,46 @@ rsync -avz --delete \
 
 # 7. 复制环境变量
 echo ""
-echo "[7/6] 复制环境变量..."
+echo "[7/7] 复制环境变量..."
 ssh -i $SSH_KEY $SERVER "
   cp $REMOTE_DIR/.env.local $REMOTE_DIR/.next/standalone/apps/web/ 2>/dev/null || echo 'env 文件已存在'
 "
 
-# 8. 启动服务（使用 Node.js 20）
+# 8. 创建 File API polyfill 脚本
 echo ""
-echo "[8/6] 启动服务..."
+echo "[8/7] 创建 File API polyfill 脚本..."
 ssh -i $SSH_KEY $SERVER "
+  cat > $REMOTE_DIR/.next/standalone/apps/web/server-with-polyfill.js << 'POLYFILL_EOF'
+// File API Polyfill for Node.js 20
+if (typeof globalThis.File === 'undefined') {
+  try {
+    const { File } = require('buffer');
+    globalThis.File = File;
+    console.log('[Server] File polyfill applied from buffer');
+  } catch (error) {
+    console.error('[Server] Failed to apply File polyfill:', error);
+  }
+}
+require('./server.js');
+POLYFILL_EOF
+  echo 'Polyfill 脚本创建完成'
+"
+
+# 9. 启动服务（使用 Node.js 20）
+echo ""
+echo "[9/7] 启动服务..."
+ssh -i $SSH_KEY $SERVER "
+  pm2 delete vidluxe 2>/dev/null || true
   cd $REMOTE_DIR/.next/standalone/apps/web && \
-  pm2 start server.js --name vidluxe --interpreter=/usr/local/bin/node && \
+  pm2 start server-with-polyfill.js --name vidluxe --interpreter /usr/local/bin/node && \
   pm2 save && \
   sleep 3 && \
   pm2 status
 "
 
-# 9. 验证部署
+# 10. 验证部署
 echo ""
-echo "[9/6] 验证部署..."
+echo "[10/7] 验证部署..."
 BUILD_ID=$(cat "$LOCAL_DIR/.next/BUILD_ID")
 REMOTE_BUILD_ID=$(ssh -i $SSH_KEY $SERVER "cat $REMOTE_DIR/.next/standalone/apps/web/.next/BUILD_ID")
 
@@ -92,9 +113,9 @@ else
   exit 1
 fi
 
-# 10. 健康检查
+# 11. 健康检查
 echo ""
-echo "[10/6] 健康检查..."
+echo "[11/8] 健康检查..."
 HEALTH=$(ssh -i $SSH_KEY $SERVER "curl -s http://localhost:3000/api/health")
 echo "健康状态: $HEALTH"
 
@@ -103,8 +124,21 @@ if echo "$HEALTH" | grep -q '"status":"healthy"'; then
   echo "=========================================="
   echo "✅ 部署成功！"
   echo "=========================================="
+  echo ""
+  echo "⚠️  重要提醒："
+  echo "如果使用了腾讯云CDN，请手动刷新以下路径："
+  echo "  1. 登录腾讯云控制台 → CDN → 缓存刷新"
+  echo "  2. 选择「URL刷新」，输入："
+  echo "     https://vidluxe.com.cn/"
+  echo "     https://www.vidluxe.com.cn/"
+  echo "  3. 或使用「目录刷新」："
+  echo "     https://vidluxe.com.cn/_next/static/"
+  echo ""
+  echo "💡 提示：HTML已配置为不缓存，刷新CDN后不会再出现此问题"
 else
   echo ""
   echo "❌ 健康检查失败"
+  echo "响应: $HEALTH"
   exit 1
 fi
+

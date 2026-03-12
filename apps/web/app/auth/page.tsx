@@ -95,11 +95,13 @@ function AuthContent() {
     setError(null);
 
     try {
+      // 使用环境变量配置的 BASE_URL，确保重定向 URL 一致
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || window.location.origin;
       const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          emailRedirectTo: `${window.location.origin}/api/auth/callback`,
+          emailRedirectTo: `${baseUrl}/api/auth/callback`,
         },
       });
 

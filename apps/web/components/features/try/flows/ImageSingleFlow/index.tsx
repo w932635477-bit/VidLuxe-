@@ -231,7 +231,7 @@ export function ImageSingleFlow() {
         // 轮询任务状态 (150次 × 2秒 = 300秒 = 5分钟，匹配后端超时)
         for (let i = 0; i < 150; i++) {
           await new Promise((resolve) => setTimeout(resolve, 2000));
-          const statusResponse = await fetch(`/api/enhance/${data.taskId}/`);
+          const statusResponse = await fetch(`/api/enhance/${data.taskId}`);
           const statusData = await statusResponse.json();
 
           setProgress(statusData.progress || 0);
