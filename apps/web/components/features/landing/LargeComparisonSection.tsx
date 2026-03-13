@@ -204,8 +204,8 @@ function LargeComparisonSlider({ originalImage, enhancedImage, title }: LargeSli
             }}
           >
             <svg width="22" height="22" viewBox="0 0 22 22" fill="none" style={{ opacity: 0.4 }}>
-              <path d="M9 15L5 11L9 7" stroke="#1a1a1a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              <path d="M13 7L17 11L13 15" stroke="#1a1a1a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+              <path d="M9 15L5 11L9 7" stroke="#1a1a1a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M13 7L17 11L13 15" stroke="#1a1a1a" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </div>
         </div>

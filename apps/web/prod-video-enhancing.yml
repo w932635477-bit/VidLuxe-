@@ -1,0 +1,69 @@
+- generic [active] [ref=e1]:
+  - alert [ref=e21]
+  - generic [ref=e27]:
+    - navigation [ref=e28]:
+      - link "VidLuxe" [ref=e29] [cursor=pointer]:
+        - /url: /
+      - generic [ref=e30]:
+        - link "价格" [ref=e31] [cursor=pointer]:
+          - /url: /pricing
+        - link "示例" [ref=e32] [cursor=pointer]:
+          - /url: /demo
+        - generic [ref=e33]:
+          - generic [ref=e34]: "932635477"
+          - button "登出" [ref=e35] [cursor=pointer]
+    - generic [ref=e36]:
+      - button "🖼️ 单图" [ref=e37] [cursor=pointer]:
+        - generic [ref=e38]: 🖼️
+        - generic [ref=e39]: 单图
+      - button "🎬 视频" [ref=e40] [cursor=pointer]:
+        - generic [ref=e41]: 🎬
+        - generic [ref=e42]: 视频
+    - generic [ref=e43]:
+      - generic [ref=e507]:
+        - text: Unexpected token '<', "<html> <h"... is not valid JSON
+        - button "✕" [ref=e508] [cursor=pointer]
+      - generic [ref=e509]:
+        - generic [ref=e510]:
+          - generic [ref=e511]:
+            - paragraph [ref=e512]: 选择封面帧（必选 1 张）
+            - generic [ref=e513]:
+              - generic [ref=e514] [cursor=pointer]:
+                - img "关键帧 1" [ref=e515]
+                - generic [ref=e516]: 封面
+                - generic [ref=e517]: 50分
+              - generic [ref=e518] [cursor=pointer]:
+                - img "关键帧 2" [ref=e519]
+                - generic [ref=e520]: 44分
+              - generic [ref=e521] [cursor=pointer]:
+                - img "关键帧 3" [ref=e522]
+                - generic [ref=e523]: 55分
+              - generic [ref=e524] [cursor=pointer]:
+                - img "关键帧 4" [ref=e525]
+                - generic [ref=e526]: 63分
+          - generic [ref=e527]:
+            - paragraph [ref=e528]: 选择替换帧（可选，增强后替换视频中的帧）
+            - generic [ref=e529]:
+              - generic [ref=e530] [cursor=pointer]:
+                - img "关键帧 1" [ref=e531]
+                - generic [ref=e532]: 00:00
+              - generic [ref=e533] [cursor=pointer]:
+                - img "关键帧 2" [ref=e534]
+                - generic [ref=e535]: 00:01
+              - generic [ref=e536] [cursor=pointer]:
+                - img "关键帧 3" [ref=e537]
+                - generic [ref=e538]: 00:03
+              - generic [ref=e539] [cursor=pointer]:
+                - img "关键帧 4" [ref=e540]
+                - generic [ref=e541]: 00:04
+          - paragraph [ref=e543]: 已选：封面帧 1 张 + 替换帧 0 张
+        - generic [ref=e544]:
+          - button "返回" [ref=e545] [cursor=pointer]
+          - button "开始增强 (1 张)" [ref=e546] [cursor=pointer]
+    - button "🎁 邀请好友，双方各得 5 额度" [ref=e65] [cursor=pointer]:
+      - generic [ref=e66]: 🎁
+      - generic [ref=e67]: 邀请好友，双方各得 5 额度
+      - img [ref=e68]
+  - generic [ref=e22] [cursor=pointer]:
+    - generic [ref=e25]: "8"
+    - generic [ref=e26]: 8 次

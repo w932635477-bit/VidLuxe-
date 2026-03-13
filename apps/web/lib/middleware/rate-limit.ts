@@ -49,8 +49,8 @@ function getClientIp(request: NextRequest): string {
     return realIp;
   }
 
-  // 最后使用 request.ip
-  return request.ip || 'unknown';
+  // 最后使用 request.ip（兼容旧版 Next.js 类型）
+  return (request as any).ip || 'unknown';
 }
 
 /**

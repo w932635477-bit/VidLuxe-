@@ -1,0 +1,36 @@
+- generic [active] [ref=e1]:
+  - alert [ref=e2]
+  - main [ref=e8]:
+    - generic [ref=e9]:
+      - generic [ref=e10]:
+        - link "VidLuxe" [ref=e11] [cursor=pointer]:
+          - /url: /
+        - paragraph [ref=e12]: 创建账号
+      - generic [ref=e34]: Email address "test1773231108@example.com" is invalid
+      - generic [ref=e13]:
+        - generic [ref=e14]:
+          - button "登录" [ref=e15] [cursor=pointer]
+          - button "注册" [ref=e16] [cursor=pointer]
+        - generic [ref=e17]:
+          - generic [ref=e18]:
+            - generic [ref=e19]: 邮箱地址
+            - textbox "请输入邮箱" [ref=e20]: test1773231108@example.com
+          - generic [ref=e21]:
+            - generic [ref=e22]: 密码
+            - textbox "请输入密码（至少6位）" [ref=e23]: test123456
+          - generic [ref=e27]:
+            - generic [ref=e28]: 确认密码
+            - textbox "请再次输入密码" [ref=e29]: test123456
+        - button "注册" [ref=e30] [cursor=pointer]
+        - paragraph [ref=e31]:
+          - text: 注册即表示同意
+          - link "用户协议" [ref=e32] [cursor=pointer]:
+            - /url: /terms
+          - text: 和
+          - link "隐私政策" [ref=e33] [cursor=pointer]:
+            - /url: /privacy
+      - link "← 返回首页" [ref=e26] [cursor=pointer]:
+        - /url: /
+  - generic [ref=e3] [cursor=pointer]:
+    - generic [ref=e6]: "0"
+    - generic [ref=e7]: 0 次

@@ -7,8 +7,6 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: '500mb',
     },
-    // 启用 instrumentation hook
-    instrumentationHook: true,
   },
   images: {
     remotePatterns: [
@@ -27,7 +25,8 @@ const nextConfig = {
     unoptimized: true,
   },
   // 将使用 WebAssembly 的包排除在 bundler 之外
-  serverExternalPackages: ['@imgly/background-removal'],
+  // undici 提供 File API，在 standalone 模式下可用
+  serverExternalPackages: ['@imgly/background-removal', 'undici'],
   // Webpack 配置
   webpack: (config, { isServer }) => {
     // 排除 WASM 相关的包

@@ -6,6 +6,8 @@
 
 'use client';
 
+import { useState, useCallback } from 'react';
+
 interface UploadSectionProps {
   isLoading: boolean;
   onFileChange: (file: File) => void;
@@ -21,6 +23,39 @@ export function UploadSection({
   onMultipleFiles,
   allowMultiple = false,
 }: UploadSectionProps) {
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragCounter, setDragCounter] = useState(0);
+
+  const handleDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragCounter(c => c + 1);
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragCounter(c => {
+      const next = c - 1;
+      if (next <= 0) setIsDragging(false);
+      return next;
+    });
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    setDragCounter(0);
+    onDrop(e);
+  }, [onDrop]);
+
   return (
     <div
       style={{
@@ -57,23 +92,30 @@ export function UploadSection({
 
       {/* 上传区 */}
       <div
-        onDrop={onDrop}
-        onDragOver={(e) => e.preventDefault()}
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        onDragEnter={handleDragEnter}
+        onDragLeave={handleDragLeave}
         onClick={() => !isLoading && document.getElementById('file-input')?.click()}
         style={{
           width: '100%',
           maxWidth: '480px',
           aspectRatio: '4/3',
           borderRadius: '24px',
-          border: '2px dashed rgba(255, 255, 255, 0.15)',
-          background: 'rgba(255, 255, 255, 0.02)',
+          border: isDragging
+            ? '2px dashed rgba(212, 175, 55, 0.8)'
+            : '2px dashed rgba(255, 255, 255, 0.15)',
+          background: isDragging
+            ? 'rgba(212, 175, 55, 0.08)'
+            : 'rgba(255, 255, 255, 0.02)',
           cursor: isLoading ? 'wait' : 'pointer',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          transition: 'all 0.3s ease',
+          transition: 'all 0.2s ease',
           opacity: isLoading ? 0.6 : 1,
+          transform: isDragging ? 'scale(1.01)' : 'scale(1)',
         }}
       >
         <input
@@ -118,33 +160,36 @@ export function UploadSection({
                 height: '80px',
                 marginBottom: '24px',
                 borderRadius: '50%',
-                background: 'rgba(255, 255, 255, 0.05)',
+                background: isDragging ? 'rgba(212, 175, 55, 0.15)' : 'rgba(255, 255, 255, 0.05)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
+                transition: 'all 0.2s ease',
               }}
             >
-              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" style={{ opacity: 0.4 }}>
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" style={{ opacity: isDragging ? 0.9 : 0.4 }}>
                 <path
                   d="M12 16V4M12 4L8 8M12 4L16 8M4 16V18C4 19.1 4.9 20 6 20H18C19.1 20 20 19.1 20 18V16"
-                  stroke="white"
+                  stroke={isDragging ? '#D4AF37' : 'white'}
                   strokeWidth="2"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 />
               </svg>
             </div>
-            <p style={{ fontSize: '21px', fontWeight: 500, marginBottom: '8px' }}>
-              拖入你的原片或视频{allowMultiple ? '（可多选）' : ''}
+            <p style={{ fontSize: '21px', fontWeight: 500, marginBottom: '8px', color: isDragging ? '#D4AF37' : 'white' }}>
+              {isDragging ? '松开即可上传' : `拖入你的原片或视频${allowMultiple ? '（可多选）' : ''}`}
             </p>
             <p style={{ fontSize: '15px', color: 'rgba(255, 255, 255, 0.4)', marginBottom: '16px' }}>
-              图片或视频
+              {isDragging ? '支持图片和视频' : '图片或视频'}
             </p>
-            <div style={{ display: 'flex', gap: '16px', fontSize: '13px', color: 'rgba(255, 255, 255, 0.35)' }}>
-              <span>JPG / PNG 最大 10MB</span>
-              <span>·</span>
-              <span>MP4 / MOV 最大 500MB</span>
-            </div>
+            {!isDragging && (
+              <div style={{ display: 'flex', gap: '16px', fontSize: '13px', color: 'rgba(255, 255, 255, 0.35)' }}>
+                <span>JPG / PNG 最大 10MB</span>
+                <span>·</span>
+                <span>MP4 / MOV 最大 500MB</span>
+              </div>
+            )}
           </>
         )}
       </div>

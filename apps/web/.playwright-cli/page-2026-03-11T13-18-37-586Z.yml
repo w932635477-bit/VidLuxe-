@@ -1,0 +1,49 @@
+- generic [active] [ref=e1]:
+  - alert [ref=e5]
+  - generic [ref=e11]:
+    - navigation [ref=e12]:
+      - link "VidLuxe" [ref=e13] [cursor=pointer]:
+        - /url: /
+      - generic [ref=e14]:
+        - link "价格" [ref=e15] [cursor=pointer]:
+          - /url: /pricing
+        - link "示例" [ref=e16] [cursor=pointer]:
+          - /url: /demo
+        - generic [ref=e17]:
+          - generic [ref=e18]: "932635477"
+          - button "登出" [ref=e19] [cursor=pointer]
+    - generic [ref=e20]:
+      - button "🖼️ 单图" [ref=e21] [cursor=pointer]:
+        - generic [ref=e22]: 🖼️
+        - generic [ref=e23]: 单图
+      - button "🎬 视频" [ref=e24] [cursor=pointer]:
+        - generic [ref=e25]: 🎬
+        - generic [ref=e26]: 视频
+    - generic [ref=e172]:
+      - generic [ref=e173]:
+        - img [ref=e176]
+        - img [ref=e181]
+        - generic [ref=e186]: "3"
+      - generic [ref=e187]:
+        - generic [ref=e188]: 分析
+        - generic [ref=e189]: 生成
+        - generic [ref=e190]: 优化
+      - generic [ref=e191]:
+        - img [ref=e193]
+        - generic [ref=e197]: 26.1%
+      - paragraph [ref=e199]: AI 正在升级图片
+      - paragraph [ref=e201]: AI 画师正在工作中...
+      - generic [ref=e202]:
+        - generic [ref=e203]:
+          - paragraph [ref=e204]: 已用时
+          - paragraph [ref=e205]: 0:18
+        - generic [ref=e207]:
+          - paragraph [ref=e208]: 预计剩余
+          - paragraph [ref=e209]: 0:42
+    - button "🎁 邀请好友，双方各得 5 额度" [ref=e49] [cursor=pointer]:
+      - generic [ref=e50]: 🎁
+      - generic [ref=e51]: 邀请好友，双方各得 5 额度
+      - img [ref=e52]
+  - generic [ref=e6] [cursor=pointer]:
+    - generic [ref=e9]: "8"
+    - generic [ref=e10]: 8 次

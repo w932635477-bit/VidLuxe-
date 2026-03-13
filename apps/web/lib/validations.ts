@@ -65,6 +65,7 @@ export const enhanceRequestSchema = z.object({
   content: contentSchema,
   styleSource: styleSourceSchema,
   anonymousId: anonymousIdSchema,
+  quality: z.enum(['1K', '2K']).optional().default('1K'),
 });
 
 // 类型导出

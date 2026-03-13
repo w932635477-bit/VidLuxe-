@@ -49,29 +49,29 @@ export interface PaymentOrder {
 export const CREDIT_PACKAGES: CreditPackage[] = [
   {
     id: 'small',
-    name: '尝鲜包',
-    credits: 10,
+    name: '小包',
+    credits: 20,
     price: 2900, // 29 元
   },
   {
     id: 'medium',
-    name: '标准包',
-    credits: 30,
+    name: '中包',
+    credits: 60,
     price: 7900, // 79 元
     originalPrice: 8700,
     popular: true,
   },
   {
     id: 'large',
-    name: '超值包',
-    credits: 100,
+    name: '大包',
+    credits: 150,
     price: 19900, // 199 元
     originalPrice: 29000,
   },
   {
     id: 'xlarge',
-    name: '专业包',
-    credits: 300,
+    name: '超大包',
+    credits: 400,
     price: 49900, // 499 元
     originalPrice: 87000,
   },

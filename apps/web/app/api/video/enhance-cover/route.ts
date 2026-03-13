@@ -44,6 +44,7 @@ interface EnhanceCoverRequest {
   effectId?: string; // 新效果系统参数
   intensity?: number; // 效果强度 0-100
   contentType?: string; // 内容类型
+  quality?: '1K' | '2K'; // 画质
   anonymousId?: string; // 匿名用户 ID（用于额度扣除）
 }
 
@@ -75,13 +76,14 @@ async function fetchWithTimeout(url: string, options: RequestInit, timeout: numb
 async function createNanoBananaTask(params: {
   prompt: string;
   imageUrls?: string[];
+  quality?: '1K' | '2K';
 }): Promise<{ taskId: string }> {
   const requestBody = {
     model: NANO_BANANA_CONFIG.model,
     prompt: params.prompt,
     image_urls: params.imageUrls,
     size: '9:16',
-    quality: '2K',
+    quality: params.quality || '1K',
   };
 
   // Debug: Log the exact request being sent
@@ -217,7 +219,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<EnhanceCo
 
   try {
     const body: EnhanceCoverRequest = await request.json();
-    const { frameUrl, style = 'magazine', effectId, intensity = 100, contentType, anonymousId } = body;
+    const { frameUrl, style = 'magazine', effectId, intensity = 100, contentType, quality = '1K', anonymousId } = body;
     anonymousIdForCredit = anonymousId;
 
     if (!frameUrl) {
@@ -404,6 +406,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<EnhanceCo
     const { taskId } = await createNanoBananaTask({
       prompt: basePrompt,
       imageUrls: [publicUrl],
+      quality,
     });
 
     console.log('[EnhanceCover] Task created:', taskId);

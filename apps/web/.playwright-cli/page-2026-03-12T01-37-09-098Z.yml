@@ -1,0 +1,33 @@
+- generic [active] [ref=e1]:
+  - main [ref=e2]:
+    - generic [ref=e3]:
+      - generic [ref=e4]:
+        - link "VidLuxe" [ref=e5] [cursor=pointer]:
+          - /url: /
+        - paragraph [ref=e6]: 创建账号
+      - generic [ref=e29]: email rate limit exceeded
+      - generic [ref=e7]:
+        - generic [ref=e8]:
+          - button "登录" [ref=e9] [cursor=pointer]
+          - button "注册" [ref=e10] [cursor=pointer]
+        - generic [ref=e11]:
+          - generic [ref=e12]:
+            - generic [ref=e13]: 邮箱地址
+            - textbox "请输入邮箱" [ref=e14]: test-register-1773279411@example.com
+          - generic [ref=e15]:
+            - generic [ref=e16]: 密码
+            - textbox "请输入密码（至少6位）" [ref=e17]: Test123456
+          - generic [ref=e22]:
+            - generic [ref=e23]: 确认密码
+            - textbox "请再次输入密码" [ref=e24]: Test123456
+        - button "注册" [ref=e25] [cursor=pointer]
+        - paragraph [ref=e26]:
+          - text: 注册即表示同意
+          - link "用户协议" [ref=e27] [cursor=pointer]:
+            - /url: /terms
+          - text: 和
+          - link "隐私政策" [ref=e28] [cursor=pointer]:
+            - /url: /privacy
+      - link "← 返回首页" [ref=e20] [cursor=pointer]:
+        - /url: /
+  - alert [ref=e21]

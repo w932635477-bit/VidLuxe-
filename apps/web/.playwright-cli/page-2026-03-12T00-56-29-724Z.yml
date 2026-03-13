@@ -1,0 +1,80 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - navigation [ref=e12]:
+      - link "VidLuxe" [ref=e13] [cursor=pointer]:
+        - /url: /
+      - generic [ref=e14]:
+        - link "价格" [ref=e15] [cursor=pointer]:
+          - /url: /pricing
+        - link "示例" [ref=e16] [cursor=pointer]:
+          - /url: /demo
+        - generic [ref=e17]:
+          - generic [ref=e18]: "932635477"
+          - button "登出" [ref=e19] [cursor=pointer]
+    - generic [ref=e20]:
+      - button "🖼️ 单图" [ref=e21] [cursor=pointer]:
+        - generic [ref=e22]: 🖼️
+        - generic [ref=e23]: 单图
+      - button "🎬 视频" [ref=e24] [cursor=pointer]:
+        - generic [ref=e25]: 🎬
+        - generic [ref=e26]: 视频
+    - generic [ref=e211]:
+      - generic [ref=e213]:
+        - img "增强后的图片" [ref=e214]
+        - generic [ref=e215]:
+          - img [ref=e216]
+          - generic [ref=e219]: AI 增强图片已生成
+      - generic [ref=e220]:
+        - generic [ref=e221]:
+          - generic [ref=e222]:
+            - paragraph [ref=e223]: 种草力评分
+            - generic [ref=e224]:
+              - generic [ref=e225]: "58"
+              - generic [ref=e226]: / 100
+          - generic [ref=e227]:
+            - generic [ref=e228]: C
+            - generic [ref=e229]: 一般
+        - generic [ref=e230]:
+          - generic [ref=e231]:
+            - generic [ref=e232]: 视觉吸引力
+            - generic [ref=e235]: "52"
+          - generic [ref=e236]:
+            - generic [ref=e237]: 内容匹配度
+            - generic [ref=e240]: "70"
+          - generic [ref=e241]:
+            - generic [ref=e242]: 真实可信度
+            - generic [ref=e245]: "55"
+          - generic [ref=e246]:
+            - generic [ref=e247]: 情绪感染力
+            - generic [ref=e250]: "55"
+          - generic [ref=e251]:
+            - generic [ref=e252]: 行动引导力
+            - generic [ref=e255]: "59"
+      - generic [ref=e257]:
+        - generic [ref=e258]:
+          - img [ref=e260]
+          - generic [ref=e263]:
+            - paragraph [ref=e264]: 剩余额度
+            - paragraph [ref=e265]: 19次
+        - generic [ref=e267]:
+          - generic [ref=e268]:
+            - paragraph [ref=e269]: 本次消耗
+            - paragraph [ref=e270]:
+              - generic [ref=e271]: "-1"
+              - text: 次
+          - img [ref=e273]
+      - generic [ref=e275]:
+        - button "下载高清图" [ref=e276] [cursor=pointer]:
+          - img [ref=e277]
+          - text: 下载高清图
+        - button "再试一个" [ref=e281] [cursor=pointer]:
+          - img [ref=e282]
+          - text: 再试一个
+    - button "🎁 邀请好友，双方各得 5 额度" [ref=e49] [cursor=pointer]:
+      - generic [ref=e50]: 🎁
+      - generic [ref=e51]: 邀请好友，双方各得 5 额度
+      - img [ref=e52]
+  - alert [ref=e6]
+  - generic [ref=e7] [cursor=pointer]:
+    - generic [ref=e10]: "19"
+    - generic [ref=e11]: 19 次

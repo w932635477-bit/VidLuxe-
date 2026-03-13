@@ -1,0 +1,84 @@
+- generic [active] [ref=e1]:
+  - alert [ref=e21]
+  - generic [ref=e27]:
+    - navigation [ref=e28]:
+      - link "VidLuxe" [ref=e29] [cursor=pointer]:
+        - /url: /
+      - generic [ref=e30]:
+        - link "价格" [ref=e31] [cursor=pointer]:
+          - /url: /pricing
+        - link "示例" [ref=e32] [cursor=pointer]:
+          - /url: /demo
+        - generic [ref=e33]:
+          - generic [ref=e34]: "932635477"
+          - button "登出" [ref=e35] [cursor=pointer]
+    - generic [ref=e36]:
+      - button "🖼️ 单图" [ref=e37] [cursor=pointer]:
+        - generic [ref=e38]: 🖼️
+        - generic [ref=e39]: 单图
+      - button "🎬 视频" [ref=e40] [cursor=pointer]:
+        - generic [ref=e41]: 🎬
+        - generic [ref=e42]: 视频
+    - generic [ref=e43]:
+      - generic [ref=e70]:
+        - text: 此页面仅支持图片上传，请使用视频上传页面
+        - button "✕" [ref=e71] [cursor=pointer]
+      - generic [ref=e229]:
+        - generic [ref=e231]:
+          - img "增强后的图片" [ref=e232]
+          - generic [ref=e233]:
+            - img [ref=e234]
+            - generic [ref=e237]: AI 增强图片已生成
+        - generic [ref=e238]:
+          - generic [ref=e239]:
+            - generic [ref=e240]:
+              - paragraph [ref=e241]: 种草力评分
+              - generic [ref=e242]:
+                - generic [ref=e243]: "59"
+                - generic [ref=e244]: / 100
+            - generic [ref=e245]:
+              - generic [ref=e246]: C
+              - generic [ref=e247]: 一般
+          - generic [ref=e248]:
+            - generic [ref=e249]:
+              - generic [ref=e250]: 视觉吸引力
+              - generic [ref=e253]: "46"
+            - generic [ref=e254]:
+              - generic [ref=e255]: 内容匹配度
+              - generic [ref=e258]: "82"
+            - generic [ref=e259]:
+              - generic [ref=e260]: 真实可信度
+              - generic [ref=e263]: "55"
+            - generic [ref=e264]:
+              - generic [ref=e265]: 情绪感染力
+              - generic [ref=e268]: "59"
+            - generic [ref=e269]:
+              - generic [ref=e270]: 行动引导力
+              - generic [ref=e273]: "53"
+        - generic [ref=e275]:
+          - generic [ref=e276]:
+            - img [ref=e278]
+            - generic [ref=e281]:
+              - paragraph [ref=e282]: 剩余额度
+              - paragraph [ref=e283]: 8次
+          - generic [ref=e285]:
+            - generic [ref=e286]:
+              - paragraph [ref=e287]: 本次消耗
+              - paragraph [ref=e288]:
+                - generic [ref=e289]: "-1"
+                - text: 次
+            - img [ref=e291]
+        - generic [ref=e293]:
+          - button "下载高清图" [ref=e294] [cursor=pointer]:
+            - img [ref=e295]
+            - text: 下载高清图
+          - button "再试一个" [ref=e299] [cursor=pointer]:
+            - img [ref=e300]
+            - text: 再试一个
+    - button "🎁 邀请好友，双方各得 5 额度" [ref=e65] [cursor=pointer]:
+      - generic [ref=e66]: 🎁
+      - generic [ref=e67]: 邀请好友，双方各得 5 额度
+      - img [ref=e68]
+  - generic [ref=e22] [cursor=pointer]:
+    - generic [ref=e25]: "8"
+    - generic [ref=e26]: 8 次

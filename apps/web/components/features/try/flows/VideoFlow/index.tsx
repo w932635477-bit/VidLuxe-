@@ -7,7 +7,7 @@
 
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useVideoStore } from '@/lib/stores/flows';
 import { useCreditsStore } from '@/lib/stores/credits-store';
 import { ProcessingAnimation } from '@/components/features/try/flows/shared/ProcessingAnimation';
@@ -152,6 +152,7 @@ export function VideoFlow() {
     selectedEffectId,
     effectIntensity,
     selectedContentType,
+    quality,
     keyframes,
     selectedKeyframe,
     enhancedCoverUrl,
@@ -168,6 +169,7 @@ export function VideoFlow() {
     setSelectedEffectId,
     setEffectIntensity,
     setSelectedContentType,
+    setQuality,
     setKeyframes,
     setSelectedKeyframe,
     setEnhancedCoverUrl,
@@ -181,7 +183,45 @@ export function VideoFlow() {
   const [myInviteCode, setMyInviteCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
-  // 替换帧切换
+  // 拖拽状态
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragCounter, setDragCounter] = useState(0);
+
+  const handleDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragCounter(c => c + 1);
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragCounter(c => {
+      const next = c - 1;
+      if (next <= 0) { setIsDragging(false); return 0; }
+      return next;
+    });
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
+
+  // 拖拽处理 - 用 ref 保存 handleFileChange 的引用
+  const handleFileChangeRef = useRef<((file: File) => void) | null>(null);
+
+  const handleVideoDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    setDragCounter(0);
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith('video/') && handleFileChangeRef.current) {
+      handleFileChangeRef.current(file);
+    }
+  }, []);
   const handleReplaceToggle = useCallback((frame: KeyFrame) => {
     setReplaceFrames((prev) =>
       prev.some((f) => f.timestamp === frame.timestamp && f.url === frame.url)
@@ -262,6 +302,9 @@ export function VideoFlow() {
       setIsLoading(false);
     }
   }, [setPreviewUrl, setUploadedFile, setIsLoading, setUploadedFileUrl, setStep, setSelectedCategory, setError]);
+
+  // 用 ref 保存 handleFileChange 供拖拽使用
+  handleFileChangeRef.current = handleFileChange;
 
   // 获取关键帧
   const fetchKeyframes = useCallback(async () => {
@@ -352,6 +395,7 @@ export function VideoFlow() {
             effectId: selectedEffectId,
             intensity: effectIntensity,
             contentType: selectedContentType,
+            quality: quality,
           }),
           signal: controller.signal,
         });
@@ -418,11 +462,19 @@ export function VideoFlow() {
 
           <div
             onClick={() => !isLoading && document.getElementById('video-file-input')?.click()}
+            onDrop={handleVideoDrop}
+            onDragOver={handleDragOver}
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
             style={{
               width: '100%', maxWidth: '320px', aspectRatio: '9/16',
-              borderRadius: '24px', border: '2px dashed rgba(255, 255, 255, 0.15)',
-              background: 'rgba(255, 255, 255, 0.02)', cursor: isLoading ? 'wait' : 'pointer',
+              borderRadius: '24px',
+              border: isDragging ? '2px dashed rgba(212, 175, 55, 0.8)' : '2px dashed rgba(255, 255, 255, 0.15)',
+              background: isDragging ? 'rgba(212, 175, 55, 0.08)' : 'rgba(255, 255, 255, 0.02)',
+              cursor: isLoading ? 'wait' : 'pointer',
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              transition: 'all 0.2s ease',
+              transform: isDragging ? 'scale(1.01)' : 'scale(1)',
             }}
           >
             <input id="video-file-input" type="file" accept="video/*" style={{ display: 'none' }} onChange={(e) => { const file = e.target.files?.[0]; if (file) handleFileChange(file); e.target.value = ''; }} disabled={isLoading} />
@@ -433,11 +485,15 @@ export function VideoFlow() {
               </div>
             ) : (
               <>
-                <div style={{ width: '80px', height: '80px', marginBottom: '24px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" style={{ opacity: 0.4 }}><path d="M12 16V4M12 4L8 8M12 4L16 8M4 16V18C4 19.1 4.9 20 6 20H18C19.1 20 20 19.1 20 18V16" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                <div style={{ width: '80px', height: '80px', marginBottom: '24px', borderRadius: '50%', background: isDragging ? 'rgba(212, 175, 55, 0.15)' : 'rgba(255, 255, 255, 0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s ease' }}>
+                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" style={{ opacity: isDragging ? 0.9 : 0.4 }}><path d="M12 16V4M12 4L8 8M12 4L16 8M4 16V18C4 19.1 4.9 20 6 20H18C19.1 20 20 19.1 20 18V16" stroke={isDragging ? '#D4AF37' : 'white'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
                 </div>
-                <p style={{ fontSize: '21px', fontWeight: 500, marginBottom: '8px' }}>拖入你的视频</p>
-                <p style={{ fontSize: '15px', color: 'rgba(255, 255, 255, 0.4)' }}>MP4 / MOV 最大 500MB</p>
+                <p style={{ fontSize: '21px', fontWeight: 500, marginBottom: '8px', color: isDragging ? '#D4AF37' : 'white' }}>
+                  {isDragging ? '松开即可上传' : '拖入你的视频'}
+                </p>
+                <p style={{ fontSize: '15px', color: 'rgba(255, 255, 255, 0.4)' }}>
+                  {isDragging ? '支持 MP4 / MOV' : 'MP4 / MOV 最大 500MB'}
+                </p>
               </>
             )}
           </div>
@@ -476,6 +532,35 @@ export function VideoFlow() {
             onContentTypeSelect={setSelectedContentType}
             onIntensityChange={setEffectIntensity}
           />
+
+          {/* 画质选择（新增） */}
+          <div style={{ marginTop: '24px', padding: '16px', borderRadius: '12px', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+            <p style={{ fontSize: '15px', fontWeight: 500, marginBottom: '12px', color: 'white' }}>选择生成画质</p>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                onClick={() => setQuality('1K')}
+                style={{
+                  flex: 1, padding: '12px', borderRadius: '8px', cursor: 'pointer',
+                  border: quality === '1K' ? '1px solid #D4AF37' : '1px solid rgba(255, 255, 255, 0.1)',
+                  background: quality === '1K' ? 'rgba(212, 175, 55, 0.1)' : 'transparent',
+                }}
+              >
+                <div style={{ fontSize: '15px', fontWeight: 500, color: quality === '1K' ? '#D4AF37' : 'white' }}>标清极速 (1K)</div>
+                <div style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.5)', marginTop: '4px' }}>约 10-15 秒/张</div>
+              </button>
+              <button
+                onClick={() => setQuality('2K')}
+                style={{
+                  flex: 1, padding: '12px', borderRadius: '8px', cursor: 'pointer',
+                  border: quality === '2K' ? '1px solid #D4AF37' : '1px solid rgba(255, 255, 255, 0.1)',
+                  background: quality === '2K' ? 'rgba(212, 175, 55, 0.1)' : 'transparent',
+                }}
+              >
+                <div style={{ fontSize: '15px', fontWeight: 500, color: quality === '2K' ? '#D4AF37' : 'white' }}>极致超清 (2K)</div>
+                <div style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.5)', marginTop: '4px' }}>约 1-4 分钟/张</div>
+              </button>
+            </div>
+          </div>
 
           {/* 按钮 */}
           <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>

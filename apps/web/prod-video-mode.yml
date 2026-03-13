@@ -1,0 +1,45 @@
+- generic [ref=e1]:
+  - alert [ref=e21]
+  - generic [ref=e27]:
+    - navigation [ref=e28]:
+      - link "VidLuxe" [ref=e29] [cursor=pointer]:
+        - /url: /
+      - generic [ref=e30]:
+        - link "价格" [ref=e31] [cursor=pointer]:
+          - /url: /pricing
+        - link "示例" [ref=e32] [cursor=pointer]:
+          - /url: /demo
+        - generic [ref=e33]:
+          - generic [ref=e34]: "932635477"
+          - button "登出" [ref=e35] [cursor=pointer]
+    - generic [ref=e36]:
+      - button "🖼️ 单图" [ref=e37] [cursor=pointer]:
+        - generic [ref=e38]: 🖼️
+        - generic [ref=e39]: 单图
+      - button "🎬 视频" [active] [ref=e40] [cursor=pointer]:
+        - generic [ref=e41]: 🎬
+        - generic [ref=e42]: 视频
+    - generic [ref=e305]:
+      - generic [ref=e306]:
+        - heading "视频升级" [level=1] [ref=e307]
+        - paragraph [ref=e308]: 上传视频，AI 自动优化
+      - generic [ref=e309] [cursor=pointer]:
+        - img [ref=e311]
+        - paragraph [ref=e313]: 拖入你的视频
+        - paragraph [ref=e314]: MP4 / MOV 最大 500MB
+      - generic [ref=e315]:
+        - generic [ref=e316]:
+          - paragraph [ref=e317]: 我的额度
+          - paragraph [ref=e318]: 8次
+        - generic [ref=e319]:
+          - paragraph [ref=e320]: 🎁 邀请码
+          - generic [ref=e321]:
+            - generic [ref=e322]: MHDBDX
+            - button "复制" [ref=e323] [cursor=pointer]
+    - button "🎁 邀请好友，双方各得 5 额度" [ref=e65] [cursor=pointer]:
+      - generic [ref=e66]: 🎁
+      - generic [ref=e67]: 邀请好友，双方各得 5 额度
+      - img [ref=e68]
+  - generic [ref=e22] [cursor=pointer]:
+    - generic [ref=e25]: "8"
+    - generic [ref=e26]: 8 次

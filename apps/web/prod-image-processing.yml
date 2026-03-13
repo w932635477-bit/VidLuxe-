@@ -1,0 +1,53 @@
+- generic [active] [ref=e1]:
+  - alert [ref=e21]
+  - generic [ref=e27]:
+    - navigation [ref=e28]:
+      - link "VidLuxe" [ref=e29] [cursor=pointer]:
+        - /url: /
+      - generic [ref=e30]:
+        - link "价格" [ref=e31] [cursor=pointer]:
+          - /url: /pricing
+        - link "示例" [ref=e32] [cursor=pointer]:
+          - /url: /demo
+        - generic [ref=e33]:
+          - generic [ref=e34]: "932635477"
+          - button "登出" [ref=e35] [cursor=pointer]
+    - generic [ref=e36]:
+      - button "🖼️ 单图" [ref=e37] [cursor=pointer]:
+        - generic [ref=e38]: 🖼️
+        - generic [ref=e39]: 单图
+      - button "🎬 视频" [ref=e40] [cursor=pointer]:
+        - generic [ref=e41]: 🎬
+        - generic [ref=e42]: 视频
+    - generic [ref=e43]:
+      - generic [ref=e70]:
+        - text: 此页面仅支持图片上传，请使用视频上传页面
+        - button "✕" [ref=e71] [cursor=pointer]
+      - generic [ref=e190]:
+        - generic [ref=e191]:
+          - img [ref=e194]
+          - img [ref=e199]
+          - generic [ref=e204]: "3"
+        - generic [ref=e205]:
+          - generic [ref=e206]: 分析
+          - generic [ref=e207]: 生成
+          - generic [ref=e208]: 优化
+        - generic [ref=e209]:
+          - img [ref=e211]
+          - generic [ref=e215]: 35.45%
+        - paragraph [ref=e217]: AI 正在升级图片
+        - paragraph [ref=e219]: 好的作品值得等待...
+        - generic [ref=e220]:
+          - generic [ref=e221]:
+            - paragraph [ref=e222]: 已用时
+            - paragraph [ref=e223]: 1:11
+          - generic [ref=e225]:
+            - paragraph [ref=e226]: 预计剩余
+            - paragraph [ref=e227]: 0:00
+    - button "🎁 邀请好友，双方各得 5 额度" [ref=e65] [cursor=pointer]:
+      - generic [ref=e66]: 🎁
+      - generic [ref=e67]: 邀请好友，双方各得 5 额度
+      - img [ref=e68]
+  - generic [ref=e22] [cursor=pointer]:
+    - generic [ref=e25]: "8"
+    - generic [ref=e26]: 8 次

@@ -115,7 +115,7 @@ export interface ColorGradeResponse {
 export interface TryPageState {
   step: Step;
   contentType: ContentType;
-  uploadedFile: File | null;
+  uploadedFile: File | Blob | null;
   uploadedFileUrl: string | null;
   previewUrl: string | null;
   progress: number;
@@ -129,7 +129,7 @@ export interface TryPageState {
   quotaRemaining: number;
   styleSourceType: import('@/components/features/try/StyleSelector').StyleSourceType;
   selectedPreset: import('@/components/features/try/StyleSelector').StyleType;
-  referenceFile: File | null;
+  referenceFile: File | Blob | null;
   referenceFileUrl: string | null;
   keyframes: KeyFrame[];
   selectedKeyframe: KeyFrame | null;
@@ -140,7 +140,7 @@ export interface TryPageState {
 // 批量上传文件项
 export interface BatchFileItem {
   id: string;
-  file: File;
+  file: File | Blob;
   previewUrl: string;
   uploadedUrl: string | null;
   status: 'pending' | 'uploading' | 'success' | 'error';

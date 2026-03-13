@@ -56,6 +56,8 @@ export interface Task {
     // 新效果系统参数（可选）
     effectId?: string;
     effectIntensity?: number; // 0-100
+    // 生成质量
+    quality?: '1K' | '2K';
   };
 }
 

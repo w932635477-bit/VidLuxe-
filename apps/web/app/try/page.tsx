@@ -16,6 +16,7 @@ import { VideoFlow } from '@/components/features/try/flows/VideoFlow';
 import { InviteCard } from '@/components/features/try/InviteCard';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { useCreditsStore } from '@/lib/stores/credits-store';
+import EmailVerificationBanner from '@/components/auth/EmailVerificationBanner';
 
 // 生成匿名 ID
 function generateAnonymousId(): string {
@@ -94,6 +95,9 @@ export default function TryPage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#000000', paddingBottom: showInviteCard ? '300px' : '88px' }}>
+      {/* 邮箱验证提示横幅 */}
+      <EmailVerificationBanner />
+
       <MinimalNav />
       <ModeTabs activeMode={activeMode} onModeChange={setActiveMode} />
       <div style={{ paddingTop: '120px' }}>

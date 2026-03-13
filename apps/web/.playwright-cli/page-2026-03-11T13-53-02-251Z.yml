@@ -1,0 +1,51 @@
+- generic [active] [ref=e1]:
+  - alert [ref=e21]
+  - generic [ref=e27]:
+    - navigation [ref=e28]:
+      - link "VidLuxe" [ref=e29] [cursor=pointer]:
+        - /url: /
+      - generic [ref=e30]:
+        - link "价格" [ref=e31] [cursor=pointer]:
+          - /url: /pricing
+        - link "示例" [ref=e32] [cursor=pointer]:
+          - /url: /demo
+        - generic [ref=e33]:
+          - generic [ref=e34]: "932635477"
+          - button "登出" [ref=e35] [cursor=pointer]
+    - generic [ref=e36]:
+      - button "🖼️ 单图" [ref=e37] [cursor=pointer]:
+        - generic [ref=e38]: 🖼️
+        - generic [ref=e39]: 单图
+      - button "🎬 视频" [ref=e40] [cursor=pointer]:
+        - generic [ref=e41]: 🎬
+        - generic [ref=e42]: 视频
+    - generic [ref=e463]:
+      - generic [ref=e464]:
+        - img [ref=e467]
+        - img [ref=e472]
+        - img [ref=e477]
+        - generic [ref=e482]: "4"
+      - generic [ref=e483]:
+        - generic [ref=e484]: 分析
+        - generic [ref=e485]: 调色
+        - generic [ref=e486]: 生成
+        - generic [ref=e487]: 优化
+      - generic [ref=e488]:
+        - img [ref=e490]
+        - generic [ref=e494]: 0%
+      - paragraph [ref=e496]: 🖼️ 正在增强第 1/1 张图片...
+      - paragraph [ref=e498]: 好的作品值得等待...
+      - generic [ref=e499]:
+        - generic [ref=e500]:
+          - paragraph [ref=e501]: 已用时
+          - paragraph [ref=e502]: 0:07
+        - generic [ref=e504]:
+          - paragraph [ref=e505]: 预计剩余
+          - paragraph [ref=e506]: 0:53
+    - button "🎁 邀请好友，双方各得 5 额度" [ref=e65] [cursor=pointer]:
+      - generic [ref=e66]: 🎁
+      - generic [ref=e67]: 邀请好友，双方各得 5 额度
+      - img [ref=e68]
+  - generic [ref=e22] [cursor=pointer]:
+    - generic [ref=e25]: "8"
+    - generic [ref=e26]: 8 次

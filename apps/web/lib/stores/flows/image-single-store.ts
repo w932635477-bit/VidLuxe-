@@ -56,6 +56,7 @@ interface ImageSingleState {
   selectedEffectId: string;
   effectIntensity: number;
   selectedContentType: ContentType;
+  quality: '1K' | '2K'; // 生成质量
 
   // 结果
   resultData: ResultData | null;
@@ -97,6 +98,7 @@ interface ImageSingleActions {
   setSelectedEffectId: (id: string) => void;
   setEffectIntensity: (intensity: number) => void;
   setSelectedContentType: (type: ContentType) => void;
+  setQuality: (quality: '1K' | '2K') => void;
 
   // 结果操作
   setResultData: (data: ResultData | null) => void;
@@ -145,6 +147,7 @@ const initialState: ImageSingleState = {
   selectedEffectId: 'outfit-magazine',
   effectIntensity: 100,
   selectedContentType: 'outfit',
+  quality: '1K',
   resultData: null,
   showCreditModal: false,
   creditRequired: 0,
@@ -202,6 +205,7 @@ export const useImageSingleStore = create<ImageSingleState & ImageSingleActions>
       setSelectedEffectId: (selectedEffectId) => set({ selectedEffectId }, false, 'setSelectedEffectId'),
       setEffectIntensity: (effectIntensity) => set({ effectIntensity }, false, 'setEffectIntensity'),
       setSelectedContentType: (selectedContentType) => set({ selectedContentType }, false, 'setSelectedContentType'),
+      setQuality: (quality) => set({ quality }, false, 'setQuality'),
 
       // 结果操作
       setResultData: (resultData) => set({ resultData }, false, 'setResultData'),

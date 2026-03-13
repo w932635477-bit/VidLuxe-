@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { content, styleSource, anonymousId } = validation.data;
+    const { content, styleSource, anonymousId, quality } = validation.data;
 
     // 检查是否登录用户
     const supabase = await createClient();
@@ -217,6 +217,7 @@ export async function POST(request: NextRequest) {
       // 新效果系统参数
       effectId,
       effectIntensity: effectIntensity ?? 100,
+      quality, // 加入 quality 支持
     };
 
     const task = taskQueue.create(taskInput);
@@ -327,6 +328,7 @@ async function executeTaskAsync(
       referenceUrl: task.input.referenceUrl,
       effectId: task.input.effectId,
       effectIntensity: task.input.effectIntensity ?? 100,
+      quality: task.input.quality ?? '1K',
       onProgress: (progress, stage) => {
         taskQueue.updateProgress(task.id, progress, stage);
       },

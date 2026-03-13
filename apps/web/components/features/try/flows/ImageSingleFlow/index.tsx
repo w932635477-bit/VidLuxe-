@@ -51,6 +51,7 @@ export function ImageSingleFlow() {
     selectedEffectId,
     effectIntensity,
     selectedContentType,
+    quality,
     setStep,
     setUploadedFile,
     setUploadedFileUrl,
@@ -59,7 +60,9 @@ export function ImageSingleFlow() {
     setProgress,
     setCurrentStage,
     setError,
+    setAiRecognition,
     setSelectedCategory,
+    setSelectedSeedingType,
     setSelectedPreset,
     setStyleSourceType,
     setReferenceFile,
@@ -69,6 +72,7 @@ export function ImageSingleFlow() {
     setSelectedEffectId,
     setEffectIntensity,
     setSelectedContentType,
+    setQuality,
     reset,
   } = useImageSingleStore();
 
@@ -83,6 +87,63 @@ export function ImageSingleFlow() {
   // 我的邀请码状态（展示用）
   const [myInviteCode, setMyInviteCode] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+
+  // 拖拽状态
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragCounter, setDragCounter] = useState(0);
+
+  const handleDragEnter = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragCounter(c => c + 1);
+    setIsDragging(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragCounter(c => {
+      const next = c - 1;
+      if (next <= 0) { setIsDragging(false); return 0; }
+      return next;
+    });
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  }, []);
+
+  // 文件上传处理（抽出来复用）
+  const processFileUpload = useCallback(async (file: File) => {
+    if (!file.type.startsWith('image/')) return;
+    const preview = URL.createObjectURL(file);
+    setPreviewUrl(preview);
+    setUploadedFile(file);
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      const data = await uploadFile(formData);
+      if (data.success && data.file) {
+        setUploadedFileUrl(data.file.url);
+        setStep('recognition');
+        setTimeout(() => {
+          setAiRecognition({ category: 'fashion', seedingType: 'product' });
+          setSelectedCategory('fashion');
+          setSelectedSeedingType('product');
+        }, 1000);
+      }
+    } catch (err) { console.error(err); }
+  }, [setPreviewUrl, setUploadedFile, setUploadedFileUrl, setStep, setAiRecognition, setSelectedCategory, setSelectedSeedingType]);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    setDragCounter(0);
+    const file = e.dataTransfer.files?.[0];
+    if (file) processFileUpload(file);
+  }, [processFileUpload]);
 
   // 是否显示邀请码输入框
   const showInviteInput = !hasUsedInviteCode && !inviteApplied;
@@ -222,6 +283,7 @@ export function ImageSingleFlow() {
           // 新效果系统参数
           effectId: selectedEffectId,
           effectIntensity: effectIntensity,
+          quality: quality,
         }),
       });
 
@@ -266,7 +328,7 @@ export function ImageSingleFlow() {
       setError('网络错误');
       setStep('style');
     }
-  }, [uploadedFileUrl, total, styleSourceType, selectedPreset, referenceFileUrl, anonymousId, selectedEffectId, effectIntensity, selectedContentType, setStep, setProgress, setCurrentStage, setResultData, setError, fetchCredits]);
+  }, [uploadedFileUrl, total, styleSourceType, selectedPreset, referenceFileUrl, anonymousId, selectedEffectId, effectIntensity, selectedContentType, quality, setStep, setProgress, setCurrentStage, setResultData, setError, fetchCredits]);
 
   // 处理参考图上传（使用 Server Action）
   const handleReferenceUpload = useCallback(async (file: File) => {
@@ -315,11 +377,19 @@ export function ImageSingleFlow() {
 
           <div
             onClick={() => !isLoading && document.getElementById('single-file-input')?.click()}
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            onDragEnter={handleDragEnter}
+            onDragLeave={handleDragLeave}
             style={{
               width: '100%', maxWidth: '480px', aspectRatio: '9/16', maxHeight: '500px',
-              borderRadius: '24px', border: '2px dashed rgba(255, 255, 255, 0.15)',
-              background: 'rgba(255, 255, 255, 0.02)', cursor: isLoading ? 'wait' : 'pointer',
+              borderRadius: '24px',
+              border: isDragging ? '2px dashed rgba(212, 175, 55, 0.8)' : '2px dashed rgba(255, 255, 255, 0.15)',
+              background: isDragging ? 'rgba(212, 175, 55, 0.08)' : 'rgba(255, 255, 255, 0.02)',
+              cursor: isLoading ? 'wait' : 'pointer',
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              transition: 'all 0.2s ease',
+              transform: isDragging ? 'scale(1.01)' : 'scale(1)',
             }}
           >
             <input id="single-file-input" type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => { const file = e.target.files?.[0]; if (file) handleFileChange(file); e.target.value = ''; }} disabled={isLoading} />
@@ -330,11 +400,15 @@ export function ImageSingleFlow() {
               </div>
             ) : (
               <>
-                <div style={{ width: '80px', height: '80px', marginBottom: '24px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" style={{ opacity: 0.4 }}><path d="M12 16V4M12 4L8 8M12 4L16 8M4 16V18C4 19.1 4.9 20 6 20H18C19.1 20 20 19.1 20 18V16" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                <div style={{ width: '80px', height: '80px', marginBottom: '24px', borderRadius: '50%', background: isDragging ? 'rgba(212, 175, 55, 0.15)' : 'rgba(255, 255, 255, 0.05)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s ease' }}>
+                  <svg width="36" height="36" viewBox="0 0 24 24" fill="none" style={{ opacity: isDragging ? 0.9 : 0.4 }}><path d="M12 16V4M12 4L8 8M12 4L16 8M4 16V18C4 19.1 4.9 20 6 20H18C19.1 20 20 19.1 20 18V16" stroke={isDragging ? '#D4AF37' : 'white'} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
                 </div>
-                <p style={{ fontSize: '21px', fontWeight: 500, marginBottom: '8px' }}>拖入你的原片</p>
-                <p style={{ fontSize: '15px', color: 'rgba(255, 255, 255, 0.4)', marginBottom: '16px' }}>图片</p>
+                <p style={{ fontSize: '21px', fontWeight: 500, marginBottom: '8px', color: isDragging ? '#D4AF37' : 'white' }}>
+                  {isDragging ? '松开即可上传' : '拖入你的原片'}
+                </p>
+                <p style={{ fontSize: '15px', color: 'rgba(255, 255, 255, 0.4)', marginBottom: '16px' }}>
+                  {isDragging ? '支持 JPG / PNG' : '图片'}
+                </p>
               </>
             )}
           </div>
@@ -451,6 +525,35 @@ export function ImageSingleFlow() {
               </p>
             </div>
           )}
+
+          {/* 画质选择（新增） */}
+          <div style={{ marginTop: '24px', padding: '16px', borderRadius: '12px', background: 'rgba(255, 255, 255, 0.03)', border: '1px solid rgba(255, 255, 255, 0.08)' }}>
+            <p style={{ fontSize: '15px', fontWeight: 500, marginBottom: '12px', color: 'white' }}>选择生成画质</p>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <button
+                onClick={() => setQuality('1K')}
+                style={{
+                  flex: 1, padding: '12px', borderRadius: '8px', cursor: 'pointer',
+                  border: quality === '1K' ? '1px solid #D4AF37' : '1px solid rgba(255, 255, 255, 0.1)',
+                  background: quality === '1K' ? 'rgba(212, 175, 55, 0.1)' : 'transparent',
+                }}
+              >
+                <div style={{ fontSize: '15px', fontWeight: 500, color: quality === '1K' ? '#D4AF37' : 'white' }}>标清极速 (1K)</div>
+                <div style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.5)', marginTop: '4px' }}>约 10-15 秒</div>
+              </button>
+              <button
+                onClick={() => setQuality('2K')}
+                style={{
+                  flex: 1, padding: '12px', borderRadius: '8px', cursor: 'pointer',
+                  border: quality === '2K' ? '1px solid #D4AF37' : '1px solid rgba(255, 255, 255, 0.1)',
+                  background: quality === '2K' ? 'rgba(212, 175, 55, 0.1)' : 'transparent',
+                }}
+              >
+                <div style={{ fontSize: '15px', fontWeight: 500, color: quality === '2K' ? '#D4AF37' : 'white' }}>极致超清 (2K)</div>
+                <div style={{ fontSize: '12px', color: 'rgba(255, 255, 255, 0.5)', marginTop: '4px' }}>约 1-4 分钟</div>
+              </button>
+            </div>
+          </div>
 
           {/* 按钮 */}
           <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>

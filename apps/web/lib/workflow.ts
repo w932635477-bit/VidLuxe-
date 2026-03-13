@@ -15,8 +15,9 @@
 import type { TaskResult } from './task-queue';
 import { getStyleProfile } from './style-profile';
 import { calculateScore } from './scorer';
-import { buildEnhancePrompt } from './style-prompts';
+import { buildEnhancePrompt, getPromptForStyle, getPromptMode, type ContentMode } from './style-prompts';
 import type { PresetStyle } from './style-prompts';
+import { detectFacesFromUrl, shouldUseProductMode } from './face-detection';
 import { getFileStorage } from './file-storage';
 
 // Nano Banana API 配置
@@ -274,8 +275,9 @@ export async function processImageEnhancement(params: {
   // 新效果系统参数
   effectId?: string;
   effectIntensity?: number;
+  quality?: '1K' | '2K';
 }): Promise<TaskResult> {
-  const { imageUrl, styleSourceType, presetStyle, referenceUrl, onProgress, effectId, effectIntensity } = params;
+  const { imageUrl, styleSourceType, presetStyle, referenceUrl, onProgress, effectId, effectIntensity, quality = '1K' } = params;
 
   // Stage 1: 获取风格 Profile (0-10%)
   onProgress?.(0, '获取风格特征');
@@ -291,7 +293,6 @@ export async function processImageEnhancement(params: {
 
   // Stage 2: 构建 Prompt 并调用 Nano Banana (10-80%)
   onProgress?.(15, '构建升级 Prompt');
-  const prompt = styleProfile.prompt;
 
   // 获取公网 URL
   let publicUrl: string | null = null;
@@ -321,6 +322,29 @@ export async function processImageEnhancement(params: {
     }
   }
 
+  // 人脸检测：判断是否使用 product 模式
+  let contentMode: ContentMode = 'face';
+  try {
+    console.log('[Workflow] Detecting faces in image...');
+    const faceDetection = await detectFacesFromUrl(publicUrl);
+    console.log('[Workflow] Face detection result:', faceDetection);
+
+    // 根据人脸检测结果自动选择模式
+    contentMode = shouldUseProductMode(faceDetection)
+      ? 'product'
+      : 'face';
+
+    console.log('[Workflow] Using content mode:', contentMode);
+  } catch (error) {
+    // 人脸检测失败时，默认使用 face 模式
+    console.warn('[Workflow] Face detection failed, defaulting to face mode:', error);
+    contentMode = 'face';
+  }
+
+  // 获取对应模式的 prompt
+  const prompt = getPromptForStyle(presetStyle, contentMode);
+  console.log('[Workflow] Using prompt for mode:', contentMode, '-', prompt.substring(0, 100) + '...');
+
   // 构建 API 请求参数
   const taskParams: {
     prompt: string;
@@ -331,7 +355,7 @@ export async function processImageEnhancement(params: {
     prompt,
     imageUrls: [publicUrl],
     size: '9:16',
-    quality: '2K',
+    quality,
   };
 
   onProgress?.(20, '提交升级任务');
@@ -388,6 +412,7 @@ export async function processVideoEnhancement(params: {
   // 新效果系统参数
   effectId?: string;
   effectIntensity?: number;
+  quality?: '1K' | '2K';
 }): Promise<TaskResult> {
   const {
     videoUrl,
@@ -398,6 +423,7 @@ export async function processVideoEnhancement(params: {
     enableBackgroundRemoval = false,
     effectId,
     effectIntensity,
+    quality = '1K',
   } = params;
 
   // 导入视频生成器
@@ -430,7 +456,7 @@ export async function processVideoEnhancement(params: {
   const { taskId: bgTaskId } = await createNanoBananaTask({
     prompt: backgroundPrompt,
     size: '9:16',
-    quality: '2K',
+    quality,
   });
 
   onProgress?.(15, 'AI 生成背景素材');
@@ -561,6 +587,7 @@ export async function processEnhancement(params: {
   // 新效果系统参数
   effectId?: string;
   effectIntensity?: number;
+  quality?: '1K' | '2K';
 }): Promise<TaskResult> {
   // effectId 和 effectIntensity 会传递给子函数，由 getStyleProfile 处理
   if (params.effectId) {
@@ -576,6 +603,7 @@ export async function processEnhancement(params: {
       onProgress: params.onProgress,
       effectId: params.effectId,
       effectIntensity: params.effectIntensity,
+      quality: params.quality,
     });
   } else {
     return processVideoEnhancement({
@@ -586,6 +614,7 @@ export async function processEnhancement(params: {
       onProgress: params.onProgress,
       effectId: params.effectId,
       effectIntensity: params.effectIntensity,
+      quality: params.quality,
     });
   }
 }

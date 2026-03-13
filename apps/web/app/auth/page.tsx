@@ -27,16 +27,41 @@ function AuthContent() {
   // 检查用户是否已登录
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        // 已登录，直接跳转
-        router.push(redirect);
-      } else {
-        setCheckingAuth(false);
+      try {
+        // 使用 getUser() 而不是 getSession()，更可靠
+        const { data: { user }, error } = await supabase.auth.getUser()
+
+        if (error) {
+          console.warn('[Auth Check] Error:', error.message)
+          setCheckingAuth(false)
+          return
+        }
+
+        if (user) {
+          // 已登录，直接跳转
+          router.push(redirect)
+        } else {
+          setCheckingAuth(false)
+        }
+      } catch (err) {
+        console.error('[Auth Check] Failed:', err)
+        // 网络错误或其他异常，显示登录表单
+        setCheckingAuth(false)
       }
-    };
-    checkAuth();
-  }, [supabase.auth, router, redirect]);
+    }
+
+    // 添加超时保护，5 秒后强制显示登录表单
+    const timeout = setTimeout(() => {
+      if (checkingAuth) {
+        console.warn('[Auth Check] Timeout - showing login form')
+        setCheckingAuth(false)
+      }
+    }, 5000)
+
+    checkAuth()
+
+    return () => clearTimeout(timeout)
+  }, [supabase.auth, router, redirect])
 
   // 登录
   const handleLogin = async () => {
@@ -97,7 +122,7 @@ function AuthContent() {
     try {
       // 使用环境变量配置的 BASE_URL，确保重定向 URL 一致
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || window.location.origin;
-      const { error } = await supabase.auth.signUp({
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -115,10 +140,16 @@ function AuthContent() {
         return;
       }
 
-      // 注册成功，提示用户验证邮箱
-      setSuccess('注册成功！请检查邮箱完成验证，然后登录');
-      setMode('login');
-      setLoading(false);
+      // 检查是否已自动登录（邮箱自动确认启用时）
+      if (data.session) {
+        // 用户已自动登录，直接跳转
+        router.push(redirect);
+      } else {
+        // 需要邮箱验证（不应该发生，因为已启用自动确认）
+        setSuccess('注册成功！请检查邮箱完成验证，然后登录');
+        setMode('login');
+        setLoading(false);
+      }
     } catch (err) {
       setError('注册失败，请重试');
       setLoading(false);

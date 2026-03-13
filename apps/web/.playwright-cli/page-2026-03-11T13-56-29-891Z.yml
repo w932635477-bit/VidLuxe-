@@ -1,0 +1,6 @@
+- generic [active] [ref=e1]:
+  - paragraph [ref=e5]: 加载中...
+  - alert [ref=e6]
+  - generic [ref=e7] [cursor=pointer]:
+    - generic [ref=e10]: "0"
+    - generic [ref=e11]: 0 次

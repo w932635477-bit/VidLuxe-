@@ -1,0 +1,380 @@
+- generic [active] [ref=e1]:
+  - alert [ref=e502]
+  - generic [ref=e508]:
+    - generic [ref=e509]:
+      - navigation [ref=e510]:
+        - generic [ref=e511]:
+          - link "VidLuxe PRO" [ref=e512] [cursor=pointer]:
+            - /url: /
+            - generic [ref=e513]: VidLuxe
+            - generic [ref=e514]: PRO
+          - generic [ref=e515]:
+            - link "体验" [ref=e516] [cursor=pointer]:
+              - /url: /try
+            - link "定价" [ref=e517] [cursor=pointer]:
+              - /url: /pricing
+          - generic [ref=e518]:
+            - link "登录" [ref=e519] [cursor=pointer]:
+              - /url: /auth?redirect=/
+            - link "免费体验" [ref=e520] [cursor=pointer]:
+              - /url: /try
+      - generic [ref=e521]:
+        - generic [ref=e522]:
+          - img "原图" [ref=e523]
+          - generic [ref=e525]: 原图
+        - generic [ref=e526]:
+          - img "升级版" [ref=e527]
+          - generic [ref=e529]: 升级版
+        - img [ref=e533]
+        - generic [ref=e538]:
+          - generic [ref=e540]: Introducing VidLuxe 2.0
+          - heading "VidLuxe AI学习了10000+高级感设计" [level=1] [ref=e541]
+          - paragraph [ref=e542]: 专治各种随手拍，秒变高级感
+          - generic [ref=e543]:
+            - link "立即免费体验" [ref=e544] [cursor=pointer]:
+              - /url: /try
+              - text: 立即免费体验
+              - img [ref=e545]
+            - generic [ref=e547]: 无需注册 · 10 次免费额度
+        - generic [ref=e549]:
+          - generic [ref=e550]: 探索更多
+          - generic [ref=e551]: ↓
+    - generic [ref=e553]:
+      - generic [ref=e554]:
+        - heading "见证升级" [level=2] [ref=e555]
+        - paragraph [ref=e556]: 主体不变，背景重构
+      - generic [ref=e557]:
+        - generic [ref=e559]:
+          - heading "美妆升级" [level=3] [ref=e560]
+          - generic [ref=e561]:
+            - generic [ref=e562]:
+              - img "原图" [ref=e563]
+              - generic [ref=e565]: 原图
+            - generic [ref=e566]:
+              - img "升级版" [ref=e567]
+              - generic [ref=e569]: 升级版
+            - img [ref=e573]
+        - generic [ref=e577]:
+          - heading "街拍升级" [level=3] [ref=e578]
+          - generic [ref=e579]:
+            - generic [ref=e580]:
+              - img "原图" [ref=e581]
+              - generic [ref=e583]: 原图
+            - generic [ref=e584]:
+              - img "升级版" [ref=e585]
+              - generic [ref=e587]: 升级版
+            - img [ref=e591]
+        - generic [ref=e595]:
+          - heading "美妆产品升级" [level=3] [ref=e596]
+          - generic [ref=e597]:
+            - generic [ref=e598]:
+              - img "原图" [ref=e599]
+              - generic [ref=e601]: 原图
+            - generic [ref=e602]:
+              - img "升级版" [ref=e603]
+              - generic [ref=e605]: 升级版
+            - img [ref=e609]
+        - generic [ref=e613]:
+          - heading "咖啡探店升级" [level=3] [ref=e614]
+          - generic [ref=e615]:
+            - generic [ref=e616]:
+              - img "原图" [ref=e617]
+              - generic [ref=e619]: 原图
+            - generic [ref=e620]:
+              - img "升级版" [ref=e621]
+              - generic [ref=e623]: 升级版
+            - img [ref=e627]
+    - generic [ref=e631]:
+      - generic [ref=e632]:
+        - heading "核心能力" [level=2] [ref=e633]
+        - paragraph [ref=e634]: 四项技术，无限可能
+      - generic [ref=e635]:
+        - generic [ref=e636]:
+          - generic [ref=e637]: ✦
+          - heading "智能主体锁定" [level=3] [ref=e638]
+          - paragraph [ref=e639]: AI 精准识别并锁定人物、产品等核心主体
+        - generic [ref=e640]:
+          - generic [ref=e641]: ◈
+          - heading "风格化重构" [level=3] [ref=e642]
+          - paragraph [ref=e643]: 四种高级感风格一键切换
+        - generic [ref=e644]:
+          - generic [ref=e645]: ◎
+          - heading "四维评分" [level=3] [ref=e646]
+          - paragraph [ref=e647]: 全方位量化内容高级感
+        - generic [ref=e648]:
+          - generic [ref=e649]: ◇
+          - heading "秒级处理" [level=3] [ref=e650]
+          - paragraph [ref=e651]: 平均 15 秒完成升级
+    - generic [ref=e653]:
+      - generic [ref=e654]:
+        - heading "全场景覆盖" [level=2] [ref=e655]
+        - paragraph [ref=e656]: 拖动对比，感受升级
+      - generic [ref=e657]:
+        - button "全部" [ref=e658] [cursor=pointer]
+        - button "穿搭 OOTD" [ref=e659] [cursor=pointer]
+        - button "美妆护肤" [ref=e660] [cursor=pointer]
+        - button "咖啡探店" [ref=e661] [cursor=pointer]
+        - button "探店美食" [ref=e662] [cursor=pointer]
+      - generic [ref=e663]:
+        - generic [ref=e664] [cursor=pointer]:
+          - generic [ref=e665]:
+            - generic [ref=e666]:
+              - img "原图" [ref=e667]
+              - generic [ref=e669]: 原图
+            - generic [ref=e670]:
+              - img "升级版" [ref=e671]
+              - generic [ref=e673]: 升级版
+            - img [ref=e677]
+          - generic [ref=e681]:
+            - generic [ref=e682]: 穿搭
+            - generic [ref=e683]:
+              - text: 拖动对比
+              - img [ref=e684]
+        - generic [ref=e687] [cursor=pointer]:
+          - generic [ref=e688]:
+            - generic [ref=e689]:
+              - img "原图" [ref=e690]
+              - generic [ref=e692]: 原图
+            - generic [ref=e693]:
+              - img "升级版" [ref=e694]
+              - generic [ref=e696]: 升级版
+            - img [ref=e700]
+          - generic [ref=e704]:
+            - generic [ref=e705]: 美妆
+            - generic [ref=e706]:
+              - text: 拖动对比
+              - img [ref=e707]
+        - generic [ref=e710] [cursor=pointer]:
+          - generic [ref=e711]:
+            - generic [ref=e712]:
+              - img "原图" [ref=e713]
+              - generic [ref=e715]: 原图
+            - generic [ref=e716]:
+              - img "升级版" [ref=e717]
+              - generic [ref=e719]: 升级版
+            - img [ref=e723]
+          - generic [ref=e727]:
+            - generic [ref=e728]: 探店
+            - generic [ref=e729]:
+              - text: 拖动对比
+              - img [ref=e730]
+        - generic [ref=e733] [cursor=pointer]:
+          - generic [ref=e734]:
+            - generic [ref=e735]:
+              - img "原图" [ref=e736]
+              - generic [ref=e738]: 原图
+            - generic [ref=e739]:
+              - img "升级版" [ref=e740]
+              - generic [ref=e742]: 升级版
+            - img [ref=e746]
+          - generic [ref=e750]:
+            - generic [ref=e751]: 美食
+            - generic [ref=e752]:
+              - text: 拖动对比
+              - img [ref=e753]
+        - generic [ref=e756] [cursor=pointer]:
+          - generic [ref=e757]:
+            - generic [ref=e758]:
+              - img "原图" [ref=e759]
+              - generic [ref=e761]: 原图
+            - generic [ref=e762]:
+              - img "升级版" [ref=e763]
+              - generic [ref=e765]: 升级版
+            - img [ref=e769]
+          - generic [ref=e773]:
+            - generic [ref=e774]: 生活
+            - generic [ref=e775]:
+              - text: 拖动对比
+              - img [ref=e776]
+        - generic [ref=e779] [cursor=pointer]:
+          - generic [ref=e780]:
+            - generic [ref=e781]:
+              - img "原图" [ref=e782]
+              - generic [ref=e784]: 原图
+            - generic [ref=e785]:
+              - img "升级版" [ref=e786]
+              - generic [ref=e788]: 升级版
+            - img [ref=e792]
+          - generic [ref=e796]:
+            - generic [ref=e797]: 美妆
+            - generic [ref=e798]:
+              - text: 拖动对比
+              - img [ref=e799]
+    - generic [ref=e803]:
+      - generic [ref=e804]:
+        - heading "用户心声" [level=2] [ref=e805]
+        - paragraph [ref=e806]: 来自真实创作者的反馈
+      - generic [ref=e807]:
+        - generic [ref=e808]:
+          - paragraph [ref=e809]: "\"一张普通的咖啡店照片，瞬间升级成了杂志封面质感。\""
+          - generic [ref=e810]: 小雨
+        - generic [ref=e811]:
+          - paragraph [ref=e812]: "\"终于找到了能完美保留穿搭风格，同时提升整体高级感的工具。\""
+          - generic [ref=e813]: Mia
+        - generic [ref=e814]:
+          - paragraph [ref=e815]: "\"护肤品照片升级后像大牌广告，粉丝都在问我是不是换了专业摄影师。\""
+          - generic [ref=e816]: 林琳
+    - generic [ref=e818]:
+      - heading "常见问题" [level=2] [ref=e820]
+      - generic [ref=e821]:
+        - generic [ref=e822]:
+          - button "VidLuxe 的 AI 升级是如何工作的？ +" [ref=e823] [cursor=pointer]:
+            - generic [ref=e824]: VidLuxe 的 AI 升级是如何工作的？
+            - generic [ref=e825]: +
+          - paragraph [ref=e826]: 就像魔法一样简单。VidLuxe 会智能识别你的图片主体，将其升级到更高分辨率，并根据你选择的风格重构背景。你可以通过自然语言描述来精确控制升级效果。
+        - generic [ref=e827]:
+          - button "VidLuxe 适合新手使用吗？ +" [ref=e828] [cursor=pointer]:
+            - generic [ref=e829]: VidLuxe 适合新手使用吗？
+            - generic [ref=e830]: +
+          - paragraph [ref=e831]: 完全适合。VidLuxe 专为各类创作者设计，无论你是专业博主还是刚起步的内容创作者。直观的界面设计让你能快速上手。
+        - generic [ref=e832]:
+          - button "哪些创作者最适合使用 VidLuxe？ +" [ref=e833] [cursor=pointer]:
+            - generic [ref=e834]: 哪些创作者最适合使用 VidLuxe？
+            - generic [ref=e835]: +
+          - paragraph [ref=e836]: VidLuxe 完美适配小红书生态中的各类创作者：穿搭博主、美妆达人、美食探店、生活方式分享者等。
+    - generic [ref=e838]:
+      - generic [ref=e839]:
+        - heading "定价" [level=2] [ref=e840]
+        - paragraph [ref=e841]: 选择适合你的方案
+      - generic [ref=e842]:
+        - generic [ref=e843]:
+          - generic [ref=e844]: 免费版Free
+          - paragraph [ref=e845]: 体验 AI 升级的魔力
+          - generic [ref=e846]: 免费
+          - list [ref=e847]:
+            - listitem [ref=e848]:
+              - img [ref=e849]
+              - text: 8 次免费额度
+            - listitem [ref=e851]:
+              - img [ref=e852]
+              - text: 4 种高级感风格
+            - listitem [ref=e854]:
+              - img [ref=e855]
+              - text: 邀请好友获得额外额度
+            - listitem [ref=e857]:
+              - img [ref=e858]
+              - text: 标准画质导出
+          - button "开始体验" [ref=e860] [cursor=pointer]
+        - generic [ref=e861]:
+          - generic [ref=e862]: 小包Starter
+          - paragraph [ref=e863]: 轻度用户首选
+          - generic [ref=e864]: ¥29一次性购买
+          - list [ref=e865]:
+            - listitem [ref=e866]:
+              - img [ref=e867]
+              - text: 20 个额度
+            - listitem [ref=e869]:
+              - img [ref=e870]
+              - text: 额度永不过期
+            - listitem [ref=e872]:
+              - img [ref=e873]
+              - text: 4 种高级感风格
+            - listitem [ref=e875]:
+              - img [ref=e876]
+              - text: 高清画质导出
+            - listitem [ref=e878]:
+              - img [ref=e879]
+              - text: 多风格批量生成
+          - button "立即购买" [ref=e881] [cursor=pointer]
+        - generic [ref=e882]:
+          - generic [ref=e883]: 最受欢迎
+          - generic [ref=e884]: 中包Pro
+          - paragraph [ref=e885]: 专业创作者推荐
+          - generic [ref=e886]: ¥79一次性购买
+          - list [ref=e887]:
+            - listitem [ref=e888]:
+              - img [ref=e889]
+              - text: 60 个额度
+            - listitem [ref=e891]:
+              - img [ref=e892]
+              - text: 额度永不过期
+            - listitem [ref=e894]:
+              - img [ref=e895]
+              - text: 4 种高级感风格
+            - listitem [ref=e897]:
+              - img [ref=e898]
+              - text: 高清画质导出
+            - listitem [ref=e900]:
+              - img [ref=e901]
+              - text: 多风格批量生成
+            - listitem [ref=e903]:
+              - img [ref=e904]
+              - text: 优先处理队列
+          - button "立即购买" [ref=e906] [cursor=pointer]
+        - generic [ref=e907]:
+          - generic [ref=e908]: 大包Business
+          - paragraph [ref=e909]: 高频创作者必备
+          - generic [ref=e910]: ¥199一次性购买
+          - list [ref=e911]:
+            - listitem [ref=e912]:
+              - img [ref=e913]
+              - text: 150 个额度
+            - listitem [ref=e915]:
+              - img [ref=e916]
+              - text: 额度永不过期
+            - listitem [ref=e918]:
+              - img [ref=e919]
+              - text: 4 种高级感风格
+            - listitem [ref=e921]:
+              - img [ref=e922]
+              - text: 高清画质导出
+            - listitem [ref=e924]:
+              - img [ref=e925]
+              - text: 多风格批量生成
+            - listitem [ref=e927]:
+              - img [ref=e928]
+              - text: 优先处理队列
+            - listitem [ref=e930]:
+              - img [ref=e931]
+              - text: 专属客服支持
+          - button "立即购买" [ref=e933] [cursor=pointer]
+        - generic [ref=e934]:
+          - generic [ref=e935]: 最划算
+          - generic [ref=e936]: 超大包Enterprise
+          - paragraph [ref=e937]: 无限创作可能
+          - generic [ref=e938]: ¥499一次性购买
+          - list [ref=e939]:
+            - listitem [ref=e940]:
+              - img [ref=e941]
+              - text: 400 个额度
+            - listitem [ref=e943]:
+              - img [ref=e944]
+              - text: 额度永不过期
+            - listitem [ref=e946]:
+              - img [ref=e947]
+              - text: 4 种高级感风格
+            - listitem [ref=e949]:
+              - img [ref=e950]
+              - text: 4K 超清画质导出
+            - listitem [ref=e952]:
+              - img [ref=e953]
+              - text: 多风格批量生成
+            - listitem [ref=e955]:
+              - img [ref=e956]
+              - text: 最高优先级处理
+            - listitem [ref=e958]:
+              - img [ref=e959]
+              - text: 专属客服支持
+            - listitem [ref=e961]:
+              - img [ref=e962]
+              - text: API 接入权限
+          - button "立即购买" [ref=e964] [cursor=pointer]
+      - paragraph [ref=e965]: 所有付费方案额度永不过期
+    - generic [ref=e967]:
+      - heading "开始升级" [level=2] [ref=e968]
+      - paragraph [ref=e969]: 免费体验，无需信用卡
+      - link "立即体验" [ref=e970] [cursor=pointer]:
+        - /url: /try
+    - contentinfo [ref=e971]:
+      - generic [ref=e972]:
+        - generic [ref=e973]: VidLuxe © 2026
+        - generic [ref=e974]:
+          - link "隐私" [ref=e975] [cursor=pointer]:
+            - /url: "#"
+          - link "协议" [ref=e976] [cursor=pointer]:
+            - /url: "#"
+          - link "联系" [ref=e977] [cursor=pointer]:
+            - /url: "#"
+  - generic [ref=e503] [cursor=pointer]:
+    - generic [ref=e506]: "0"
+    - generic [ref=e507]: 0 次

@@ -22,11 +22,17 @@ interface ResultSectionProps {
   creditsConsumed?: number;
 }
 
-// 下载图片的辅助函数
+// 下载图片的辅助函数（使用代理 API 绕过 CORS）
 async function downloadImage(url: string, filename: string): Promise<void> {
   try {
-    const response = await fetch(url);
-    if (!response.ok) throw new Error('下载失败');
+    // 使用代理 API 来避免 CORS 问题
+    const proxyUrl = `/api/download?url=${encodeURIComponent(url)}&filename=${encodeURIComponent(filename)}`;
+
+    const response = await fetch(proxyUrl);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || '下载失败');
+    }
 
     const blob = await response.blob();
     const blobUrl = URL.createObjectURL(blob);

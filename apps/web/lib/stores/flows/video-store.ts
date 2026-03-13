@@ -58,6 +58,7 @@ interface VideoState {
   selectedEffectId: string;
   effectIntensity: number;
   selectedContentType: ContentType;
+  quality: '1K' | '2K'; // 画质
 
   // 调色
   colorGradeExplanation: string;
@@ -112,6 +113,7 @@ interface VideoActions {
   setSelectedEffectId: (id: string) => void;
   setEffectIntensity: (intensity: number) => void;
   setSelectedContentType: (type: ContentType) => void;
+  setQuality: (quality: '1K' | '2K') => void;
 
   // 调色操作
   setColorGradeExplanation: (explanation: string) => void;
@@ -173,6 +175,7 @@ const initialState: VideoState = {
   selectedEffectId: 'outfit-magazine',
   effectIntensity: 100,
   selectedContentType: 'outfit',
+  quality: '1K',
   colorGradeExplanation: '',
   gradedVideoUrl: null,
   keyframes: [],
@@ -239,6 +242,7 @@ export const useVideoStore = create<VideoState & VideoActions>()(
       setSelectedEffectId: (selectedEffectId) => set({ selectedEffectId }, false, 'setSelectedEffectId'),
       setEffectIntensity: (effectIntensity) => set({ effectIntensity }, false, 'setEffectIntensity'),
       setSelectedContentType: (selectedContentType) => set({ selectedContentType }, false, 'setSelectedContentType'),
+      setQuality: (quality) => set({ quality }, false, 'setQuality'),
 
       // 调色操作
       setColorGradeExplanation: (colorGradeExplanation) => set({ colorGradeExplanation }, false, 'setColorGradeExplanation'),

@@ -1,0 +1,45 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - navigation [ref=e12]:
+      - link "VidLuxe" [ref=e13] [cursor=pointer]:
+        - /url: /
+      - generic [ref=e14]:
+        - link "价格" [ref=e15] [cursor=pointer]:
+          - /url: /pricing
+        - link "示例" [ref=e16] [cursor=pointer]:
+          - /url: /demo
+        - generic [ref=e17]:
+          - generic [ref=e18]: "932635477"
+          - button "登出" [ref=e19] [cursor=pointer]
+    - generic [ref=e20]:
+      - button "🖼️ 单图" [ref=e21] [cursor=pointer]:
+        - generic [ref=e22]: 🖼️
+        - generic [ref=e23]: 单图
+      - button "🎬 视频" [ref=e24] [cursor=pointer]:
+        - generic [ref=e25]: 🎬
+        - generic [ref=e26]: 视频
+    - generic [ref=e28]:
+      - generic [ref=e29]:
+        - heading "让普通素材变爆款" [level=1] [ref=e30]
+        - paragraph [ref=e31]: 光线差、背景乱？一键提升高级感
+      - generic [ref=e32] [cursor=pointer]:
+        - img [ref=e34]
+        - paragraph [ref=e36]: 拖入你的原片
+        - paragraph [ref=e37]: 图片
+      - generic [ref=e38]:
+        - generic [ref=e39]:
+          - paragraph [ref=e40]: 我的额度
+          - paragraph [ref=e41]: 8次
+        - generic [ref=e42]:
+          - paragraph [ref=e43]: 🎁 邀请码
+          - generic [ref=e44]:
+            - generic [ref=e45]: MHDBDX
+            - button "复制" [ref=e46] [cursor=pointer]
+    - button "🎁 邀请好友，双方各得 5 额度" [ref=e49] [cursor=pointer]:
+      - generic [ref=e50]: 🎁
+      - generic [ref=e51]: 邀请好友，双方各得 5 额度
+      - img [ref=e52]
+  - alert [ref=e6]
+  - generic [ref=e7] [cursor=pointer]:
+    - generic [ref=e10]: "8"
+    - generic [ref=e11]: 8 次
