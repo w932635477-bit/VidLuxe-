@@ -48,6 +48,10 @@ tmp/
 scripts/verify-*.js
 scripts/test-*.ts
 
+# Worktrees
+.worktrees/
+worktrees/
+
 apps/web/scripts/*test*.ts
 apps/web/scripts/verify*.js
 
