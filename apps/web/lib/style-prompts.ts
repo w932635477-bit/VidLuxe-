@@ -2,6 +2,7 @@
  * 风格 Prompt 模板
  *
  * 定义 4 种预设风格的 Prompt 模板
+ * 扩展支持非人脸内容的 Prompt
  * 用于 Nano Banana API 调用
  */
 
@@ -9,6 +10,9 @@ import type { ContentType } from './content-types';
 
 // 预设风格类型
 export type PresetStyle = 'magazine' | 'soft' | 'urban' | 'vintage';
+
+// 内容模式类型
+export type ContentMode = 'face' | 'product';
 
 // 风格配置
 export interface StyleConfig {
@@ -20,7 +24,29 @@ export interface StyleConfig {
   negativePrompt: string;
   colors: string[];
   suitableFor: string[];
+  // 扩展：产品模式 Prompt
+  productPrompt?: string;
 }
+
+// 扩展的 Prompt 库（支持 face 和 product 模式）
+export const STYLE_PROMPTS: Record<PresetStyle, Record<ContentMode, string>> = {
+  magazine: {
+    face: 'Vogue magazine cover style, luxury fashion aesthetic, professional model photography, high-end beauty editorial, warm golden lighting, sophisticated and elegant, premium quality, editorial composition',
+    product: 'Vogue magazine aesthetic, luxury product photography, premium styling, sophisticated composition, warm golden lighting, high-end commercial aesthetic, sharp details, professional product showcase, magazine quality',
+  },
+  soft: {
+    face: 'Japanese lifestyle magazine style, soft natural lighting, muted pastel colors, Kinfolk aesthetic, dreamy atmosphere, gentle and warm, artistic and refined, editorial quality',
+    product: 'Japanese aesthetic product photography, soft natural lighting, muted pastel colors, artisanal product styling, gentle and warm, artistic composition, focus on texture and detail, lifestyle aesthetic',
+  },
+  urban: {
+    face: 'Apple keynote style, clean professional background, cool blue-gray tones, corporate executive aesthetic, modern minimalist, trustworthy and authoritative, soft diffused lighting, sharp details',
+    product: 'Apple product photography style, clean minimalist aesthetic, cool blue-gray tones, professional product showcase, modern minimalist, sharp focus, premium tech aesthetic, studio lighting',
+  },
+  vintage: {
+    face: 'Kodak Portra 400 film look, vintage aesthetic, warm film grain, cinematic color grading, nostalgic atmosphere, retro style, artistic, soft highlights, analog photography feel',
+    product: 'Kodak Portra 400 film look, vintage product aesthetic, warm film grain, cinematic color grading, nostalgic product styling, retro commercial aesthetic, artistic composition, vintage photography quality',
+  },
+};
 
 // 4 种主要预设风格配置（前端批量生成使用）
 export const STYLE_PRESETS: Record<PresetStyle, StyleConfig> = {
@@ -218,6 +244,34 @@ export function buildVideoBackgroundPrompt(params: {
 /**
  * 风格描述文本（用于 UI 显示）
  */
+/**
+ * 获取指定风格和模式的 Prompt
+ * 支持 face 和 product 两种模式
+ */
+export function getPromptForStyle(style: string, mode: ContentMode = 'face'): string {
+  return STYLE_PROMPTS[style as PresetStyle]?.[mode] || STYLE_PROMPTS.magazine.product;
+}
+
+/**
+ * 获取指定类别的所有风格 Prompt
+ */
+export function getPromptForCategory(category: string): string {
+  // 返回所有风格的组合 prompt
+  return Object.values(STYLE_PROMPTS)
+    .map(s => s.product)
+    .filter(Boolean)
+    .join(' | ');
+}
+
+/**
+ * 根据人脸检测结果自动选择模式
+ */
+export function getPromptMode(hasFaces: boolean, confidence: number = 0): ContentMode {
+  // 如果检测到人脸且置信度高，使用 face 模式
+  // 否则使用 product 模式
+  return hasFaces && confidence >= 0.6 ? 'face' : 'product';
+}
+
 export function getStyleDescription(style: PresetStyle): string {
   const config = getStyleConfig(style);
   return `${config.name} · ${config.description}`;
